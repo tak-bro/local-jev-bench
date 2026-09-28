@@ -184,3 +184,7 @@ Kev-4B's server used 2.7 GB RSS after startup. AnyJev and CLM run Qwen3-8B on vl
 - Under 8 concurrent requests only vllm-metal batches. Ollama's default settings (left untouched) served them at single-request speed.
 - Ollama's OpenAI endpoint ignores `/no_think` and `think: false`. Send `reasoning_effort: "none"` to turn thinking off, or `content` stays empty until the thinking tokens finish.
 - These numbers come from one run with 8 prompts each and are not repeated.
+
+## License
+
+MIT. See [LICENSE](LICENSE). The benchmarked engines and datasets keep their own licenses.

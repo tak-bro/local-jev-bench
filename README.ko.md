@@ -184,3 +184,7 @@ Kev-4B 서버는 기동 직후 RSS 2.7GB였다. AnyJev와 CLM은 vllm-metal에�
 - 동시 요청 8개에서는 vllm-metal만 배치 처리를 한다. Ollama는 기본 설정 그대로 두었더니 단건 속도로 처리했다.
 - Ollama의 OpenAI 엔드포인트는 `/no_think`와 `think: false`를 무시한다. thinking을 끄려면 `reasoning_effort: "none"`을 보내야 한다. 그러지 않으면 thinking 토큰이 끝날 때까지 `content`가 비어 있다.
 - 이 수치는 프롬프트 8개로 한 번 잰 값이고 반복 측정하지 않았다.
+
+## 라이선스
+
+MIT. [LICENSE](LICENSE) 참고. 벤치마크한 엔진과 데이터셋은 각자의 라이선스를 따른다.
