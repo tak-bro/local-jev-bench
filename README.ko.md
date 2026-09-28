@@ -1,8 +1,8 @@
-# local-sys1: Apple Silicon 맥에서 돌리는 Jev 스타일 결정 모델 (AnyJev, Kev, Laya, CLM)
+# local-jev-bench: Apple Silicon 맥에서 돌리는 Jev 스타일 결정 모델 (AnyJev, Kev, Laya, CLM)
 
 [English](README.md) | 한국어
 
-local-sys1은 Jev 스타일의 System One 결정 모델을 Apple Silicon 맥에서 로컬로 돌린다. 결정 모델은 타입이 정해진 질문을 받아 보정된 확률로 답하는 모델이다. 여기서는 영어·한국어 고객 문의와 공개 셋인 BANKING77 20-way 인텐트 분류에서 여러 엔진을 같은 질문으로 비교한다.
+local-jev-bench는 Jev 스타일의 System One 결정 모델을 Apple Silicon 맥에서 로컬로 돌린다. 결정 모델은 타입이 정해진 질문을 받아 보정된 확률로 답하는 모델이다. 여기서는 영어·한국어 고객 문의와 공개 셋인 BANKING77 20-way 인텐트 분류에서 여러 엔진을 같은 질문으로 비교한다.
 
 **핵심 결과 (M3 Max 36GB, 2026-09-29).** 모든 셋에서 Kev-4B가 가장 정확하다. 영어 279/315, 한국어 273/315, BANKING77-20 266/300이고, 호출당 215~240ms다. 호출당 50ms 미만인 엔진은 Ollaya(Laya)뿐이다(20.7~35.8ms). 대신 선택지가 많아지면 정확도가 떨어진다. Qwen3-8B 위의 AnyJev는 BANKING77-20에서 자기 README 수치를 그대로 재현했다(order-flip 68/300 → 22/300). 자세한 내용은 [결과](#결과-2026-09-29-m3-max-36gb) 절에 있다.
 

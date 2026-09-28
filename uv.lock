@@ -1057,7 +1057,7 @@ wheels = [
 ]
 
 [[package]]
-name = "local-sys1"
+name = "local-jev-bench"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

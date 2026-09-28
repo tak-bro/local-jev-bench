@@ -1,8 +1,8 @@
-# local-sys1: local Jev-style decision models on Apple Silicon (AnyJev, Kev, Laya, CLM)
+# local-jev-bench: local Jev-style decision models on Apple Silicon (AnyJev, Kev, Laya, CLM)
 
 English | [한국어](README.ko.md)
 
-local-sys1 runs Jev-style System One decision models (typed questions in, calibrated answers out) locally on an
+local-jev-bench runs Jev-style System One decision models (typed questions in, calibrated answers out) locally on an
 Apple Silicon Mac, and benchmarks them on the same questions: English and Korean customer tickets, and the public
 BANKING77 20-way intent set.
 
