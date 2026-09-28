@@ -1,0 +1,256 @@
+"""Offline checks for the scripts: no model is loaded, fake HTTP servers stand in for the engines."""
+
+from __future__ import annotations
+
+import json
+import math
+import os
+import socket
+import stat
+import subprocess
+import sys
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "bench"))
+import run  # noqa: E402
+
+
+def free_port() -> int:
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
+class FakeServer:
+    """Serves `routes[path](body) -> (status, json)` on localhost."""
+
+    def __init__(self, routes):
+        routes_ = routes
+
+        class H(BaseHTTPRequestHandler):
+            def _reply(self):
+                n = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(n)) if n else None
+                status, payload = routes_[self.path](body)
+                data = json.dumps(payload).encode()
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+
+            do_GET = do_POST = _reply
+
+            def log_message(self, *a):
+                pass
+
+        self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
+        self.port = self.httpd.server_address[1]
+        threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
+
+    def close(self):
+        self.httpd.shutdown()
+
+
+def embed_server(vec):
+    return FakeServer({
+        "/v1/models": lambda _: (200, {"data": [{"id": "fake"}]}),
+        "/v1/embeddings": lambda _: (200, {"data": [{"embedding": vec}]}),
+    })
+
+
+def sh(*args, env=None):
+    return subprocess.run(["bash", *args], cwd=ROOT, capture_output=True, text=True, env=env, timeout=60)
+
+
+# --- smoke-embed.sh -------------------------------------------------------------------------------
+
+def test_smoke_embed_fails_without_server():
+    assert sh("scripts/smoke-embed.sh", str(free_port())).returncode == 1
+
+
+@pytest.mark.parametrize("dim", [None, "4"])
+def test_smoke_embed_accepts_normalised_vector(dim):
+    srv = embed_server([1 / math.sqrt(4)] * 4)
+    try:
+        r = sh("scripts/smoke-embed.sh", str(srv.port), *([dim] if dim else []))
+    finally:
+        srv.close()
+    assert r.returncode == 0, r.stderr
+    assert "dim=4" in r.stdout
+
+
+@pytest.mark.parametrize("vec,dim,reason", [
+    ([1.0] * 4, "4", "L2 norm"),          # right dimension, not normalised
+    ([0.5, 0.5], None, "L2 norm"),        # no dimension given, not normalised
+    ([1.0, 0.0], "4", "dimension"),
+    ([], None, "empty"),
+])
+def test_smoke_embed_rejects_bad_vectors(vec, dim, reason):
+    srv = embed_server(vec)
+    try:
+        r = sh("scripts/smoke-embed.sh", str(srv.port), *([dim] if dim else []))
+    finally:
+        srv.close()
+    assert r.returncode == 1
+    assert reason in r.stderr
+
+
+# --- serve scripts --------------------------------------------------------------------------------
+
+@pytest.mark.parametrize("script,args", [
+    ("scripts/serve-embed.sh", ["m", "{port}", "n"]),
+    ("scripts/serve-clm.sh", []),
+])
+def test_serve_refuses_busy_port(tmp_path, script, args):
+    # Stand-ins that fail loudly: if the port check ever falls through, no real model gets loaded.
+    for name in ("vllm", "uv"):
+        p = tmp_path / name
+        p.write_text("#!/bin/sh\nexit 99\n")
+        p.chmod(p.stat().st_mode | stat.S_IEXEC)
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))  # never the real :8700 — clm-serve may be up while tests run
+        s.listen()
+        port = s.getsockname()[1]
+        env = {**os.environ, "PATH": f"{tmp_path}:{os.environ['PATH']}", "CLM_PORT": str(port)}
+        r = sh(script, *[a.format(port=port) for a in args], env=env)
+    assert r.returncode == 1, (r.returncode, r.stderr)
+    assert "already in use" in r.stderr
+
+
+# --- run.py ---------------------------------------------------------------------------------------
+
+def systemone_server(status_for=lambda body: 200):
+    def handle(body):
+        st = status_for(body)
+        if st != 200:
+            return st, {"detail": "boom"}
+        answers = {}
+        for qid, q in body["questions"].items():
+            if q["type"] == "noul":
+                answers[qid] = {"type": "noul", "noul": 0.9}
+            elif q["type"] == "choice":
+                first = next(iter(q["criteria"]))
+                answers[qid] = {"type": "choice", "choice": first, "confidence": 0.9,
+                                "probabilities": {first: 0.9}}
+            else:
+                answers[qid] = {"type": "score", "score": 1.0, "confidence": 0.9, "probabilities": {}}
+        return 200, {"answers": answers}
+    return FakeServer({"/v1/systemone": handle})
+
+
+@pytest.fixture
+def engine(monkeypatch):
+    def point(port):
+        monkeypatch.setitem(run.ENGINES, "fake", {"url": f"http://127.0.0.1:{port}", "model": None})
+        return "fake"
+    return point
+
+
+def test_ask_raises_when_engine_is_down(engine):
+    with pytest.raises(run.EngineError):
+        run.ask(engine(free_port()), "s", run.README_QUESTIONS, timeout=5)
+
+
+def test_ask_rejects_missing_answer_field(engine):
+    srv = FakeServer({"/v1/systemone": lambda b: (200, {"answers": {"urgency": {"type": "noul"}}})})
+    try:
+        with pytest.raises(run.EngineError):
+            run.ask(engine(srv.port), "s", run.README_QUESTIONS)
+    finally:
+        srv.close()
+
+
+@pytest.mark.parametrize("answers", [
+    {"urgency": {"type": "noul", "noul": "0.4"}},                       # number sent as a string
+    {"urgency": {"type": "noul", "noul": True}},
+    {"department": {"type": "choice", "choice": "billing"}},           # no probabilities
+])
+def test_ask_rejects_wrongly_typed_answers(engine, answers):
+    qs = {k: run.README_QUESTIONS[k] for k in answers}
+    srv = FakeServer({"/v1/systemone": lambda b: (200, {"answers": answers})})
+    try:
+        with pytest.raises(run.EngineError):
+            run.ask(engine(srv.port), "s", qs)
+    finally:
+        srv.close()
+
+
+def test_smoke_cli_exits_1_when_engine_down():
+    env = {**os.environ, "CLM_URL": f"http://127.0.0.1:{free_port()}"}
+    r = subprocess.run([sys.executable, "bench/run.py", "--smoke", "--engine", "clm"],
+                       cwd=ROOT, capture_output=True, text=True, env=env, timeout=60)
+    assert r.returncode == 1
+
+
+ITEMS = [{"id": f"i{i}", "state": f"state {i}",
+          "questions": {"u": {"type": "noul", "instructions": "?"}}, "expected": {"u": True}} for i in range(4)]
+
+
+def test_bench_separates_cold_from_warm(engine):
+    srv = systemone_server()
+    try:
+        res = run.bench(engine(srv.port), ITEMS)
+    finally:
+        srv.close()
+    assert res.cold_ms is not None
+    assert len(res.warm_ms) == len(ITEMS) * run.REPS
+    assert (res.right, res.graded) == (len(ITEMS) * run.REPS,) * 2
+
+
+def test_bench_errors_add_no_latency_or_answers(engine):
+    srv = systemone_server(lambda body: 500 if body["state"] == "state 2" else 200)
+    try:
+        res = run.bench(engine(srv.port), ITEMS)
+    finally:
+        srv.close()
+    assert len(res.errors) == run.REPS
+    assert len(res.warm_ms) == (len(ITEMS) - 1) * run.REPS
+    assert res.graded == (len(ITEMS) - 1) * run.REPS
+    assert all(ms > 0 for ms in res.warm_ms)
+
+
+def test_report_marks_failed_engine():
+    text = run.report([run.Result("fake", errors=["down"], pressure=["normal"])], 4)
+    assert "| fake | failed | failed | failed | 0 | failed | 1 | normal |" in text
+
+
+def test_report_shows_worst_pressure():
+    text = run.report([run.Result("fake", pressure=["normal", "critical", "warn"])], 4)
+    assert text.rstrip().endswith("| critical |")
+
+
+def test_correct_rounds_score_half_up():
+    q = {"type": "score"}
+    assert run.correct(q, {"score": 0.5}, 1) and run.correct(q, {"score": 2.5}, 3)
+
+
+def test_load_questions_rejects_long_state(tmp_path):
+    p = tmp_path / "q.jsonl"
+    p.write_text("\n".join(json.dumps(it) for it in ITEMS))
+    with pytest.raises(SystemExit, match="i3"):
+        run.load_questions(p, lambda text: 10_000 if text.startswith("state 3") else 5)
+
+
+def test_token_guard_counts_state_plus_instructions():
+    from clm.schema import state_text
+    it = {"state": " s ", "questions": {"a": {"type": "noul", "instructions": " long question "}}}
+    assert run.embedded_texts(it) == [state_text(" s ", " long question ")]
+
+
+def test_shipped_questions_are_well_formed():
+    items = run.load_questions(ROOT / "bench" / "questions.jsonl", lambda text: len(text.split()))
+    assert len(items) == 30
+    for it in items:
+        assert set(it["expected"]) <= set(it["questions"])
+        for qid, want in it["expected"].items():
+            q = it["questions"][qid]
+            if q["type"] == "choice":
+                assert want in q["criteria"]
+            if q["type"] == "score":
+                assert 0 <= want < len(q["criteria"])
