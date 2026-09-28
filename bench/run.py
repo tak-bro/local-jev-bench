@@ -25,7 +25,7 @@ import requests
 
 ENGINES: dict[str, dict[str, Any]] = {
     "clm": {"url": os.environ.get("CLM_URL", "http://127.0.0.1:8700"), "model": None},
-    "ollaya": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"), "model": "laya"},
+    "ollaya": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"), "model": os.environ.get("OLLAYA_MODEL", "laya")},
 }
 
 # The example from github.com/Contrastive-LM/CLM README, with its published CLM-8B answers (RTX 4090).
