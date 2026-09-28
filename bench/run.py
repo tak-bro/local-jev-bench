@@ -141,6 +141,7 @@ class Result:
     pressure: list[str] = field(default_factory=list)
     cold_ms: float | None = None
     warm_ms: list[float] = field(default_factory=list)
+    first_ms: list[float] = field(default_factory=list)  # first call per item: before any per-state cache hit
     right: int = 0
     graded: int = 0
     errors: list[str] = field(default_factory=list)
@@ -159,13 +160,15 @@ def bench(engine: str, items: list[dict]) -> Result:
         if i == 0:
             res.cold_ms = ms
     for it in items:
-        for _ in range(REPS):
+        for rep in range(REPS):
             try:
                 answers, ms = ask(engine, it["state"], it["questions"])
             except EngineError as e:
                 res.errors.append(f"{it['id']}: {e}")
                 continue  # a failed call adds neither a latency sample nor an answer
             res.warm_ms.append(ms)
+            if rep == 0:
+                res.first_ms.append(ms)
             for qid, want in it["expected"].items():
                 res.graded += 1
                 res.right += correct(it["questions"][qid], answers[qid], want)
@@ -195,21 +198,24 @@ def report(results: list[Result], n_items: int) -> str:
         "# System One local benchmark",
         "",
         f"{n_items} questions x {REPS} reps, sequential, {WARMUP} warm-up calls excluded.",
+        "`first-call p50` covers only each item's first call. Repeats of the same state can be served from an engine's",
+        "embedding cache (CLM caches state vectors), so all-call percentiles understate uncached latency.",
         f"Accuracy over {n_items} hand-written items is a sanity check, not a benchmark.",
         "",
-        "| engine | cold ms | warm p50 ms | warm p95 ms | samples | accuracy | errors | worst memory pressure |",
-        "|---|---|---|---|---|---|---|---|",
+        "| engine | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | samples | accuracy | errors | worst memory pressure |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for r in results:
         if r.warm_ms:
             p50, p95 = f"{pct(r.warm_ms, 50):.1f}", f"{pct(r.warm_ms, 95):.1f}"
         else:
             p50 = p95 = "failed"
+        first = f"{pct(r.first_ms, 50):.1f}" if r.first_ms else "failed"
         cold = f"{r.cold_ms:.1f}" if r.cold_ms is not None else "failed"
         acc = f"{r.right}/{r.graded} ({r.right / r.graded:.0%})" if r.graded else "failed"
         worst = max(r.pressure, key=list(PRESSURE.values()).index, default="unsampled") \
             if all(p in PRESSURE.values() for p in r.pressure) else ", ".join(sorted(set(r.pressure)))
-        lines.append(f"| {r.engine} | {cold} | {p50} | {p95} | {len(r.warm_ms)} | {acc} | {len(r.errors)} | {worst} |")
+        lines.append(f"| {r.engine} | {cold} | {first} | {p50} | {p95} | {len(r.warm_ms)} | {acc} | {len(r.errors)} | {worst} |")
     for r in results:
         for e in r.errors[:5]:
             lines.append(f"- {r.engine} error: {e}")

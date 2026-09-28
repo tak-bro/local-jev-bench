@@ -31,6 +31,12 @@ Every server binds to `127.0.0.1` only.
 
 The serve scripts refuse to start when their port is already taken.
 
+`serve-embed.sh` pins three settings that were needed on this Mac (M3 Max, 36 GB, vllm-metal 0.30.0):
+
+- `GLOO_SOCKET_IFNAME=lo0 VLLM_HOST_IP=127.0.0.1`: without these, the engine hangs at init because torch.distributed cannot resolve the `.local` hostname.
+- `--pooler-config '{"seq_pooling_type": "LAST", "use_activation": true}'`: last-token pooling with L2 normalisation, which is what CLM's head expects. Without it, vLLM falls back to the architecture default.
+- `--gpu-memory-utilization 0.7`: vllm-metal applies the fraction to the Metal wired limit (28.1 GB here). The default of 0.92 pushed memory pressure to warn. 0.55 left no KV cache for the 16 GB of bf16 weights.
+
 ## Check and benchmark
 
 ```bash
@@ -43,3 +49,14 @@ uv run pytest -q                              # offline tests, fake servers, no 
 ```
 
 The benchmark rejects any item whose state plus question instructions (the text CLM actually embeds) exceeds 2048 Qwen3 tokens, because `clm-serve` would otherwise truncate it without an error. Treat the accuracy over 30 hand-written items as a sanity check, not a benchmark.
+
+## Results (2026-09-28, M3 Max 36 GB)
+
+| engine | cold ms | first-call p50 ms | accuracy | worst memory pressure |
+|---|---|---|---|---|
+| CLM-8B (vllm-metal, bf16) | 4303 | 184 | 126/315 (40%) | warn |
+| Ollaya `laya:en` (MLX, F32) | 499 | 40 | 237/315 (75%) | warn |
+
+- The vllm-metal embeddings match transformers (MPS, bf16, last-token, L2) with cosine ≥ 0.9998 on four probe texts, so the encoder side is faithful.
+- CLM reproduces the README's `department` (billing, 0.987 vs 0.939) and `frustration` (2.00 vs 1.98), but gives `urgency` 0.852 against the README's 0.41. Laya gives 0.795 on the same ticket. The cause is unresolved.
+- On this question set CLM answers `frustration` at about 2.0 every time and leans toward `billing` for `department`. See `bench/report.md` for the full table.

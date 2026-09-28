@@ -200,6 +200,7 @@ def test_bench_separates_cold_from_warm(engine):
         srv.close()
     assert res.cold_ms is not None
     assert len(res.warm_ms) == len(ITEMS) * run.REPS
+    assert len(res.first_ms) == len(ITEMS)
     assert (res.right, res.graded) == (len(ITEMS) * run.REPS,) * 2
 
 
@@ -217,7 +218,7 @@ def test_bench_errors_add_no_latency_or_answers(engine):
 
 def test_report_marks_failed_engine():
     text = run.report([run.Result("fake", errors=["down"], pressure=["normal"])], 4)
-    assert "| fake | failed | failed | failed | 0 | failed | 1 | normal |" in text
+    assert "| fake | failed | failed | failed | failed | 0 | failed | 1 | normal |" in text
 
 
 def test_report_shows_worst_pressure():
