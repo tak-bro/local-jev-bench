@@ -1,11 +1,13 @@
 # local-sys1
 
-This repo runs Jev-style System One decision models (typed questions in, calibrated answers out) locally on an Apple Silicon Mac. It sets up two engines and benchmarks them on the same questions:
+This repo runs Jev-style System One decision models (typed questions in, calibrated answers out) locally on an Apple Silicon Mac. It sets up four engines and benchmarks them on the same questions:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): the `laya` model, run on MLX.
+- **AnyJev** ([nokia-applied-research/AnyJev](https://github.com/nokia-applied-research/AnyJev)): training-free; reads label logprobs from Qwen3-8B on vllm-metal, with no correction (`anyjev-raw`) or with cyclic option shifts plus a batch prior (`anyjev-l0`).
+- **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): a LoRA on Qwen3.5-4B-Base, run on MLX.
 
-Both speak TypeSafe's `POST /v1/systemone` wire format.
+All speak TypeSafe's `POST /v1/systemone` wire format.
 
 ## Install
 
@@ -15,6 +17,10 @@ brew install vllm-project/vllm-metal/vllm-metal
 OLLAYA_INSTALL_DIR=$HOME/.local OLLAYA_NO_SERVICE=1 sh -c "$(curl -fsSL https://ollaya.dev/install.sh)"
 uv sync
 ```
+
+[AnyJev](https://github.com/nokia-applied-research/AnyJev) comes from `uv sync`. Its vLLM backend reads label logprobs over HTTP and imports `transformers` only for the tokenizer, so torch is not needed. `serve/anyjev_server.py` wraps it in the `/v1/systemone` format. The request's `model` picks the correction level (`anyjev-raw` or `anyjev-l0`). The adapter asks the generate server for each label's logprob by id (`logprob_token_ids`) rather than AnyJev's `allowed_token_ids` + top-K, because vllm-metal 0.30.0 reports logprobs before that filter and a label can fall out of the top K. A label token missing from the server's logprobs is an HTTP 502, not a filled-in probability.
+
+[Kev](https://github.com/jaredpalmer/kev) keeps its own uv environment (torch, mlx-lm) in its checkout, so it is not a dependency here. `git clone https://github.com/jaredpalmer/kev ~/workspace/tak-bro/kev && (cd ~/workspace/tak-bro/kev && uv sync --extra serve)` sets it up. `scripts/serve-kev.sh` runs its `/v1/systemone` server with the `jaredpalmer/kev-4b` adapter on Qwen3.5-4B-Base.
 
 `contrastive-lm` declares `vllm` as a dependency, but it only calls the embeddings endpoint over HTTP. `pyproject.toml` overrides that dependency away so a second vLLM is not installed.
 
@@ -28,6 +34,9 @@ Every server binds to `127.0.0.1` only.
 | 8090 | Qwen3-8B encoder for CLM | `scripts/serve-embed.sh Qwen/Qwen3-8B 8090 qwen3-8b` |
 | 8700 | CLM System One API | `scripts/serve-clm.sh` |
 | 11435 | Ollaya daemon | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
+| 8092 | Qwen3-8B generate server for AnyJev | `scripts/serve-llm.sh Qwen/Qwen3-8B 8092 qwen3-8b` |
+| 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
+| 8009 | Kev System One API (`kev-latest`) | `KEV_DIR=~/workspace/tak-bro/kev scripts/serve-kev.sh` |
 
 The serve scripts refuse to start when their port is already taken.
 
@@ -44,22 +53,85 @@ scripts/smoke-embed.sh 8091                   # vector returned, L2-normalised
 scripts/smoke-embed.sh 8090 4096              # Qwen3-8B: 4096 dims, normalised
 uv run python bench/run.py --smoke --engine clm      # CLM README example within tolerance
 uv run python bench/run.py --smoke --engine ollaya   # same example, shape only
-uv run python bench/run.py --out bench/report.md     # 30 questions x 3 reps on both engines, with kernel memory pressure
+uv run python bench/run.py --out bench/report.md     # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
+uv run python bench/run.py --smoke --engine anyjev-raw --engine anyjev-l0 --engine kev   # shape only
+uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl --out bench/report_banking77.md --append
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 
+AnyJev and Kev each need most of the Metal memory, so every engine is measured alone: start its servers, run
+`bench/run.py --engine <e> --questions <set> --out <report> --append`, stop them. `--append` replaces that engine's
+rows and refuses a report written for another question set. Restart the AnyJev adapter before each run: the L0
+batch prior accumulates across every call the adapter has served.
+
 The benchmark rejects any item whose state plus question instructions (the text CLM actually embeds) exceeds 2048 Qwen3 tokens, because `clm-serve` would otherwise truncate it without an error. Treat the accuracy over 30 hand-written items as a sanity check, not a benchmark.
 
-## Results (2026-09-28, M3 Max 36 GB)
+## Results (2026-09-29, M3 Max 36 GB)
 
-| engine | cold ms | first-call p50 ms | accuracy | worst memory pressure |
+30 questions x 3 reps per set, one engine running at a time. Accuracy carries a 95% Wilson interval; `order-flip`
+counts items whose choice changed when the options were listed in reverse. Full tables: `bench/report.md` (English)
+and `bench/report_ko.md` (Korean). Ollaya ran `laya` on English and `laya:multilingual` on Korean
+(`OLLAYA_MODEL=laya:multilingual`); on Korean the English model scored 33% (2026-09-28).
+
+| engine | first-call p50 ms (en / ko) | accuracy en | accuracy ko | order-flip (en / ko) |
 |---|---|---|---|---|
-| CLM-8B (vllm-metal, bf16) | 4303 | 184 | 126/315 (40%) | warn |
-| Ollaya `laya:en` (MLX, F32) | 499 | 40 | 237/315 (75%) | warn |
+| Kev-4B (MLX, bf16) | 225.9 / 215.0 | 279/315 (89%, 85-92) | 273/315 (87%, 82-90) | 1/30 / 1/30 |
+| AnyJev L0 (Qwen3-8B, vllm-metal) | 434.5 / 444.1 | 254/315 (81%, 76-85) | 264/315 (84%, 79-87) | 0/30 / 0/30 |
+| AnyJev raw (Qwen3-8B, vllm-metal) | 178.5 / 182.2 | 258/315 (82%, 77-86) | 261/315 (83%, 78-87) | 0/30 / 2/30 |
+| Ollaya (`laya` en / `laya:multilingual` ko, MLX) | 35.8 / 20.7 | 237/315 (75%, 70-80) | 207/315 (66%, 60-71) | 2/30 / 6/30 |
+| CLM-8B (vllm-metal, bf16) | 225.7 / 266.5 | 123/315 (39%, 34-45) | 129/315 (41%, 36-46) | 0/30 / 0/30 |
+
+No run reached `critical` memory pressure (worst: `warn`, for CLM). In the run log, the first AnyJev runs after the
+generate server started took about 1 s per call (warm-up); those rows were discarded, and both AnyJev rows above
+come from runs on a warmed server.
+
+CLM picks a choice by comparing embeddings of the option texts, so its 0 order-flips may be structural rather than
+a sign of order robustness (not verified). Do not compare its order-flip column with the others.
+
+Which engine to use (intervals that overlap count as no difference):
+
+- **Under 50 ms per call:** only Ollaya fits (35.8 ms en, 20.7 ms ko first-call p50). On English only Kev beats it
+  (279 vs 237, 85-92 vs 70-80); on Korean Kev and both AnyJev levels do (273, 264, 261 vs 207; 60-71 is clear of
+  82-90, 79-87 and 78-87).
+- **Korean:** Kev or AnyJev; they cannot be told apart (82-90 vs 79-87 / 78-87). Kev needs one 4B model (server RSS
+  2.7 GB after startup in the 2026-09-29 smoke run); AnyJev needs Qwen3-8B on vllm-metal.
+- **Cannot be told apart on these 30 items:** Kev vs either AnyJev level on both sets (on English, Kev vs L0 only
+  just: Kev's lower bound 84.58 against L0's upper 84.62), AnyJev raw vs L0, and either AnyJev level vs Ollaya on English.
+
+Earlier findings on CLM (2026-09-28):
 
 - The vllm-metal embeddings match transformers (MPS, bf16, last-token, L2) with cosine ≥ 0.9998 on four probe texts, so the encoder side is faithful.
 - CLM reproduces the README's `department` (billing, 0.987 vs 0.939) and `frustration` (2.00 vs 1.98), but gives `urgency` 0.852 against the README's 0.41. Laya gives 0.795 on the same ticket. The cause is unresolved.
-- On this question set CLM answers `frustration` at about 2.0 every time and leans toward `billing` for `department`. See `bench/report.md` for the full table.
+- On this question set CLM answers `frustration` at about 2.0 every time and leans toward `billing` for `department`.
+
+### BANKING77 20-way (2026-09-29)
+
+`bench/questions_banking77.jsonl` restates AnyJev's `banking20` task, so the numbers can be set beside its README.
+It uses the 20 intents most frequent in BANKING77 train, listed by label id with no descriptions, and the question
+"What is the customer's intent?". It keeps the first 300 test items after `random.Random(0)`, read from
+`mteb/banking77` at a pinned revision. `uv run bench/make_banking77.py` regenerates it. One call per item
+(`--reps 1`); full table: `bench/report_banking77.md`.
+
+| engine | first-call p50 ms | accuracy | order-flip |
+|---|---|---|---|
+| Kev-4B | 240.0 | 266/300 (89%, 85-92) | 23/300 (8%) |
+| AnyJev L0 | 8489.3 | 241/300 (80%, 75-84) | 22/300 (7%) |
+| AnyJev raw | 624.0 | 224/300 (75%, 69-79) | 68/300 (23%) |
+| Ollaya `laya` | 27.8 | 180/300 (60%, 54-65) | 93/300 (31%) |
+| CLM-8B | 359.7 | 61/300 (20%, 16-25) | 0/300 (0%) |
+
+- **AnyJev reproduces its README here.** Its README reports, for Qwen3-8B on BANKING77 20-way with 300 test items,
+  order-flip 0.230 raw → 0.073 L0 and accuracy 0.747 → 0.803. This run gives 68/300 (0.227) → 22/300 (0.073) and
+  224/300 (0.747) → 241/300 (0.803).
+- **L0 cuts order-flips; its accuracy gain is not shown on 300 items.** Order-flips fall from 68/300 to 22/300,
+  while the accuracy intervals 69-79 and 75-84 overlap.
+- **Kev is the most accurate engine here** (85-92, clear of every other interval) within one order-flip of L0
+  (23/300 vs 22/300), and 240.0 ms against L0's 8489.3 ms. L0 prefills the prompt once per cyclic shift, up to 20 times on a
+  20-way question.
+- **Ollaya falls to 60% with 20 options** and flips 31% of its choices when they are reversed.
+- For scale, not comparison: Laya zero-shot is quoted at 38% on all 77 intents, against 76% for Jev
+  (dhruvmehra/jevbench, as reported in a Laya fine-tuning write-up; not verified here). That set is 77-way, this
+  one 20-way.
 
 ## vllm-metal vs Ollama, Qwen3-8B chat (2026-09-28, M3 Max 36 GB)
 

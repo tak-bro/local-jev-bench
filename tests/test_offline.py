@@ -103,24 +103,73 @@ def test_smoke_embed_rejects_bad_vectors(vec, dim, reason):
 
 # --- serve scripts --------------------------------------------------------------------------------
 
-@pytest.mark.parametrize("script,args", [
-    ("scripts/serve-embed.sh", ["m", "{port}", "n"]),
-    ("scripts/serve-clm.sh", []),
-])
-def test_serve_refuses_busy_port(tmp_path, script, args):
-    # Stand-ins that fail loudly: if the port check ever falls through, no real model gets loaded.
-    for name in ("vllm", "uv"):
+def fake_on_path(tmp_path, *names) -> dict:
+    """Env with stand-ins for `names` that exit 99: if a port check ever falls through, no real model gets loaded."""
+    for name in names:
         p = tmp_path / name
         p.write_text("#!/bin/sh\nexit 99\n")
         p.chmod(p.stat().st_mode | stat.S_IEXEC)
+    return {**os.environ, "PATH": f"{tmp_path}:{os.environ['PATH']}"}
+
+
+@pytest.mark.parametrize("script,args", [
+    ("scripts/serve-embed.sh", ["m", "{port}", "n"]),
+    ("scripts/serve-clm.sh", []),
+    ("scripts/serve-anyjev.sh", []),
+    ("scripts/serve-kev.sh", []),
+])
+def test_serve_refuses_busy_port(tmp_path, script, args):
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))  # never the real :8700 — clm-serve may be up while tests run
         s.listen()
         port = s.getsockname()[1]
-        env = {**os.environ, "PATH": f"{tmp_path}:{os.environ['PATH']}", "CLM_PORT": str(port)}
+        env = {**fake_on_path(tmp_path, "vllm", "uv"), "CLM_PORT": str(port), "ANYJEV_PORT": str(port),
+               "KEV_PORT": str(port)}
         r = sh(script, *[a.format(port=port) for a in args], env=env)
     assert r.returncode == 1, (r.returncode, r.stderr)
     assert "already in use" in r.stderr
+
+
+def test_serve_accepts_a_port_in_time_wait(tmp_path):
+    # A server stopped right after answering leaves TIME_WAIT sockets on its port; restarting it must not fail.
+    with socket.socket() as srv:
+        srv.bind(("127.0.0.1", 0))
+        srv.listen()
+        port = srv.getsockname()[1]
+        client = socket.create_connection(("127.0.0.1", port))
+        conn, _ = srv.accept()
+        conn.close()  # the server side closes first, so its end of the port sits in TIME_WAIT
+        client.close()
+    r = sh("scripts/serve-anyjev.sh", env={**fake_on_path(tmp_path, "uv"), "ANYJEV_PORT": str(port)})
+    assert "already in use" not in r.stderr
+    assert r.returncode == 99  # reached the (stubbed) server
+
+
+def test_serve_refuses_a_bound_port_that_is_not_listening(tmp_path):
+    # vLLM binds before it listens; a hung one holds the port that way.
+    with socket.socket() as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(("127.0.0.1", 0))
+        r = sh("scripts/serve-anyjev.sh", env={**fake_on_path(tmp_path, "uv"), "ANYJEV_PORT": str(s.getsockname()[1])})
+    assert r.returncode == 1 and "already in use" in r.stderr
+
+
+def test_serve_refuses_a_port_listening_on_all_interfaces(tmp_path):
+    # A stale server on 0.0.0.0 still answers 127.0.0.1, even though SO_REUSEADDR lets 127.0.0.1 bind beside it.
+    with socket.socket() as s:
+        s.bind(("0.0.0.0", 0))
+        s.listen()
+        r = sh("scripts/serve-anyjev.sh", env={**fake_on_path(tmp_path, "uv"), "ANYJEV_PORT": str(s.getsockname()[1])})
+    assert r.returncode == 1 and "already in use" in r.stderr
+
+
+def test_serve_kev_needs_a_checkout(tmp_path):
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    r = sh("scripts/serve-kev.sh", env={**fake_on_path(tmp_path, "uv"), "KEV_PORT": str(port),
+                                        "KEV_DIR": str(tmp_path / "nope")})
+    assert r.returncode == 1 and "no Kev checkout" in r.stderr
 
 
 # --- run.py ---------------------------------------------------------------------------------------
@@ -204,6 +253,38 @@ def test_bench_separates_cold_from_warm(engine):
     assert (res.right, res.graded) == (len(ITEMS) * run.REPS,) * 2
 
 
+def test_bench_reps(engine):
+    srv = systemone_server()
+    try:
+        res = run.bench(engine(srv.port), ITEMS, reps=1)
+    finally:
+        srv.close()
+    assert len(res.warm_ms) == len(ITEMS) and res.graded == len(ITEMS)
+    assert "4 questions x 1 reps" in run.report([res], len(ITEMS), reps=1)
+
+
+def test_reps_below_one_is_refused(monkeypatch, tmp_path):
+    # --out points away from bench/: if the check ever lapses, main() runs and must not overwrite a real report
+    monkeypatch.setattr(run, "bench", lambda engine, items, reps: run.Result(engine))
+    monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
+    monkeypatch.setattr(run, "qwen_token_counter", lambda: len)
+    monkeypatch.setattr(sys, "argv", ["run.py", "--engine", "kev", "--reps", "0", "--out", str(tmp_path / "r.md")])
+    with pytest.raises(SystemExit) as e:
+        run.main()
+    assert e.value.code == 2  # argparse usage error
+
+
+def test_reps_flag_reaches_bench_and_report(monkeypatch, tmp_path):
+    seen = []
+    monkeypatch.setattr(run, "qwen_token_counter", lambda: len)
+    monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
+    monkeypatch.setattr(run, "bench", lambda engine, items, reps: seen.append(reps) or run.Result(engine))
+    out = tmp_path / "r.md"
+    monkeypatch.setattr(sys, "argv", ["run.py", "--engine", "kev", "--reps", "1", "--out", str(out)])
+    run.main()
+    assert seen == [1] and "x 1 reps" in out.read_text()
+
+
 def test_bench_errors_add_no_latency_or_answers(engine):
     srv = systemone_server(lambda body: 500 if body["state"] == "state 2" else 200)
     try:
@@ -218,7 +299,7 @@ def test_bench_errors_add_no_latency_or_answers(engine):
 
 def test_report_marks_failed_engine():
     text = run.report([run.Result("fake", errors=["down"], pressure=["normal"])], 4)
-    assert "| fake | failed | failed | failed | failed | 0 | failed | 1 | normal |" in text
+    assert "| fake | failed | failed | failed | failed | 0 | failed | failed | 1 | normal |" in text
 
 
 def test_report_shows_worst_pressure():
@@ -255,3 +336,114 @@ def test_shipped_questions_are_well_formed():
                 assert want in q["criteria"]
             if q["type"] == "score":
                 assert 0 <= want < len(q["criteria"])
+
+
+CHOICE_ITEMS = [{"id": f"c{i}", "state": f"state {i}",
+                 "questions": {"u": {"type": "noul", "instructions": "?"},
+                               "d": {"type": "choice", "instructions": "?", "criteria": {"a": "A", "b": "B"}}},
+                 "expected": {"u": True, "d": "a"}} for i in range(4)]
+
+
+def test_order_flip_counts_only_choice_questions(engine):
+    srv = systemone_server()  # always picks the first listed option, so reversing flips every choice
+    try:
+        res = run.bench(engine(srv.port), CHOICE_ITEMS)
+    finally:
+        srv.close()
+    assert (res.flips, res.flip_items) == (4, 4)  # the noul question is not in the denominator
+    assert not res.errors
+
+
+def test_order_flip_zero_for_order_independent_engine(engine):
+    def handle(body):
+        return 200, {"answers": {
+            "u": {"type": "noul", "noul": 0.9},
+            "d": {"type": "choice", "choice": "a", "probabilities": {"a": 0.9, "b": 0.1}}}}
+    srv = FakeServer({"/v1/systemone": handle})
+    try:
+        res = run.bench(engine(srv.port), CHOICE_ITEMS)
+    finally:
+        srv.close()
+    assert (res.flips, res.flip_items) == (0, 4)
+
+
+def test_failed_reversed_request_counts_neither_way(engine):
+    reversed_call = lambda body: next(iter(body["questions"]["d"]["criteria"])) == "b"
+    srv = systemone_server(lambda body: 500 if reversed_call(body) else 200)
+    try:
+        res = run.bench(engine(srv.port), CHOICE_ITEMS)
+    finally:
+        srv.close()
+    assert (res.flips, res.flip_items) == (0, 0)
+    assert len(res.errors) == len(CHOICE_ITEMS)
+    assert res.graded == len(CHOICE_ITEMS) * run.REPS * 2  # the forward answers still count
+    assert "| failed | 4 |" in run.report([res], 4)  # not n/a: there were choices, the reversed calls failed
+
+
+def test_report_accuracy_has_wilson_interval():
+    text = run.report([run.Result("fake", right=237, graded=315, warm_ms=[1.0], first_ms=[1.0],
+                                  cold_ms=1.0, pressure=["normal"])], 30)
+    assert "237/315 (75%, 70-80)" in text  # Wilson 95%: 70.2-79.7, worked by hand
+
+
+def test_report_order_flip_column():
+    r = run.Result("fake", warm_ms=[1.0], first_ms=[1.0], cold_ms=1.0, pressure=["normal"], flips=1, flip_items=4)
+    assert "| 1/4 (25%) |" in run.report([r], 4)
+    r.flips = r.flip_items = 0
+    assert "| n/a |" in run.report([r], 4)
+
+
+def ok_result(name):
+    return run.Result(name, warm_ms=[1.0], first_ms=[1.0], cold_ms=1.0, pressure=["normal"], right=1, graded=2)
+
+
+def test_append_replaces_same_engine_row(tmp_path):
+    out = tmp_path / "r.md"
+    run.write_report(out, [ok_result("a"), ok_result("b")], 4, "q.jsonl", append=False)
+    first = out.read_text()
+    run.write_report(out, [run.Result("b", errors=["down"], pressure=["normal"])], 4, "q.jsonl", append=True)
+    text = out.read_text()
+    rows = [l for l in text.splitlines() if l.startswith("| a ") or l.startswith("| b ")]
+    assert len(rows) == 2
+    assert [l for l in first.splitlines() if l.startswith("| a ")][0] in rows
+    assert "| b | failed |" in text and "- b error: down" in text
+
+
+@pytest.mark.parametrize("n_items, questions", [(30, "bench/q.jsonl"), (4, "other/q.jsonl")])
+def test_append_rejects_other_question_set(tmp_path, n_items, questions):
+    out = tmp_path / "r.md"
+    run.write_report(out, [ok_result("a")], 4, "bench/q.jsonl", append=False)
+    with pytest.raises(SystemExit, match="header"):
+        run.write_report(out, [ok_result("b")], n_items, questions, append=True)
+
+
+def test_append_refuses_file_without_table(tmp_path):
+    out = tmp_path / "r.md"
+    out.write_text("hand-edited notes\n")
+    with pytest.raises(SystemExit, match="no results table"):
+        run.write_report(out, [ok_result("b")], 4, "bench/q.jsonl", append=True)
+
+
+def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
+    benched = []
+    monkeypatch.setattr(run, "qwen_token_counter", lambda: len)
+    monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
+    monkeypatch.setattr(run, "bench", lambda engine, items, reps: benched.append(engine) or run.Result(engine))
+    monkeypatch.setattr(sys, "argv", ["run.py", "--out", str(tmp_path / "r.md")])
+    run.main()
+    assert benched == ["clm", "ollaya"]  # new engines are measured one at a time, by name
+
+
+@pytest.mark.parametrize("name, model", [("anyjev-raw", "anyjev-raw"), ("anyjev-l0", "anyjev-l0"), ("kev", "kev-latest")])
+def test_new_engines_send_their_model(monkeypatch, name, model):
+    seen = []
+    def handle(body):
+        seen.append(body.get("model"))
+        return 200, {"answers": {"u": {"type": "noul", "noul": 0.9}}}
+    srv = FakeServer({"/v1/systemone": handle})
+    monkeypatch.setitem(run.ENGINES, name, {**run.ENGINES[name], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        run.ask(name, "s", {"u": {"type": "noul", "instructions": "?"}})
+    finally:
+        srv.close()
+    assert seen == [model]

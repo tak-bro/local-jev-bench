@@ -10,6 +10,10 @@ dependencies = [
     "huggingface_hub>=0.20",
     # Without this pin uv resolved fastapi 0.125 + pydantic 1.10.13, which fails at import on Python 3.13.
     "pydantic>=2",
+    # AnyJev's vLLM backend reads label logprobs over HTTP; it imports transformers only for AutoTokenizer, so
+    # torch is not needed. Pinned: serve/anyjev_server.py reuses the backend's tokenizer, name and base_url attributes.
+    "anyjev==0.1.0",
+    "transformers>=4.53",
 ]
 
 [dependency-groups]
