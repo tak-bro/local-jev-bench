@@ -60,3 +60,18 @@ The benchmark rejects any item whose state plus question instructions (the text 
 - The vllm-metal embeddings match transformers (MPS, bf16, last-token, L2) with cosine ≥ 0.9998 on four probe texts, so the encoder side is faithful.
 - CLM reproduces the README's `department` (billing, 0.987 vs 0.939) and `frustration` (2.00 vs 1.98), but gives `urgency` 0.852 against the README's 0.41. Laya gives 0.795 on the same ticket. The cause is unresolved.
 - On this question set CLM answers `frustration` at about 2.0 every time and leans toward `billing` for `department`. See `bench/report.md` for the full table.
+
+## vllm-metal vs Ollama, Qwen3-8B chat (2026-09-28, M3 Max 36 GB)
+
+`scripts/serve-llm.sh` serves a chat model through vllm-metal. `bench/llm_compare.py` sends the same 8 prompts (max 256 tokens, temperature 0, thinking off) to any OpenAI-compatible server and appends a row to `bench/llm_report.md`.
+
+| server | TTFT p50 ms | single decode tok/s | 8 concurrent, total tok/s | memory |
+|---|---|---|---|---|
+| vllm-metal, bf16 | 197 | 16.8 | 77.3 | reserves ~20 GB (0.7 × wired limit) |
+| vllm-metal, MLX 4bit | 291 | 30.2 | 48.6 | same reservation |
+| Ollama 0.34.2, Q4 (`qwen3:8b`) | 233 | 29.4 | 30.2 | 10 GB (32K context) |
+
+- For a single user, 4-bit models decode at about the same speed on vllm-metal and Ollama (about 30 tok/s). Ollama uses half the memory.
+- Under 8 concurrent requests only vllm-metal batches. Ollama's default settings (left untouched) served them at single-request speed.
+- Ollama's OpenAI endpoint ignores `/no_think` and `think: false`. Send `reasoning_effort: "none"` to turn thinking off, or `content` stays empty until the thinking tokens finish.
+- These numbers come from one run with 8 prompts each and are not repeated.
