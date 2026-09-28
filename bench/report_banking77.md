@@ -1,7 +1,7 @@
 # System One local benchmark
 
-Questions: `bench/questions.jsonl`
-30 questions x 3 reps, sequential, 3 warm-up calls excluded.
+Questions: `bench/questions_banking77.jsonl`
+300 questions x 1 reps, sequential, 3 warm-up calls excluded.
 `first-call p50` covers only each item's first call. Repeats of the same state can be served from an engine's
 embedding cache (CLM caches state vectors), so all-call percentiles understate uncached latency.
 Accuracy carries a 95% Wilson interval; overlapping intervals are not a difference.
@@ -9,8 +9,8 @@ Accuracy carries a 95% Wilson interval; overlapping intervals are not a differen
 
 | engine | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | samples | accuracy | order-flip | errors | worst memory pressure |
 |---|---|---|---|---|---|---|---|---|---|
-| kev | 331.6 | 225.9 | 182.7 | 251.8 | 90 | 279/315 (89%, 85-92) | 1/30 (3%) | 0 | normal |
-| ollaya | 462.1 | 35.8 | 35.9 | 43.1 | 90 | 237/315 (75%, 70-80) | 2/30 (7%) | 0 | normal |
-| clm | 3333.8 | 225.7 | 1.9 | 241.9 | 90 | 123/315 (39%, 34-45) | 0/30 (0%) | 0 | warn |
-| anyjev-l0 | 712.4 | 434.5 | 263.4 | 501.0 | 90 | 254/315 (81%, 76-85) | 0/30 (0%) | 0 | normal |
-| anyjev-raw | 436.4 | 178.5 | 178.2 | 192.6 | 90 | 258/315 (82%, 77-86) | 0/30 (0%) | 0 | normal |
+| ollaya | 580.6 | 27.8 | 27.8 | 30.3 | 300 | 180/300 (60%, 54-65) | 93/300 (31%) | 0 | normal |
+| kev | 2017.5 | 240.0 | 240.0 | 285.4 | 300 | 266/300 (89%, 85-92) | 23/300 (8%) | 0 | normal |
+| clm | 1127.9 | 359.7 | 359.7 | 523.7 | 300 | 61/300 (20%, 16-25) | 0/300 (0%) | 0 | warn |
+| anyjev-raw | 3742.2 | 624.0 | 624.0 | 859.8 | 300 | 224/300 (75%, 69-79) | 68/300 (23%) | 0 | warn |
+| anyjev-l0 | 8648.0 | 8489.3 | 8489.3 | 9218.3 | 300 | 241/300 (80%, 75-84) | 22/300 (7%) | 0 | normal |
