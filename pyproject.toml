@@ -1,5 +1,5 @@
 [project]
-name = "local-sys1"
+name = "local-jev-bench"
 version = "0.1.0"
 description = "Local Jev-style System One decision models on Apple Silicon: vllm-metal + CLM, Ollaya, and a benchmark"
 requires-python = ">=3.12"
