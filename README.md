@@ -1,6 +1,17 @@
-# local-sys1
+# local-sys1: local Jev-style decision models on Apple Silicon (AnyJev, Kev, Laya, CLM)
 
-This repo runs Jev-style System One decision models (typed questions in, calibrated answers out) locally on an Apple Silicon Mac. It sets up four engines and benchmarks them on the same questions:
+English | [한국어](README.ko.md)
+
+local-sys1 runs Jev-style System One decision models (typed questions in, calibrated answers out) locally on an
+Apple Silicon Mac, and benchmarks them on the same questions: English and Korean customer tickets, and the public
+BANKING77 20-way intent set.
+
+**Key results (M3 Max 36 GB, 2026-09-29).** Kev-4B is the most accurate engine on every set: 279/315 English,
+273/315 Korean, 266/300 BANKING77-20, at 215-240 ms per call. Ollaya (Laya) is the only engine under 50 ms per call
+(20.7-35.8 ms) and loses accuracy with many options. AnyJev on Qwen3-8B reproduces its own README on BANKING77-20
+(order-flip 68/300 → 22/300). Details in [Results](#results-2026-09-29-m3-max-36-gb).
+
+It sets up four engines:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): the `laya` model, run on MLX.
@@ -132,6 +143,32 @@ It uses the 20 intents most frequent in BANKING77 train, listed by label id with
 - For scale, not comparison: Laya zero-shot is quoted at 38% on all 77 intents, against 76% for Jev
   (dhruvmehra/jevbench, as reported in a Laya fine-tuning write-up; not verified here). That set is 77-way, this
   one 20-way.
+
+## FAQ
+
+**What is a System One decision model?**
+A model that answers typed questions about a piece of text (a choice among options, a yes/no probability, or a
+score) in one forward pass, with calibrated probabilities instead of generated text. TypeSafe's Jev is the hosted
+original; its `POST /v1/systemone` format is what every engine here speaks.
+
+**Which local decision model is the most accurate on a Mac?**
+Kev-4B in these runs: 89% on the English and BANKING77-20 sets and 87% on Korean, clear of every other engine on
+BANKING77-20 (Wilson 85-92).
+
+**Which one is the fastest?**
+Ollaya running Laya: 20.7-35.8 ms first-call p50, against 178.5-444.1 ms for the others on the 30-item sets.
+
+**Does AnyJev work on vllm-metal?**
+Yes, with one change: vllm-metal 0.30.0 reports raw logprobs whatever `--logprobs-mode` says, so the adapter asks for
+each label by `logprob_token_ids`. With that, AnyJev reproduces its README on BANKING77-20.
+
+**Can these models answer in Korean?**
+Kev (273/315) and AnyJev (261-264/315) can; they cannot be told apart on 30 items. Ollaya needs
+`laya:multilingual` and reaches 207/315.
+
+**How much memory do they need?**
+Kev-4B's server used 2.7 GB RSS after startup. AnyJev and CLM run Qwen3-8B on vllm-metal, which reserves about
+20 GB (0.7 of the 28.1 GB Metal wired limit); measure them one at a time.
 
 ## vllm-metal vs Ollama, Qwen3-8B chat (2026-09-28, M3 Max 36 GB)
 
