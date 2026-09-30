@@ -125,10 +125,27 @@ def embedded_texts(item: dict) -> list[str]:
     return [f"{item['state'].strip()}\n\n{q['instructions'].strip()}" for q in item["questions"].values()]
 
 
+def render_state(v: Any, indent: int = 0) -> str:
+    """A structured state as the text Kev's model reads (kev/api.py `render`): field names kept as labels in their
+    order, nested objects indented, lists as "- " lines. Every engine gets this text, so a dict state reads the same
+    to all of them and Kev sees what it would render itself."""
+    pad = "  " * indent
+    if v is None:
+        return ""
+    if isinstance(v, (str, int, float, bool)):
+        return str(v)
+    if isinstance(v, list):
+        return "\n".join(f"{pad}- {render_state(x, indent + 1).lstrip()}" for x in v)
+    return "\n".join(f"{pad}{k}:\n{render_state(x, indent + 1)}" if isinstance(x, (dict, list))
+                     else f"{pad}{k}: {render_state(x)}" for k, x in v.items())
+
+
 def load_questions(path: Path, count_tokens: Callable[[str], int]) -> list[dict]:
     """Reject over-long inputs up front: clm-serve truncates them silently (truncate_prompt_tokens), which
     would only show up as a lower score."""
     items = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    for it in items:
+        it["state"] = render_state(it["state"])
     too_long = [(it["id"], n) for it in items
                 if (n := max(count_tokens(t) for t in embedded_texts(it))) > MAX_STATE_TOKENS]
     if too_long:

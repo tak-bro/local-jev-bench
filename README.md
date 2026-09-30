@@ -68,6 +68,7 @@ uv run python bench/run.py                           # 30 questions x 3 reps on 
 uv run python bench/run.py --smoke --engine anyjev-raw --engine anyjev-l0 --engine kev   # shape only
 uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
 uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
+uv run python bench/make_sets.py transfer-v4        # Kev's out-of-distribution dev set (764) into bench/data/, gitignored
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 

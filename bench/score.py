@@ -25,7 +25,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 LEVELS = ("normal", "warn", "critical")
-SCORE_RULES = ("round",)
+SCORE_RULES = ("round", "argmax")
 SAME_IN_EVERY_LOG = ("set", "set_sha256", "reps", "warmup")
 
 
@@ -46,11 +46,13 @@ def load_jsonl(path: Path) -> list[dict]:
     return out
 
 
-def check_scoring(item: dict) -> None:
-    """An item may name how its score questions are graded; only the default, rounding the score, exists."""
+def score_rule(item: dict) -> str:
+    """How the item's score questions are graded: `round` (the default) rounds the returned expected score, `argmax`
+    takes the most probable level, as Kev's own benchmark does."""
     rule = item.get("scoring", {}).get("score", "round")
     if rule not in SCORE_RULES:
         raise SystemExit(f"item {item['id']}: unknown score rule {rule!r}, want one of {SCORE_RULES}")
+    return rule
 
 
 def load_dir(d: Path) -> tuple[dict, list[dict], dict[str, tuple[dict, list[dict]]]]:
@@ -83,35 +85,52 @@ def load_dir(d: Path) -> tuple[dict, list[dict], dict[str, tuple[dict, list[dict
                          f"the file is now {now[:12]}; measure again")
     items = load_jsonl(set_path)
     for it in items:
-        check_scoring(it)
+        score_rule(it)
     return common, items, runs
 
 
-def decide(q: dict, answer: dict) -> Any:
+def decide(q: dict, answer: dict, rule: str = "round") -> Any:
     """The discrete decision an answer makes: noul -> bool, choice -> option key, score -> criterion index."""
     kind = q["type"]
     if kind == "noul":
         return answer["noul"] >= 0.5
     if kind == "choice":
         return answer["choice"]
-    return math.floor(answer["score"] + 0.5)  # round() sends 0.5 to 0 and 2.5 to 2
+    if rule == "round":
+        return math.floor(answer["score"] + 0.5)  # round() sends 0.5 to 0 and 2.5 to 2
+    return max(range(len(q["criteria"])), key=score_levels(q, answer).__getitem__)
+
+
+def score_levels(q: dict, answer: dict) -> list[float]:
+    """Probability of each score level. Engines key them all by index ("0", "1", ...) or all by criterion text; the
+    form is decided over the whole answer, never per level."""
+    probs = answer.get("probabilities") or {}
+    by_index = [probs.get(str(i)) for i in range(len(q["criteria"]))]
+    by_text = [probs.get(text) for text in q["criteria"]]
+    if None not in by_index and None not in by_text and by_index != by_text:
+        raise SystemExit(f"the argmax score rule cannot tell index keys from criterion keys, ambiguous: {probs!r} "
+                         f"for {q['criteria']}")
+    levels = by_index if None not in by_index else by_text
+    if None in levels:
+        raise SystemExit(f"the argmax score rule needs a probability per level, got {probs!r} for {q['criteria']}")
+    return levels
 
 
 def gold(q: dict, expected: Any) -> Any:
     return bool(expected) if q["type"] == "noul" else int(expected) if q["type"] == "score" else expected
 
 
-def graded(items: list[dict], records: list[dict]) -> dict[tuple[str, str], tuple[dict, dict, Any]]:
-    """{(item, question): (question, rep-0 answer, expected)} for every decision whose rep 0 was answered. Repeats of
-    the same input are not independent samples, so each decision is graded once, from rep 0."""
+def graded(items: list[dict], records: list[dict]) -> dict[tuple[str, str], tuple[dict, dict, Any, str]]:
+    """{(item, question): (question, rep-0 answer, expected, score rule)} for every decision whose rep 0 was answered.
+    Repeats of the same input are not independent samples, so each decision is graded once, from rep 0."""
     answered = timed(records)
-    return {(it["id"], qid): (it["questions"][qid], a[qid], want)
+    return {(it["id"], qid): (it["questions"][qid], a[qid], want, score_rule(it))
             for it in items if (a := answered.get((it["id"], 0))) is not None
             for qid, want in it["expected"].items()}
 
 
-def is_right(q: dict, answer: dict, expected: Any) -> bool:
-    return decide(q, answer) == gold(q, expected)
+def is_right(q: dict, answer: dict, expected: Any, rule: str = "round") -> bool:
+    return decide(q, answer, rule) == gold(q, expected)
 
 
 def timed(records: list[dict]) -> dict[tuple[str, int], dict]:
@@ -138,7 +157,7 @@ def brier(decisions: list[tuple[dict, dict, Any]]) -> tuple[float, int] | None:
     """(mean multi-class Brier score, n) over noul and choice decisions: sum over options of (p - 1[option is
     right])^2, so 0 is perfect and 2 is sure and wrong. None when there are none."""
     scores = [sum((p - (i == outcome(q, gold(q, want)))) ** 2 for i, p in enumerate(f))
-              for q, a, want in decisions if (f := forecast(q, a)) is not None]
+              for q, a, want, _ in decisions if (f := forecast(q, a)) is not None]
     return (sum(scores) / len(scores), len(scores)) if scores else None
 
 
@@ -154,7 +173,7 @@ def ece(points: list[tuple[float, bool]], bins: int = 15) -> float:
 def confidence_points(decisions: list[tuple[dict, dict, Any]]) -> list[tuple[float, bool]]:
     """(probability the engine gave its own decision, whether that decision is right) for noul and choice."""
     return [(f[outcome(q, decide(q, a))], is_right(q, a, want))
-            for q, a, want in decisions if (f := forecast(q, a)) is not None]
+            for q, a, want, _ in decisions if (f := forecast(q, a)) is not None]
 
 
 def mcnemar_exact(b: int, c: int) -> float:
@@ -175,9 +194,9 @@ def rep_disagree(items: list[dict], records: list[dict]) -> tuple[int, int]:
         if not later:
             continue
         for qid in it["expected"]:
-            q = it["questions"][qid]
+            q, rule = it["questions"][qid], score_rule(it)
             n += 1
-            changed += any(decide(q, a[qid]) != decide(q, first[qid]) for a in later)
+            changed += any(decide(q, a[qid], rule) != decide(q, first[qid], rule) for a in later)
     return changed, n
 
 
@@ -225,11 +244,20 @@ def row(header: dict, reps: int, items: list[dict], records: list[dict]) -> tupl
 
     engine = header["engine"]
     g = graded(items, records)
-    for (item, qid), (q, a, _) in g.items():
-        if q["type"] == "choice" and a["choice"] not in a["probabilities"]:
-            # keyed by option text or index instead: every option would read as probability 0
-            raise SystemExit(f"{engine} {item} {qid}: chose {a['choice']!r} but its probabilities are keyed "
-                             f"{sorted(a['probabilities'])}; an engine must key choice probabilities by option key")
+    items_by_id = {it["id"]: it for it in items}
+    for (item, _), answers in timed(records).items():  # every answered timed call, not only rep 0
+        it, rule = items_by_id[item], score_rule(items_by_id[item])
+        for qid, q in it["questions"].items():
+            a = answers[qid]
+            if q["type"] == "choice" and a["choice"] not in a["probabilities"]:
+                # keyed by option text or index instead: every option would read as probability 0
+                raise SystemExit(f"{engine} {item} {qid}: chose {a['choice']!r} but its probabilities are keyed "
+                                 f"{sorted(a['probabilities'])}; an engine must key choice probabilities by option key")
+            if q["type"] == "score" and rule == "argmax":
+                try:
+                    score_levels(q, a)
+                except SystemExit as e:
+                    raise SystemExit(f"{engine} {item} {qid}: {e}") from None
     decisions = list(g.values())
     right, n = sum(is_right(*d) for d in decisions), len(decisions)
     b = brier(decisions)
@@ -286,7 +314,28 @@ def report(common: dict, items: list[dict], runs: dict[str, tuple[dict, list[dic
     lines += [r for r, _ in rows] + [e for _, errs in rows for e in errs]
     if len(engines) > 1:
         lines += pairs(items, {e: runs[e][1] for e in engines})
+    for key in ("source", "variant"):
+        lines += breakdown(items, {e: runs[e][1] for e in engines}, key)
     return "\n".join(lines) + "\n"
+
+
+def breakdown(items: list[dict], runs: dict[str, list[dict]], key: str) -> list[str]:
+    """Accuracy per value of the items' `meta[key]` (a set that records where each item came from); none without."""
+    groups = sorted({it["meta"][key] for it in items if key in it.get("meta", {})})
+    if not groups:
+        return []
+    right = {e: {k: is_right(*v) for k, v in graded(items, records).items()} for e, records in runs.items()}
+    lines = ["", f"## By {key}", "", f"| {key} | decisions | " + " | ".join(runs) + " |",
+             "|---|---|" + "---|" * len(runs)]
+    for g in groups:
+        keys = {(it["id"], qid) for it in items if it.get("meta", {}).get(key) == g for qid in it["expected"]}
+        cells = []
+        for e in runs:
+            got = [right[e][k] for k in keys if k in right[e]]
+            failed = f", {len(keys) - len(got)} failed" if len(got) < len(keys) else ""
+            cells.append(ratio(sum(got), len(got)) + failed if got else "failed")
+        lines.append(f"| {g} | {len(keys)} | " + " | ".join(cells) + " |")
+    return lines
 
 
 def pairs(items: list[dict], runs: dict[str, list[dict]]) -> list[str]:

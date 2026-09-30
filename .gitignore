@@ -4,3 +4,4 @@ __pycache__/
 *.log
 logs/
 .claude/
+bench/data/

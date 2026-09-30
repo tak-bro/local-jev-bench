@@ -307,6 +307,16 @@ def test_load_questions_rejects_long_state(tmp_path):
         run.load_questions(p, lambda text: 10_000 if text.startswith("state 3") else 5)
 
 
+def test_structured_state_goes_out_as_the_text_kev_renders(tmp_path):
+    # kev/api.py render(): field names kept as labels, in their order; nested objects indented, lists as "- " lines.
+    # Kev feeds a dict state to its model that way, so every engine gets the same text Kev reads.
+    state = {"b": "é", "a": 1, "case": {"x": True, "items": ["one", {"k": "v"}]}, "none": None}
+    p = tmp_path / "q.jsonl"
+    p.write_text(json.dumps({**ITEMS[0], "state": state}) + "\n")
+    (item,) = run.load_questions(p, len)
+    assert item["state"] == "b: é\na: 1\ncase:\n  x: True\n  items:\n    - one\n    - k: v\nnone: "
+
+
 def test_token_guard_counts_state_plus_instructions():
     from clm.schema import state_text
     it = {"state": " s ", "questions": {"a": {"type": "noul", "instructions": " long question "}}}

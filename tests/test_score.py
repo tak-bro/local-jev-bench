@@ -315,3 +315,74 @@ def test_choice_probabilities_keyed_otherwise_are_an_error(runs):
 def test_small_p_values_are_not_printed_as_zero(runs):
     assert score.p_cell(score.mcnemar_exact(40, 80)) == "<0.001"
     assert score.p_cell(0.5) == "0.500"
+
+
+# --- slice 03: argmax rule, breakdown by source and variant ------------------------------------------
+
+SCORE_Q = {"type": "score", "instructions": "?", "criteria": ["lo", "mid", "hi"]}
+
+
+def test_argmax_rule_reads_score_probabilities_keyed_by_index_or_criterion():
+    by_index = {"score": 0.9, "probabilities": {"0": 0.1, "1": 0.3, "2": 0.6}}
+    by_text = {"score": 0.9, "probabilities": {"lo": 0.1, "mid": 0.3, "hi": 0.6}}
+    # the expected value 0.9 rounds to 1; the most probable level is 2
+    assert score.decide(SCORE_Q, by_index, "round") == 1
+    assert score.decide(SCORE_Q, by_index, "argmax") == 2 and score.decide(SCORE_Q, by_text, "argmax") == 2
+
+
+def test_argmax_rule_without_probabilities_is_an_error():
+    with pytest.raises(SystemExit, match="argmax"):
+        score.decide(SCORE_Q, {"score": 0.9, "probabilities": {}}, "argmax")
+
+
+def test_breakdown_by_source_and_variant(runs, tmp_path):
+    d, _ = runs
+    items = [{**ITEMS[0], "meta": {"source": "mmlu", "variant": "clean"}},
+             {**ITEMS[1], "meta": {"source": "paws", "variant": "permuted"}}]
+    s = write_set(tmp_path, items)
+    wrong_i1 = [r if (r["item"], r["call"], r["rep"]) != ("i1", "timed", 0) else {**r, "answers": WRONG}
+                for r in calls()]
+    write_raw(d, "e", s, wrong_i1)
+    text = score.render(d)
+    assert "## By source" in text and "## By variant" in text
+    assert "| mmlu | 2 | 2/2 (100%) |" in text and "| paws | 2 | 0/2 (0%) |" in text
+    assert "| clean | 2 | 2/2 (100%) |" in text and "| permuted | 2 | 0/2 (0%) |" in text
+
+
+def test_no_breakdown_without_meta(runs):
+    d, s = runs
+    write_raw(d, "e", s, calls())
+    assert "## By source" not in score.render(d)
+
+
+def test_argmax_refuses_probabilities_that_read_both_ways():
+    # criteria "1", "0": index keys and criterion-text keys are the same strings but name different levels
+    q = {"type": "score", "instructions": "?", "criteria": ["1", "0"]}
+    with pytest.raises(SystemExit, match="ambiguous"):
+        score.decide(q, {"score": 0.0, "probabilities": {"0": 0.8, "1": 0.2}}, "argmax")
+
+
+def test_argmax_reads_digit_criteria_keyed_by_text():
+    # index keys are incomplete ("3" is not an index of three levels), so the keys are criterion texts
+    q = {"type": "score", "instructions": "?", "criteria": ["1", "2", "3"]}
+    assert score.decide(q, {"score": 0.0, "probabilities": {"1": 0.1, "2": 0.3, "3": 0.6}}, "argmax") == 2
+
+
+def test_argmax_error_names_engine_item_and_question(runs, tmp_path):
+    d, _ = runs
+    items = [{**it, "questions": {"s": SCORE_Q}, "expected": {"s": 1}, "scoring": {"score": "argmax"}} for it in ITEMS]
+    s = write_set(tmp_path, items)
+    ans = {"s": {"type": "score", "score": 1.0, "probabilities": {}}}
+    write_raw(d, "e", s, [r for r in calls(rep0=ans, later=ans) if r["call"] != "reversed"])
+    with pytest.raises(SystemExit, match="e i0 s: .*argmax"):
+        score.render(d)
+
+
+def test_breakdown_counts_decisions_an_engine_failed(runs, tmp_path):
+    d, _ = runs
+    items = [{**it, "meta": {"source": "mmlu"}} for it in ITEMS]
+    s = write_set(tmp_path, items)
+    failed_i1 = [r if (r["item"], r["call"], r["rep"]) != ("i1", "timed", 0) else {**r, "answers": None, "error": "x"}
+                 for r in calls()]
+    write_raw(d, "e", s, failed_i1)
+    assert "| mmlu | 4 | 2/2 (100%), 2 failed |" in score.render(d)
