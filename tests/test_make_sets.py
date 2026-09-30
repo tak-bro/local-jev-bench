@@ -106,3 +106,32 @@ def test_typed_decisions_items():
     assert item["prior"]["team"] == {"a": 0.7, "b": 0.3}
     assert item["scoring"] == {"score": "argmax"} and item["meta"] == {"source": "customer_service"}
     assert set(item["questions"]) == {"urgent", "team", "risk"}
+
+
+def test_sample_is_seeded_and_without_replacement():
+    rows = list(range(100))
+    a, b = make_sets.sample(rows, 10, seed=0), make_sets.sample(rows, 10, seed=0)
+    assert a == b and len(set(a)) == 10
+    assert make_sets.sample(rows, 10, seed=1) != a
+
+
+def test_nsmc_items():
+    rows = [{"id": "1", "document": "재밌다", "label": 1}, {"id": "2", "document": "지루함", "label": 0},
+            {"id": "3", "document": "", "label": 1}, {"id": "4", "document": None, "label": 0}]
+    items = make_sets.nsmc(rows, n=2)
+    assert sorted(it["id"] for it in items) == ["nsmc/1", "nsmc/2"]  # empty reviews are never sampled
+    it = next(x for x in items if x["id"] == "nsmc/2")
+    assert it["state"] == "지루함" and it["expected"] == {"positive": False}
+    assert it["questions"]["positive"] == {"type": "noul", "instructions": "이 리뷰는 긍정적인가?"}
+
+
+def test_klue_ynat_items():
+    rows = [{"guid": "ynat-v1_dev_00000", "title": "코스피 상승 마감", "label": 1},
+            {"guid": "ynat-v1_dev_00001", "title": "손흥민 결승골", "label": 5}]
+    items = make_sets.klue_ynat(rows, n=2)
+    it = next(x for x in items if x["id"] == "ynat-v1_dev_00001")
+    assert it["state"] == "손흥민 결승골" and it["expected"] == {"topic": "스포츠"}
+    q = it["questions"]["topic"]
+    assert q["type"] == "choice" and q["instructions"] == "이 기사 제목의 분야는?"
+    # KLUE's ClassLabel names, in label order (ynat parquet metadata)
+    assert list(q["criteria"]) == ["IT과학", "경제", "사회", "생활문화", "세계", "스포츠", "정치"]

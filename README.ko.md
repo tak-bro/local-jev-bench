@@ -72,6 +72,8 @@ uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_ban
 uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
 uv run python bench/make_sets.py transfer-v4        # Kev의 분포 밖 development 세트(764)를 bench/data/에, gitignore
 uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test(400케이스, 2,000판단), gold 분포 포함
+uv run python bench/make_sets.py nsmc               # 한국어 영화 리뷰 300개, 긍정 여부 (HF 카드: CC BY 2.0)
+uv run python bench/make_sets.py klue-ynat          # 한국어 뉴스 제목 300개, 7개 분야 (KLUE, CC BY-SA 4.0)
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 
