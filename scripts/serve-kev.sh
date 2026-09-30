@@ -3,6 +3,7 @@
 # keeps its own uv environment (torch, mlx-lm). On Apple Silicon it runs on MLX.
 #   git clone https://github.com/jaredpalmer/kev ~/workspace/tak-bro/kev && (cd ~/workspace/tak-bro/kev && uv sync --extra serve)
 #   KEV_DIR=~/workspace/tak-bro/kev scripts/serve-kev.sh
+#   KEV_RUN=jaredpalmer/kev-9b scripts/serve-kev.sh   # or kev-0.8b; measure it as --engine kev-9b
 set -euo pipefail
 
 source "$(dirname "$0")/lib.sh"

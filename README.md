@@ -1,22 +1,40 @@
-# local-jev-bench: local Jev-style decision models on Apple Silicon (AnyJev, Kev, Laya, CLM)
+# local-jev-bench: local Jev-style decision models on Apple Silicon (Kev, Winnow, Jeff, AnyJev, Laya, CLM)
 
 English | [한국어](README.ko.md)
 
 local-jev-bench runs Jev-style System One decision models (typed questions in, calibrated answers out) locally on an
-Apple Silicon Mac, and benchmarks them on the same questions: English and Korean customer tickets, and the public
-BANKING77 20-way intent set.
+Apple Silicon Mac, and benchmarks them on the same questions. The sets are English and Korean customer tickets, the
+public BANKING77 20-way intent set, Kev's out-of-distribution transfer-v4 set, the typed-decisions leaderboard set,
+and two Korean sets: NSMC movie reviews and KLUE-YNAT news headlines.
 
-**Key results (M3 Max 36 GB, 2026-09-29).** Kev-4B is the most accurate engine on every set: 279/315 English,
-273/315 Korean, 266/300 BANKING77-20, at 215-240 ms per call. Ollaya (Laya) is the only engine under 50 ms per call
-(20.7-35.8 ms) and loses accuracy with many options. AnyJev on Qwen3-8B reproduces its own README on BANKING77-20
-(order-flip 68/300 → 22/300). Details in [Results](#results-2026-09-29-m3-max-36-gb).
+**Key results (M3 Max 36 GB, 2026-09-30).** Kev-9B, Kev-4B and Winnow-E4B are the most accurate engines overall,
+and paired McNemar tests separate them on only some sets:
 
-It sets up four engines:
+- **transfer-v4:** Kev beats Winnow (Kev-9B 81% vs 77%, p = 0.003), but only on the set's two held-out
+  policy-structure sources, built from the kind of programmatic policy data Kev trains on (Kev-4B 160/176, Winnow
+  125/176). On the six public sources Kev never trained on, the three are level (454, 461 and 460 of 588, p > 0.45), and so is
+  training-free AnyJev (458 raw and L0).
+- **typed-decisions:** Winnow beats Kev-4B (73% vs 67%, p < 0.001) and is level with Kev-9B (72%, p = 0.529).
+- **NSMC and KLUE-YNAT (Korean):** the three cannot be told apart.
+- **AnyJev (training-free Qwen3-8B):** level with the top group on KLUE-YNAT (75-76%) and with Winnow on transfer-v4
+  (75%), but behind it on typed-decisions (61-63%), and far from the gold distributions there (KL 2.8-3.8 against
+  0.2-0.3). It reproduces its own README on BANKING77-20 again, and paired, L0's accuracy gain over raw is real there
+  (p = 0.005).
+
+Ollaya (Laya) is the fastest engine, at 15-55 ms first-call p50 outside typed-decisions' long states. It is also the least
+accurate engine apart from CLM on every set but the 30 English items, where Jeff is lower, and the worst calibrated
+(ECE) of Kev, Winnow, Jeff and Ollaya on the same sets; AnyJev and CLM are worse calibrated still on some. Kev-0.8B takes 28-58 ms on the same sets and is as
+accurate as Ollaya or more on every set. Kev-4B reproduces its model card on transfer-v4 (534/656 against 0.817). Details are in
+[Results](#results-2026-09-30-m3-max-36-gb).
+
+It sets up six engines:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): the `laya` model, run on MLX.
+- **Winnow** ([ollaya.dev/library/winnow](https://ollaya.dev/library/winnow)): `winnow:e4b`, built on Gemma 4 E4B and run by Ollaya on llama.cpp (Q8_0).
 - **AnyJev** ([nokia-applied-research/AnyJev](https://github.com/nokia-applied-research/AnyJev)): training-free; reads label logprobs from Qwen3-8B on vllm-metal, with no correction (`anyjev-raw`) or with cyclic option shifts plus a batch prior (`anyjev-l0`).
-- **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): a LoRA on Qwen3.5-4B-Base, run on MLX.
+- **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): a LoRA plus pointer head on Qwen3.5-0.8B, 4B or 9B Base (`kev-0.8b`, `kev-4b`, `kev-9b`), run on MLX.
+- **Jeff** ([firelex/jeff](https://github.com/firelex/jeff)): Jeff-Qwen3.5-2B, a fine-tuned Qwen3.5-2B with a trained answer readout, run on MLX.
 
 All speak TypeSafe's `POST /v1/systemone` wire format.
 
@@ -31,7 +49,11 @@ uv sync
 
 [AnyJev](https://github.com/nokia-applied-research/AnyJev) comes from `uv sync`. Its vLLM backend reads label logprobs over HTTP and imports `transformers` only for the tokenizer, so torch is not needed. `serve/anyjev_server.py` wraps it in the `/v1/systemone` format. The request's `model` picks the correction level (`anyjev-raw` or `anyjev-l0`). The adapter asks the generate server for each label's logprob by id (`logprob_token_ids`) rather than AnyJev's `allowed_token_ids` + top-K, because vllm-metal 0.30.0 reports logprobs before that filter and a label can fall out of the top K. A label token missing from the server's logprobs is an HTTP 502, not a filled-in probability.
 
-[Kev](https://github.com/jaredpalmer/kev) keeps its own uv environment (torch, mlx-lm) in its checkout, so it is not a dependency here. `git clone https://github.com/jaredpalmer/kev ~/workspace/tak-bro/kev && (cd ~/workspace/tak-bro/kev && uv sync --extra serve)` sets it up. `scripts/serve-kev.sh` runs its `/v1/systemone` server with the `jaredpalmer/kev-4b` adapter on Qwen3.5-4B-Base.
+[Kev](https://github.com/jaredpalmer/kev) keeps its own uv environment (torch, mlx-lm) in its checkout, so it is not a dependency here. `git clone https://github.com/jaredpalmer/kev ~/workspace/tak-bro/kev && (cd ~/workspace/tak-bro/kev && uv sync --extra serve)` sets it up. `scripts/serve-kev.sh` runs its `/v1/systemone` server with the `jaredpalmer/kev-4b` adapter on Qwen3.5-4B-Base; `KEV_RUN=jaredpalmer/kev-0.8b` or `jaredpalmer/kev-9b` serves another size on the same port. The engines `kev-0.8b`, `kev-4b` and `kev-9b` check `/v1/models` before a run and refuse a server running another size.
+
+[Winnow](https://ollaya.dev/library/winnow) runs in Ollaya: `ollaya pull winnow:e4b` (8.0 GB, Gemma 4, Q8_0), measured as the `winnow` engine. `ollaya stop winnow:e4b` unloads it.
+
+[Jeff](https://github.com/firelex/jeff) keeps its own uv environment too, and its `pyproject.toml` requires uv 0.12.19 or newer, hence `uvx`: `git clone https://github.com/firelex/jeff ~/workspace/tak-bro/jeff && git -C ~/workspace/tak-bro/jeff checkout f06788292874c21a5b5c41549ac220dd9e15da7f`, then in it `uvx --from 'uv>=0.12.19' uv sync --no-default-groups --extra mac` and `uvx --from 'uv>=0.12.19' uv run --no-default-groups hf download mstrasser/Jeff-Qwen3.5-2B --local-dir checkpoints/jeff-2b`. `scripts/serve-jeff.sh` serves it on MLX, which runs Jeff's Qwen models only, so Jeff-Gemma4-E2B is not used here.
 
 `contrastive-lm` declares `vllm` as a dependency, but it only calls the embeddings endpoint over HTTP. `pyproject.toml` overrides that dependency away so a second vLLM is not installed.
 
@@ -44,10 +66,11 @@ Every server binds to `127.0.0.1` only.
 | 8091 | small embedding model (smoke only) | `scripts/serve-embed.sh mlx-community/Qwen3-Embedding-0.6B-8bit 8091 embed-small` |
 | 8090 | Qwen3-8B encoder for CLM | `scripts/serve-embed.sh Qwen/Qwen3-8B 8090 qwen3-8b` |
 | 8700 | CLM System One API | `scripts/serve-clm.sh` |
-| 11435 | Ollaya daemon | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
+| 11435 | Ollaya daemon (`laya`, `winnow:e4b`) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
 | 8092 | Qwen3-8B generate server for AnyJev | `scripts/serve-llm.sh Qwen/Qwen3-8B 8092 qwen3-8b` |
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
-| 8009 | Kev System One API (`kev-latest`) | `KEV_DIR=~/workspace/tak-bro/kev scripts/serve-kev.sh` |
+| 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (or `kev-0.8b`, `kev-9b`) |
+| 8765 | Jeff System One API (`jeff-latest`) | `scripts/serve-jeff.sh` |
 
 The serve scripts refuse to start when their port is already taken.
 
@@ -64,50 +87,136 @@ scripts/smoke-embed.sh 8091                   # vector returned, L2-normalised
 scripts/smoke-embed.sh 8090 4096              # Qwen3-8B: 4096 dims, normalised
 uv run python bench/run.py --smoke --engine clm      # CLM README example within tolerance
 uv run python bench/run.py --smoke --engine ollaya   # same example, shape only
-uv run python bench/run.py --out bench/report.md     # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
-uv run python bench/run.py --smoke --engine anyjev-raw --engine anyjev-l0 --engine kev   # shape only
-uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl --out bench/report_banking77.md --append
+uv run python bench/run.py                           # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
+uv run python bench/run.py --smoke --engine <e>       # shape only (anyjev-raw, anyjev-l0, kev-0.8b, kev-4b, kev-9b, winnow, jeff), its server up
+uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
+uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
+uv run python bench/make_sets.py transfer-v4        # Kev's out-of-distribution dev set (764) into bench/data/, gitignored
+uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test (400 cases, 2,000 decisions) with gold distributions
+uv run python bench/make_sets.py nsmc               # 300 Korean movie reviews, positive or not (HF card: CC BY 2.0)
+uv run python bench/make_sets.py klue-ynat          # 300 Korean headlines, 7 topics (KLUE, CC BY-SA 4.0)
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 
 AnyJev and Kev each need most of the Metal memory, so every engine is measured alone: start its servers, run
-`bench/run.py --engine <e> --questions <set> --out <report> --append`, stop them. `--append` replaces that engine's
-rows and refuses a report written for another question set. Restart the AnyJev adapter before each run: the L0
-batch prior accumulates across every call the adapter has served.
+`bench/run.py --engine <e> --questions <set>`, stop them. `scripts/measure.sh [--reps N] <engine> <set>...` does
+all three and stops the servers even when a step fails; server output goes to `logs/<name>.log`. Each run logs every call (answers with probabilities,
+latency, memory pressure) to `bench/runs/<set>/<engine>.jsonl`, replacing that engine's earlier log once the run finishes, and
+`bench/score.py` rebuilds `bench/runs/<set>/report.md` from all the logs in that directory. It refuses a log measured
+on another version of the set or with another `--reps`. Restart the AnyJev adapter before each run: the L0 batch prior
+accumulates across every call the adapter has served.
 
 The benchmark rejects any item whose state plus question instructions (the text CLM actually embeds) exceeds 2048 Qwen3 tokens, because `clm-serve` would otherwise truncate it without an error. Treat the accuracy over 30 hand-written items as a sanity check, not a benchmark.
 
-## Results (2026-09-29, M3 Max 36 GB)
+## Results (2026-09-30, M3 Max 36 GB)
 
-30 questions x 3 reps per set, one engine running at a time. Accuracy carries a 95% Wilson interval; `order-flip`
-counts items whose choice changed when the options were listed in reverse. Full tables: `bench/report.md` (English)
-and `bench/report_ko.md` (Korean). Ollaya ran `laya` on English and `laya:multilingual` on Korean
-(`OLLAYA_MODEL=laya:multilingual`); on Korean the English model scored 33% (2026-09-28).
+`scripts/measure.sh` measured one engine at a time. The 30-item sets ran 3 reps; every other set ran 1 rep, plus a
+reversed-option call where the set has choice questions (all but NSMC). Accuracy is graded per decision (item x question) from each item's first timed call. The full
+tables are in `bench/runs/<set>/report.md`: counts with 95% Wilson intervals, Brier, ECE, order-flip, the pairwise
+McNemar table, and per-source breakdowns. Each table is rebuilt from the raw logs next to it by
+`bench/score.py <dir> --check`. Ollaya ran `laya` on the English sets and `laya:multilingual` on the Korean ones.
 
-| engine | first-call p50 ms (en / ko) | accuracy en | accuracy ko | order-flip (en / ko) |
-|---|---|---|---|---|
-| Kev-4B (MLX, bf16) | 225.9 / 215.0 | 279/315 (89%, 85-92) | 273/315 (87%, 82-90) | 1/30 / 1/30 |
-| AnyJev L0 (Qwen3-8B, vllm-metal) | 434.5 / 444.1 | 254/315 (81%, 76-85) | 264/315 (84%, 79-87) | 0/30 / 0/30 |
-| AnyJev raw (Qwen3-8B, vllm-metal) | 178.5 / 182.2 | 258/315 (82%, 77-86) | 261/315 (83%, 78-87) | 0/30 / 2/30 |
-| Ollaya (`laya` en / `laya:multilingual` ko, MLX) | 35.8 / 20.7 | 237/315 (75%, 70-80) | 207/315 (66%, 60-71) | 2/30 / 6/30 |
-| CLM-8B (vllm-metal, bf16) | 225.7 / 266.5 | 123/315 (39%, 34-45) | 129/315 (41%, 36-46) | 0/30 / 0/30 |
+Accuracy, first timed call (`†` = the engine trained on a train split of data in this set):
 
-No run reached `critical` memory pressure (worst: `warn`, for CLM). In the run log, the first AnyJev runs after the
-generate server started took about 1 s per call (warm-up); those rows were discarded, and both AnyJev rows above
-come from runs on a warmed server.
+| engine | English 30 | Korean 30 | BANKING77-20 | transfer-v4 | typed-decisions | NSMC | KLUE-YNAT |
+|---|---|---|---|---|---|---|---|
+| decisions | 105 | 105 | 300 | 764 | 2,000 | 300 | 300 |
+| Kev-9B | 90% | 90% | 89%† | 81% | 72% | 86% | 73% |
+| Kev-4B | 89% | 87% | 89%† | 80% | 67% | 83% | 74% |
+| Winnow-E4B | 89% | 86% | 81% | 77% | 73% | 84% | 74% |
+| Kev-0.8B | 75% | 75% | 88%† | 65% | 46% | 80% | 63% |
+| Jeff-Qwen3.5-2B | 64% | 75% | 65% | 69%† | 52% | 79% | 74% |
+| Ollaya | 75% | 66% | 60% | 63% | 36% | 56% | 43% |
+| AnyJev L0 | 81% | 84% | 80% | 75% | 63% | 80% | 75% |
+| AnyJev raw | 82% | 83% | 75% | 75% | 61% | 81% | 76% |
+| CLM-8B | 39% | 41% | 20% | - | - | - | - |
 
-CLM picks a choice by comparing embeddings of the option texts, so its 0 order-flips may be structural rather than
-a sign of order robustness (not verified). Do not compare its order-flip column with the others.
+`†`: Kev (all three sizes) trained on BANKING77's train split, and Jeff on PAWS's. PAWS's test split is 80 of
+transfer-v4's 764 decisions. An engine without a mark either did not train on the set or does not publish its training
+data (Winnow, Laya, CLM). See the training table below.
 
-Which engine to use (intervals that overlap count as no difference):
+First-call p50, ms:
 
-- **Under 50 ms per call:** only Ollaya fits (35.8 ms en, 20.7 ms ko first-call p50). On English only Kev beats it
-  (279 vs 237, 85-92 vs 70-80); on Korean Kev and both AnyJev levels do (273, 264, 261 vs 207; 60-71 is clear of
-  82-90, 79-87 and 78-87).
-- **Korean:** Kev or AnyJev; they cannot be told apart (82-90 vs 79-87 / 78-87). Kev needs one 4B model (server RSS
-  2.7 GB after startup in the 2026-09-29 smoke run); AnyJev needs Qwen3-8B on vllm-metal.
-- **Cannot be told apart on these 30 items:** Kev vs either AnyJev level on both sets (on English, Kev vs L0 only
-  just: Kev's lower bound 84.58 against L0's upper 84.62), AnyJev raw vs L0, and either AnyJev level vs Ollaya on English.
+| engine | English 30 | Korean 30 | BANKING77-20 | transfer-v4 | typed-decisions | NSMC | KLUE-YNAT |
+|---|---|---|---|---|---|---|---|
+| Kev-9B | 534.7 | 538.6 | 545.6 | 367.0 | 1552.2 | 296.6 | 413.9 |
+| Kev-4B | 289.4 | 306.9 | 290.1 | 185.5 | 858.7 | 158.5 | 243.0 |
+| Winnow-E4B | 720.0 | 632.3 | 574.8 | 339.4 | 1545.8 | 291.4 | 426.4 |
+| Kev-0.8B | 54.1 | 52.0 | 57.6 | 40.3 | 152.4 | 27.9 | 42.3 |
+| Jeff-Qwen3.5-2B | 251.1 | 258.7 | 129.8 | 99.3 | 986.5 | 69.7 | 103.9 |
+| Ollaya | 36.6 | 55.3 | 28.3 | 22.1 | 292.9 | 14.7 | 21.7 |
+| AnyJev L0 | 937.3 | 1056.2 | 7860.1 | 571.7 | 2319.5 | 391.3 | 2554.0 |
+| AnyJev raw | 436.5 | 576.5 | 582.3 | 292.2 | 1507.6 | 204.1 | 465.4 |
+| CLM-8B | 326.6 | 354.0 | 142.3 | - | - | - | - |
+
+What each engine was trained on, as far as its authors publish it:
+
+| engine | this repo's sets in its training data | source |
+|---|---|---|
+| Kev (all three sizes) | BANKING77 train split. Of transfer-v4's sources, Kev never trained on the six public ones. The two held-out policy structures come from the kind of policy data it trains on | model cards (`datasets`, transfer-v4 description), `kev/data.py` `TRAINABLE` |
+| Jeff | PAWS `labeled_final` train split. transfer-v4's `paws` source (80 decisions) is that dataset's test split. None of the other sets is in its source list | `docs/data-sources.md` and `src/jeff/data.py` at `f0678829`, `kev/data.py` (`paws`: train, test) |
+| AnyJev | none: training-free, Qwen3-8B as released | AnyJev README |
+| Winnow, Laya, CLM | unknown | |
+
+Nobody trained on the 30-item sets, which were written for this repo.
+
+Read these results with the following caveats:
+
+- **Memory:** a vLLM Qwen3-8B server left over from a test (`--gpu-memory-utilization 0.7`, idle) ran through the whole
+  matrix, so the latencies may be higher than on an idle machine. For example, Kev-4B's English first-call p50 is 289.4 ms
+  here and was 225.9 ms on 2026-09-29.
+- **Memory pressure:** it reached `critical` on 3 of Jeff's 604 KLUE-YNAT calls, with no errors or slow calls. All other runs stayed at `normal` or `warn`.
+- **Ollaya errors:** Ollaya refused 7 typed-decisions items (35 decisions) with `STATE_TRUNCATED`, because the state
+  did not fit `laya:en`'s context. They are counted as failed, not wrong.
+- **AnyJev:** measured afterwards (18:59-22:02), once the leftover server that held its port 8092 was stopped, so its
+  latencies come from an idle machine and do not compare directly with the rows above. `measure.sh` starts a fresh
+  generate server for it. The 2026-09-29 AnyJev rows came from a server warmed by an earlier, discarded run over the
+  same items, which is why its first-call p50 was lower then (raw English 178.5 ms, here 436.5 ms).
+- **CLM:** measured on the 30-item and BANKING77 sets only. It picks a choice by comparing embeddings of the option
+  texts, so its 0 order-flips may be structural rather than a sign of order robustness (not verified).
+
+Which engine to use. Engines count as different when the exact McNemar p is below 0.05. With 28-36 pairs per set, some p values under 0.05 come by chance.
+
+- **Most accurate:** Kev-9B, Kev-4B or Winnow.
+  - **Kev-9B vs Kev-4B:** they differ only on typed-decisions (72% vs 67%, 265 vs 165 discordant, p < 0.001).
+  - **Kev vs Winnow on transfer-v4:** Kev is ahead (Kev-4B p = 0.012, Kev-9B p = 0.003), but only on
+    `composition_holdout` and `legacy_holdout`. Those are held-out structures of the policy data Kev trains on:
+    Kev-4B 160/176, Kev-9B 157/176, Winnow 125/176 (p < 0.001). On the six public sources (`emotion`, `mmlu`, `paws`,
+    `qnli`, `sciq`, `tweet_offensive`) they are level: 454, 461 and 460 of 588 (Kev-4B vs Winnow p = 0.58, Kev-9B vs
+    Winnow p = 1.0). The counts are sums of the report's `## By source` table. The per-part p values are computed from the raw logs
+    (snippet in `reports/2026-09-30-analysis.md`).
+  - **Kev vs Winnow on BANKING77:** Kev is ahead, but that set is in Kev's training distribution.
+  - **Winnow vs Kev-4B on typed-decisions:** Winnow is ahead (289 vs 176, p < 0.001).
+  - **No difference:** on the 30-item sets, NSMC and KLUE-YNAT.
+- **typed-decisions:** Winnow (0.7265) and Kev-9B (0.720) land where the dataset card puts Jev 1.13.0 (0.727, ceiling
+  0.735). Those are the card's numbers from its own harness, not re-run here. Kev-9B is closest to the gold
+  distributions (KL 0.209, Brier 0.107, against Winnow's 0.286 and 0.128). The report's uniform row reproduces the
+  card's KL 0.444 and Brier 0.238.
+- **Under 60 ms:** Kev-0.8B (28-58 ms) or Ollaya (15-55 ms), outside typed-decisions' long states.
+  - **Accuracy:** Kev-0.8B is more accurate on typed-decisions, NSMC and KLUE-YNAT (p < 0.001) and on BANKING77
+    (in-distribution). It does not differ from Ollaya on the 30-item sets or transfer-v4.
+  - **Order-flip:** Ollaya changes 30-45% of its choices on BANKING77, typed-decisions and KLUE-YNAT when the options
+    are reversed. Kev-0.8B changes 8-19%.
+- **Korean:**
+  - **NSMC:** Kev-9B, Winnow and Kev-4B (83-86%) cannot be told apart, and Kev-9B beats Jeff (p = 0.008) and Kev-0.8B (p = 0.012).
+  - **KLUE-YNAT:** Kev-4B, Jeff, Winnow and Kev-9B (73-74%) cannot be told apart (p ≥ 0.86). Kev-0.8B (63%) and
+    Ollaya (43%) are below them (p < 0.001).
+- **AnyJev:**
+  - **KLUE-YNAT:** raw 76% and L0 75% are level with Kev-4B, Kev-9B, Winnow and Jeff (p ≥ 0.33).
+  - **transfer-v4:** 75% for both, level with Winnow (p > 0.24) and below Kev-4B and Kev-9B (p < 0.001). The whole gap
+    to Kev is on the two policy holdouts (Kev-4B 49 vs 2 discordant). On the six public sources AnyJev scores 458 of 588
+    against Kev-4B's 454 (p = 0.76).
+  - **typed-decisions:** raw 61% and L0 63% are below Kev-4B, Kev-9B and Winnow (p < 0.001). Their forecasts are
+    far from gold: KL 3.783 (raw) and 2.813 (L0), ECE 0.35 and 0.31.
+  - **NSMC:** 80-81%, below Kev-9B (p = 0.040 raw, 0.033 L0) and level with the rest of the top group.
+  - **L0 vs raw:** L0 cuts order-flips on every set where raw flips any (Korean 30 2 → 0, BANKING77 68 → 22, transfer-v4 76 → 27,
+    typed-decisions 101 → 31, KLUE-YNAT 46 → 26). It is more accurate on BANKING77 (p = 0.005) and typed-decisions
+    (p < 0.001), and it costs 1.5-13.5x the first-call time.
+- **Jeff-Qwen3.5-2B:** 52% on typed-decisions. The card lists another checkpoint, Jeff-Gemma4-E2B, at 0.561. Jeff is
+  level with the 4B and 9B models on KLUE-YNAT, and flips 24% of BANKING77 choices.
+- **Kev-4B reproduces its model card on transfer-v4:** 534/656 (81.4%, Wilson 78-84) on the clean questions against the
+  card's 0.817 over the same 656. The set's other 108 decisions are its none_absent, none_present and permuted
+  variants, 36 each (`## By variant` in the report).
 
 Earlier findings on CLM (2026-09-28):
 
@@ -115,31 +224,36 @@ Earlier findings on CLM (2026-09-28):
 - CLM reproduces the README's `department` (billing, 0.987 vs 0.939) and `frustration` (2.00 vs 1.98), but gives `urgency` 0.852 against the README's 0.41. Laya gives 0.795 on the same ticket. The cause is unresolved.
 - On this question set CLM answers `frustration` at about 2.0 every time and leans toward `billing` for `department`.
 
-### BANKING77 20-way (2026-09-29)
+### BANKING77 20-way
 
 `bench/questions_banking77.jsonl` restates AnyJev's `banking20` task, so the numbers can be set beside its README.
 It uses the 20 intents most frequent in BANKING77 train, listed by label id with no descriptions, and the question
 "What is the customer's intent?". It keeps the first 300 test items after `random.Random(0)`, read from
-`mteb/banking77` at a pinned revision. `uv run bench/make_banking77.py` regenerates it. One call per item
-(`--reps 1`); full table: `bench/report_banking77.md`.
+`mteb/banking77` at a pinned revision. `uv run bench/make_banking77.py` regenerates it. The accuracy is in the table above.
+Order-flip on this set (2026-09-30):
 
-| engine | first-call p50 ms | accuracy | order-flip |
-|---|---|---|---|
-| Kev-4B | 240.0 | 266/300 (89%, 85-92) | 23/300 (8%) |
-| AnyJev L0 | 8489.3 | 241/300 (80%, 75-84) | 22/300 (7%) |
-| AnyJev raw | 624.0 | 224/300 (75%, 69-79) | 68/300 (23%) |
-| Ollaya `laya` | 27.8 | 180/300 (60%, 54-65) | 93/300 (31%) |
-| CLM-8B | 359.7 | 61/300 (20%, 16-25) | 0/300 (0%) |
+| engine | order-flip |
+|---|---|
+| Kev-9B | 30/300 (10%) |
+| Kev-4B | 23/300 (8%) |
+| Kev-0.8B | 23/300 (8%) |
+| Winnow-E4B | 38/300 (13%) |
+| Jeff-Qwen3.5-2B | 73/300 (24%) |
+| Ollaya `laya` | 93/300 (31%) |
+| AnyJev L0 | 22/300 (7%) |
+| AnyJev raw | 68/300 (23%) |
+| CLM-8B | 0/300 (0%) |
 
+- **Kev's BANKING77 numbers are in-distribution.** All three Kev cards list `legacy-datasets/banking77` as training data. Here
+  Kev-0.8B cannot be told apart from the larger sizes (p ≥ 0.80), unlike on transfer-v4, typed-decisions and KLUE-YNAT
+  (p < 0.001). Do not compare them with engines that did not train on it.
 - **AnyJev reproduces its README here.** Its README reports, for Qwen3-8B on BANKING77 20-way with 300 test items,
   order-flip 0.230 raw → 0.073 L0 and accuracy 0.747 → 0.803. This run gives 68/300 (0.227) → 22/300 (0.073) and
-  224/300 (0.747) → 241/300 (0.803).
-- **L0 cuts order-flips; its accuracy gain is not shown on 300 items.** Order-flips fall from 68/300 to 22/300,
-  while the accuracy intervals 69-79 and 75-84 overlap.
-- **Kev is the most accurate engine here** (85-92, clear of every other interval) within one order-flip of L0
-  (23/300 vs 22/300), and 240.0 ms against L0's 8489.3 ms. L0 prefills the prompt once per cyclic shift, up to 20 times on a
-  20-way question.
-- **Ollaya falls to 60% with 20 options** and flips 31% of its choices when they are reversed.
+  224/300 (0.747) → 241/300 (0.803), the same counts as the 2026-09-29 run. The Wilson intervals overlap (69-79 and
+  75-84), but the paired test shows the accuracy gain: 25 decisions only L0 got right against 8 only raw got right,
+  p = 0.005. L0 is level with Winnow here (p = 0.868).
+- **L0 is slow on many options.** It prefills the prompt once per cyclic shift, up to 20 times on a 20-way question:
+  7860.1 ms first-call p50 against 582.3 ms raw.
 - For scale, not comparison: Laya zero-shot is quoted at 38% on all 77 intents, against 76% for Jev
   (dhruvmehra/jevbench, as reported in a Laya fine-tuning write-up; not verified here). That set is 77-way, this
   one 20-way.
@@ -152,22 +266,24 @@ score) in one forward pass, with calibrated probabilities instead of generated t
 original; its `POST /v1/systemone` format is what every engine here speaks.
 
 **Which local decision model is the most accurate on a Mac?**
-Kev-4B in these runs: 89% on the English and BANKING77-20 sets and 87% on Korean, clear of every other engine on
-BANKING77-20 (Wilson 85-92).
+Kev-9B, Kev-4B or Winnow-E4B. Kev leads on Kev's transfer-v4 set (81% and 80% against 77%), but only on its two policy-structure holdouts. Winnow and
+Kev-9B lead on typed-decisions (73% and 72%, against Kev-4B's 67%). On the Korean sets the three cannot be told apart.
 
 **Which one is the fastest?**
-Ollaya running Laya: 20.7-35.8 ms first-call p50, against 178.5-444.1 ms for the others on the 30-item sets.
+Ollaya running Laya: 14.7-55.3 ms first-call p50, or 292.9 ms on typed-decisions' long states. Kev-0.8B is next
+(27.9-57.6 ms) and is as accurate or more on every set.
 
 **Does AnyJev work on vllm-metal?**
 Yes, with one change: vllm-metal 0.30.0 reports raw logprobs whatever `--logprobs-mode` says, so the adapter asks for
 each label by `logprob_token_ids`. With that, AnyJev reproduces its README on BANKING77-20.
 
 **Can these models answer in Korean?**
-Kev (273/315) and AnyJev (261-264/315) can; they cannot be told apart on 30 items. Ollaya needs
-`laya:multilingual` and reaches 207/315.
+Kev-4B, Kev-9B, Winnow and Jeff can: 83-86% on NSMC for the first three, and 73-74% on KLUE-YNAT for all four.
+AnyJev can too, with no training: 80-81% on NSMC and 75-76% on KLUE-YNAT.
+Ollaya needs `laya:multilingual` and reaches 56% and 43%.
 
 **How much memory do they need?**
-Kev-4B's server used 2.7 GB RSS after startup. AnyJev and CLM run Qwen3-8B on vllm-metal, which reserves about
+Kev-4B's server used 2.7 GB RSS after startup. Winnow is an 8.0 GB download. AnyJev and CLM run Qwen3-8B on vllm-metal, which reserves about
 20 GB (0.7 of the 28.1 GB Metal wired limit); measure them one at a time.
 
 ## vllm-metal vs Ollama, Qwen3-8B chat (2026-09-28, M3 Max 36 GB)

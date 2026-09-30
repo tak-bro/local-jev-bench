@@ -4,3 +4,5 @@ __pycache__/
 *.log
 logs/
 .claude/
+bench/data/
+*.jsonl.partial
