@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -386,3 +387,60 @@ def test_breakdown_counts_decisions_an_engine_failed(runs, tmp_path):
                  for r in calls()]
     write_raw(d, "e", s, failed_i1)
     assert "| mmlu | 4 | 2/2 (100%), 2 failed |" in score.render(d)
+
+
+# --- slice 04: KL and Brier against gold distributions, uniform and prior references ---------------
+
+def test_kl_from_gold():
+    # 0.5 ln(0.5/0.25) + 0.5 ln(0.5/0.75) = 0.5 (0.693147) + 0.5 (-0.405465)
+    assert score.kl([0.5, 0.5], [0.25, 0.75]) == pytest.approx(0.143841, abs=1e-6)
+    assert score.kl([1.0, 0.0], [0.0, 1.0]) == pytest.approx(math.log(1 / 1e-6), rel=1e-3)  # floored, not infinite
+
+
+GOLD_ITEMS = [{"id": "g0", "state": "s", "questions": {"u": {"type": "noul", "instructions": "?"}},
+               "expected": {"u": True}, "scoring": {"score": "argmax"},
+               "gold": {"u": {"false": 0.2, "true": 0.8}}, "prior": {"u": {"false": 0.4, "true": 0.6}}}]
+
+
+def test_gold_table_rows(runs, tmp_path):
+    d, _ = runs
+    s = write_set(tmp_path, GOLD_ITEMS)
+    ans = {"u": {"type": "noul", "noul": 0.9}}
+    write_raw(d, "e", s, [rec("g0", "cold", answers=ans), rec("g0", "timed", 0, ans)], reps=1)
+    text = score.render(d)
+    assert "## Against the gold distributions" in text
+    # engine: [yes 0.9, no 0.1] vs gold [0.8, 0.2]: KL = 0.8 ln(0.8/0.9) + 0.2 ln(0.2/0.1) = 0.044395; Brier = 0.02
+    assert "| e | 1 | 1/1 (100%) | 0.044 | 0.020 |" in text
+    # uniform: KL = 0.8 ln 1.6 + 0.2 ln 0.4 = 0.192745; Brier = 0.09 + 0.09; a random pick of 2 is right half the time
+    assert "| (uniform) | 1 | 0.5 expected | 0.193 | 0.180 |" in text
+    # prior [0.6, 0.4]: KL = 0.8 ln(0.8/0.6) + 0.2 ln(0.2/0.4) = 0.091516; Brier = 0.04 + 0.04; argmax yes is right
+    assert "| (prior) | 1 | 1/1 (100%) | 0.092 | 0.080 |" in text
+
+
+def test_gold_table_aligns_choice_and_score_and_drops_failed_calls(runs, tmp_path):
+    d, _ = runs
+    q = {"c": {"type": "choice", "instructions": "?", "criteria": {"x": "X", "y": "Y"}}, "s": SCORE_Q}
+    items = [{"id": f"g{i}", "state": "s", "questions": q, "expected": {"c": "y", "s": 2},
+              "scoring": {"score": "argmax"},
+              "gold": {"c": {"x": 0.25, "y": 0.75}, "s": {"0": 0.0, "1": 0.5, "2": 0.5}}} for i in range(2)]
+    s = write_set(tmp_path, items)
+    ans = {"c": {"type": "choice", "choice": "y", "probabilities": {"x": 0.25, "y": 0.75}},
+           "s": {"type": "score", "score": 1.5, "probabilities": {"0": 0.0, "1": 0.5, "2": 0.5}}}
+    write_raw(d, "e", s, [rec("g0", "cold", answers=ans), rec("g0", "timed", 0, ans),
+                          rec("g1", "timed", 0, error="boom"), rec("g0", "reversed", answers=ans),
+                          ], reps=1)
+    text = score.render(d)
+    # the engine matches gold exactly on the 2 decisions of g0 (the score argmax ties 1 and 2 and takes 1: wrong);
+    # g1 failed and is out of the engine row, not of the references
+    assert "| e | 2 | 1/2 (50%) | 0.000 | 0.000 |" in text
+    assert "| (uniform) | 4 |" in text
+
+
+def test_argmax_sets_count_score_questions_in_brier(runs, tmp_path):
+    d, _ = runs
+    items = [{**it, "questions": {"s": SCORE_Q}, "expected": {"s": 2}, "scoring": {"score": "argmax"}} for it in ITEMS]
+    s = write_set(tmp_path, items)
+    ans = {"s": {"type": "score", "score": 1.5, "probabilities": {"0": 0.0, "1": 0.5, "2": 0.5}}}
+    write_raw(d, "e", s, [r for r in calls(reps=1, rep0=ans) if r["call"] != "reversed"], reps=1)
+    # [0, .5, .5] against level 2: 0 + 0.25 + 0.25 = 0.5 per decision
+    assert "| 0.500 (2) |" in row(score.render(d), "e")

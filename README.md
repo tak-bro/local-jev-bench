@@ -69,6 +69,7 @@ uv run python bench/run.py --smoke --engine anyjev-raw --engine anyjev-l0 --engi
 uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
 uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
 uv run python bench/make_sets.py transfer-v4        # Kev's out-of-distribution dev set (764) into bench/data/, gitignored
+uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test (400 cases, 2,000 decisions) with gold distributions
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 

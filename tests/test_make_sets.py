@@ -76,3 +76,33 @@ def test_cli_writes_the_set_and_prints_its_sha(monkeypatch, tmp_path, capsys):
     written = out / "transfer-v4.jsonl"
     assert len(written.read_text().splitlines()) == 3
     assert make_sets.sha256(written) in capsys.readouterr().out
+
+
+# Shaped like LocalLLaMA/typed-decisions all/{test,train} rows: state, questions and gold are JSON strings.
+def td_row(i, split, gold):
+    questions = {"urgent": {"type": "noul", "instructions": "Is it urgent?"},
+                 "team": {"type": "choice", "instructions": "Which team?", "criteria": {"a": "A", "b": "B"}},
+                 "risk": {"type": "score", "instructions": "How risky?", "criteria": ["Low", "Mid", "High"]}}
+    return {"id": f"cs_{split}_{i}", "workflow": "customer_service", "split": split,
+            "state": json.dumps({"ticket": f"t{i}"}), "questions": json.dumps(questions), "gold": json.dumps(gold)}
+
+
+GOLD_A = {"urgent": {"type": "noul", "label": "true", "probabilities": {"false": 0.2, "true": 0.8}},
+          "team": {"type": "choice", "label": "b", "probabilities": {"a": 0.4, "b": 0.6}},
+          "risk": {"type": "score", "label": "2", "probabilities": {"0": 0.1, "1": 0.2, "2": 0.7}}}
+GOLD_B = {"urgent": {"type": "noul", "label": "false", "probabilities": {"false": 0.6, "true": 0.4}},
+          "team": {"type": "choice", "label": "a", "probabilities": {"a": 1.0, "b": 0.0}},
+          "risk": {"type": "score", "label": "0", "probabilities": {"0": 0.5, "1": 0.3, "2": 0.2}}}
+
+
+def test_typed_decisions_items():
+    (item,) = make_sets.typed_decisions([td_row(0, "test", GOLD_A)], [td_row(1, "train", GOLD_A),
+                                                                      td_row(2, "train", GOLD_B)])
+    assert item["id"] == "cs_test_0" and item["state"] == {"ticket": "t0"}
+    assert item["expected"] == {"urgent": True, "team": "b", "risk": 2}  # labels in the types score.py grades
+    assert item["gold"]["risk"] == {"0": 0.1, "1": 0.2, "2": 0.7}
+    # prior: each question's mean gold distribution over train, per workflow
+    assert item["prior"]["urgent"] == {"false": 0.4, "true": 0.6}
+    assert item["prior"]["team"] == {"a": 0.7, "b": 0.3}
+    assert item["scoring"] == {"score": "argmax"} and item["meta"] == {"source": "customer_service"}
+    assert set(item["questions"]) == {"urgent", "team", "risk"}

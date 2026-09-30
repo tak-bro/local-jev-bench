@@ -138,26 +138,37 @@ def timed(records: list[dict]) -> dict[tuple[str, int], dict]:
     return {(r["item"], r["rep"]): r["answers"] for r in records if r["call"] == "timed" and not r["error"]}
 
 
-def forecast(q: dict, answer: dict) -> list[float] | None:
-    """Probability of each option, in the question's order (a noul is [yes, no]); None for a score question, whose
-    probabilities engines key differently (criterion text or index)."""
+def forecast(q: dict, answer: dict, rule: str = "round") -> list[float] | None:
+    """Probability of each option, in `option_keys` order (a noul is [yes, no]). A score question has one only under
+    the argmax rule, which reads its level probabilities; under rounding it is graded by its expected score."""
     if q["type"] == "noul":
         return [answer["noul"], 1 - answer["noul"]]
     if q["type"] == "choice":
         return [answer["probabilities"].get(k, 0.0) for k in q["criteria"]]
-    return None
+    return score_levels(q, answer) if rule == "argmax" else None
+
+
+def option_keys(q: dict) -> list[str]:
+    """The keys a set's gold and prior distributions use, in forecast order."""
+    if q["type"] == "noul":
+        return ["true", "false"]
+    if q["type"] == "choice":
+        return list(q["criteria"])
+    return [str(i) for i in range(len(q["criteria"]))]
 
 
 def outcome(q: dict, value: Any) -> int:
     """Index of `value` (an expected answer or a decision) among the forecast's options."""
-    return (0 if value else 1) if q["type"] == "noul" else list(q["criteria"]).index(value)
+    if q["type"] == "noul":
+        return 0 if value else 1
+    return list(q["criteria"]).index(value) if q["type"] == "choice" else int(value)
 
 
-def brier(decisions: list[tuple[dict, dict, Any]]) -> tuple[float, int] | None:
-    """(mean multi-class Brier score, n) over noul and choice decisions: sum over options of (p - 1[option is
+def brier(decisions: list[tuple[dict, dict, Any, str]]) -> tuple[float, int] | None:
+    """(mean multi-class Brier score, n) over the decisions with a forecast: sum over options of (p - 1[option is
     right])^2, so 0 is perfect and 2 is sure and wrong. None when there are none."""
     scores = [sum((p - (i == outcome(q, gold(q, want)))) ** 2 for i, p in enumerate(f))
-              for q, a, want, _ in decisions if (f := forecast(q, a)) is not None]
+              for q, a, want, rule in decisions if (f := forecast(q, a, rule)) is not None]
     return (sum(scores) / len(scores), len(scores)) if scores else None
 
 
@@ -170,10 +181,21 @@ def ece(points: list[tuple[float, bool]], bins: int = 15) -> float:
     return sum(abs(sum(r for _, r in g) - sum(c for c, _ in g)) for g in groups.values()) / len(points)
 
 
-def confidence_points(decisions: list[tuple[dict, dict, Any]]) -> list[tuple[float, bool]]:
-    """(probability the engine gave its own decision, whether that decision is right) for noul and choice."""
-    return [(f[outcome(q, decide(q, a))], is_right(q, a, want))
-            for q, a, want, _ in decisions if (f := forecast(q, a)) is not None]
+def confidence_points(decisions: list[tuple[dict, dict, Any, str]]) -> list[tuple[float, bool]]:
+    """(probability the engine gave its own decision, whether that decision is right) where there is a forecast."""
+    return [(f[outcome(q, decide(q, a, rule))], is_right(q, a, want, rule))
+            for q, a, want, rule in decisions if (f := forecast(q, a, rule)) is not None]
+
+
+KL_FLOOR = 1e-6
+
+
+def kl(target: list[float], p: list[float]) -> float:
+    """KL(target || p) in nats. p is floored at KL_FLOOR and renormalised, so an option an engine ruled out costs a
+    large finite amount rather than infinity."""
+    floored = [max(x, KL_FLOOR) for x in p]
+    total = sum(floored)
+    return sum(g * math.log(g / (x / total)) for g, x in zip(target, floored) if g > 0)
 
 
 def mcnemar_exact(b: int, c: int) -> float:
@@ -262,7 +284,8 @@ def row(header: dict, reps: int, items: list[dict], records: list[dict]) -> tupl
     right, n = sum(is_right(*d) for d in decisions), len(decisions)
     b = brier(decisions)
     calib = confidence_points(decisions)
-    has_forecast = any(q["type"] in ("noul", "choice") for it in items for q in it["questions"].values())
+    has_forecast = any(q["type"] in ("noul", "choice") or score_rule(it) == "argmax"
+                       for it in items for q in it["questions"].values())
     missing = "failed" if has_forecast else "n/a"
     brier_cell = f"{b[0]:.3f} ({b[1]})" if b else missing
     ece_cell = f"{ece(calib):.3f}" if calib else missing
@@ -300,10 +323,10 @@ def report(common: dict, items: list[dict], runs: dict[str, tuple[dict, list[dic
         "`first-call p50` covers only each item's first call. Repeats of the same state can be served from an engine's",
         "embedding cache (CLM caches state vectors), so all-call percentiles understate uncached latency.",
         "`order-flip` asks each item once more with every choice's options reversed and counts changed choices.",
-        "`Brier` is the mean multi-class Brier score of the graded noul and choice decisions (sum over options, a noul",
-        "being yes/no; 0 is perfect, 2 is sure and wrong), with their count. `ECE` is the expected calibration error of",
-        "the probability each engine gave its own decision on those, in 15 equal-width bins. Score questions are left",
-        "out of both: engines key their probabilities differently.",
+        "`Brier` is the mean multi-class Brier score of the graded decisions that come with a distribution (sum over",
+        "options, a noul being yes/no; 0 is perfect, 2 is sure and wrong), with their count. `ECE` is the expected",
+        "calibration error of the probability each engine gave its own decision on those, in 15 equal-width bins. Score",
+        "questions count only in sets graded by argmax, which read their level probabilities.",
         "",
         "| engine | model | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | calls | accuracy "
         "| Brier (n) | ECE | rep-disagree | order-flip | errors | worst memory pressure |",
@@ -314,9 +337,51 @@ def report(common: dict, items: list[dict], runs: dict[str, tuple[dict, list[dic
     lines += [r for r, _ in rows] + [e for _, errs in rows for e in errs]
     if len(engines) > 1:
         lines += pairs(items, {e: runs[e][1] for e in engines})
+    lines += against_gold(items, {e: runs[e][1] for e in engines})
     for key in ("source", "variant"):
         lines += breakdown(items, {e: runs[e][1] for e in engines}, key)
     return "\n".join(lines) + "\n"
+
+
+def against_gold(items: list[dict], runs: dict[str, list[dict]]) -> list[str]:
+    """KL and Brier against each decision's gold distribution, for sets that carry one (typed-decisions), with two
+    references: every option equally likely, and the set's `prior` distribution per question."""
+    with_gold = [(it, qid) for it in items if "gold" in it for qid in it["expected"]]
+    if not with_gold:
+        return []
+    target = {(it["id"], qid): [it["gold"][qid][k] for k in option_keys(it["questions"][qid])] for it, qid in with_gold}
+    lines = ["", "## Against the gold distributions", "",
+             "`KL` = mean KL(gold || forecast) in nats, the forecast floored at 1e-6 and renormalised; `Brier` = mean sum",
+             "over options of (forecast - gold)^2. `(uniform)` gives every option the same probability; its accuracy is",
+             "what a random pick gets on average. `(prior)` gives each question the set's `prior` distribution (for",
+             "typed-decisions, the mean train gold distribution per workflow and question; not the dataset card's Prior)",
+             "and decides by its argmax.", "",
+             "| forecast | decisions | accuracy | KL | Brier |", "|---|---|---|---|---|"]
+
+    def line(name: str, rows_: list[tuple[list[float], list[float], bool | float]], acc: str | None = None) -> str:
+        if not rows_:
+            return f"| {name} | 0 | failed | failed | failed |"
+        n = len(rows_)
+        right = sum(r for _, _, r in rows_)
+        return (f"| {name} | {n} | {acc or ratio(int(right), n)} | {sum(kl(g, f) for g, f, _ in rows_) / n:.3f} "
+                f"| {sum(sum((x - y) ** 2 for x, y in zip(f, g)) for g, f, _ in rows_) / n:.3f} |")
+
+    for e, records in runs.items():
+        lines.append(line(e, [(target[k], f, is_right(q, a, want, rule))
+                              for k, (q, a, want, rule) in graded(items, records).items()
+                              if k in target and (f := forecast(q, a, rule)) is not None]))
+    chance = [1 / len(g) for g in target.values()]
+    lines.append(line("(uniform)", [(g, [1 / len(g)] * len(g), 0) for g in target.values()],
+                      acc=f"{sum(chance) / len(chance):.3g} expected"))
+    if all("prior" in it for it, _ in with_gold):
+        prior_rows = []
+        for it, qid in with_gold:
+            q = it["questions"][qid]
+            f = [it["prior"][qid][k] for k in option_keys(q)]
+            pick = max(range(len(f)), key=f.__getitem__)  # ties go to the first option
+            prior_rows.append((target[(it["id"], qid)], f, pick == outcome(q, gold(q, it["expected"][qid]))))
+        lines.append(line("(prior)", prior_rows))
+    return lines
 
 
 def breakdown(items: list[dict], runs: dict[str, list[dict]], key: str) -> list[str]:
