@@ -119,6 +119,7 @@ def fake_on_path(tmp_path, *names) -> dict:
     ("scripts/serve-clm.sh", []),
     ("scripts/serve-anyjev.sh", []),
     ("scripts/serve-kev.sh", []),
+    ("scripts/serve-jeff.sh", []),
 ])
 def test_serve_refuses_busy_port(tmp_path, script, args):
     with socket.socket() as s:
@@ -126,7 +127,7 @@ def test_serve_refuses_busy_port(tmp_path, script, args):
         s.listen()
         port = s.getsockname()[1]
         env = {**fake_on_path(tmp_path, "vllm", "uv"), "CLM_PORT": str(port), "ANYJEV_PORT": str(port),
-               "KEV_PORT": str(port)}
+               "KEV_PORT": str(port), "JEFF_PORT": str(port)}
         r = sh(script, *[a.format(port=port) for a in args], env=env)
     assert r.returncode == 1, (r.returncode, r.stderr)
     assert "already in use" in r.stderr
@@ -163,6 +164,29 @@ def test_serve_refuses_a_port_listening_on_all_interfaces(tmp_path):
         s.listen()
         r = sh("scripts/serve-anyjev.sh", env={**fake_on_path(tmp_path, "uv"), "ANYJEV_PORT": str(s.getsockname()[1])})
     assert r.returncode == 1 and "already in use" in r.stderr
+
+
+def test_serve_jeff_needs_a_checkpoint(tmp_path):
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    r = sh("scripts/serve-jeff.sh", env={**fake_on_path(tmp_path, "uvx"), "JEFF_PORT": str(port),
+                                         "JEFF_DIR": str(tmp_path / "nope")})
+    assert r.returncode == 1 and "no Jeff checkpoint" in r.stderr
+
+
+def test_serve_jeff_refuses_another_commit(tmp_path):
+    jeff = tmp_path / "jeff"
+    (jeff / "checkpoints" / "jeff-2b").mkdir(parents=True)
+    (jeff / "checkpoints" / "jeff-2b" / "config.json").write_text("{}")
+    git = lambda *a: subprocess.run(["git", "-C", str(jeff), *a], check=True, capture_output=True)  # noqa: E731
+    git("init", "-q")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "other")
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    r = sh("scripts/serve-jeff.sh", env={**fake_on_path(tmp_path, "uvx"), "JEFF_PORT": str(port), "JEFF_DIR": str(jeff)})
+    assert r.returncode == 1 and "f067882" in r.stderr
 
 
 def test_serve_kev_needs_a_checkout(tmp_path):
@@ -278,7 +302,7 @@ def test_reps_below_one_is_refused(monkeypatch, tmp_path):
     monkeypatch.setattr(run, "bench", lambda engine, items, raw, reps: 0)
     monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
     monkeypatch.setattr(run, "qwen_token_counter", lambda: len)
-    monkeypatch.setattr(sys, "argv", ["run.py", "--engine", "kev", "--reps", "0", "--runs", str(tmp_path)])
+    monkeypatch.setattr(sys, "argv", ["run.py", "--engine", "kev-4b", "--reps", "0", "--runs", str(tmp_path)])
     with pytest.raises(SystemExit) as e:
         run.main()
     assert e.value.code == 2  # argparse usage error
@@ -403,7 +427,9 @@ def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
     assert benched == ["clm", "ollaya"]  # new engines are measured one at a time, by name
 
 
-@pytest.mark.parametrize("name, model", [("anyjev-raw", "anyjev-raw"), ("anyjev-l0", "anyjev-l0"), ("kev", "kev-latest")])
+@pytest.mark.parametrize("name, model", [("anyjev-raw", "anyjev-raw"), ("anyjev-l0", "anyjev-l0"),
+                                         ("kev-0.8b", "kev-latest"), ("kev-4b", "kev-latest"), ("kev-9b", "kev-latest"),
+                                         ("winnow", "winnow:e4b"), ("jeff", "jeff-latest")])
 def test_new_engines_send_their_model(monkeypatch, name, model):
     seen = []
     def handle(body):
@@ -416,3 +442,75 @@ def test_new_engines_send_their_model(monkeypatch, name, model):
     finally:
         srv.close()
     assert seen == [model]
+
+
+@pytest.mark.parametrize("name, route, body", [
+    ("kev-9b", "/v1/models", {"models": [{"name": "kev-latest", "run": "jaredpalmer/kev-9b"}]}),
+    ("jeff", "/health", {"status": "ready", "model": "jeff-qwen3.5-2b"}),
+])
+def test_served_identity_matches(monkeypatch, name, route, body):
+    srv = FakeServer({route: lambda _: (200, body)})
+    monkeypatch.setitem(run.ENGINES, name, {**run.ENGINES[name], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        assert run.served(name) == run.ENGINES[name]["served"][2]
+    finally:
+        srv.close()
+
+
+def test_a_server_running_another_model_is_refused(monkeypatch):
+    # kev-0.8b, kev-4b and kev-9b share one port; the engine name alone does not say which adapter is up
+    srv = FakeServer({"/v1/models": lambda _: (200, {"models": [{"run": "jaredpalmer/kev-4b"}]})})
+    monkeypatch.setitem(run.ENGINES, "kev-9b", {**run.ENGINES["kev-9b"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        with pytest.raises(run.EngineError, match="jaredpalmer/kev-4b.*jaredpalmer/kev-9b"):
+            run.served("kev-9b")
+    finally:
+        srv.close()
+
+
+def test_main_measures_nothing_when_a_server_is_the_wrong_model(monkeypatch, tmp_path):
+    srv = FakeServer({"/v1/models": lambda _: (200, {"models": [{"run": "jaredpalmer/kev-4b"}]})})
+    monkeypatch.setitem(run.ENGINES, "kev-9b", {**run.ENGINES["kev-9b"], "url": f"http://127.0.0.1:{srv.port}"})
+    monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
+    try:
+        with pytest.raises(SystemExit, match="kev-9b"):
+            run_main(monkeypatch, tmp_path, "--engine", "kev-9b")
+    finally:
+        srv.close()
+    assert not (tmp_path / "runs").exists() or not list((tmp_path / "runs").rglob("*.jsonl"))
+
+
+def test_header_records_what_the_server_said_it_serves(engine, monkeypatch, tmp_path):
+    srv = FakeServer({"/v1/systemone": lambda b: (200, {"answers": {"u": {"type": "noul", "noul": 0.9}}}),
+                      "/health": lambda _: (200, {"model": "fake-1"})})
+    name = engine(srv.port)
+    monkeypatch.setitem(run.ENGINES[name], "served", ("/health", ("model",), "fake-1"))
+    qs = tmp_path / "set.jsonl"
+    qs.write_text("".join(json.dumps(it) + "\n" for it in ITEMS))
+    try:
+        run_main(monkeypatch, tmp_path, "--engine", name, "--questions", str(qs), "--reps", "1")
+    finally:
+        srv.close()
+    header = json.loads((tmp_path / "runs" / "set" / f"{name}.jsonl").read_text().splitlines()[0])["header"]
+    assert header["served"] == "fake-1"
+
+
+def test_smoke_checks_what_the_server_runs(monkeypatch):
+    srv = FakeServer({"/v1/models": lambda _: (200, {"models": [{"run": "jaredpalmer/kev-4b"}]}),
+                      "/v1/systemone": lambda b: (200, {"answers": {}})})
+    monkeypatch.setitem(run.ENGINES, "kev-9b", {**run.ENGINES["kev-9b"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        with pytest.raises(run.EngineError, match="kev-4b"):
+            run.smoke("kev-9b")
+    finally:
+        srv.close()
+
+
+def test_unreadable_identity_is_an_error(monkeypatch):
+    srv = FakeServer({"/v1/models": lambda _: (200, {"models": []})})
+    monkeypatch.setitem(run.ENGINES, "kev-4b", {**run.ENGINES["kev-4b"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        with pytest.raises(run.EngineError, match="cannot read what"):
+            run.served("kev-4b")
+    finally:
+        srv.close()

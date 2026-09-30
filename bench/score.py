@@ -4,9 +4,10 @@
     uv run python bench/score.py bench/runs/questions --check   # exit 1 if report.md is not what the logs give
 
 A raw log is one JSON object per line. The first is `{"header": {set, set_sha256, engine, model, reps, warmup,
-started, host}}` and the last is `{"footer": {finished}}`, written only when the run completes. Every line between
-is one engine call, `{item, call, rep, answers, error, ms, pressure}`, where `call` is `cold`, `warmup`, `timed`
-(rep 0..reps-1) or `reversed` (one call per item with choice options reversed).
+started, host, served}}` (`served`: what the server said it runs, null when the request's model pins it) and the
+last is `{"footer": {finished}}`, written only when the run completes. Every line between is one engine call,
+`{item, call, rep, answers, error, ms, pressure}`, where `call` is `cold`, `warmup`, `timed` (rep 0..reps-1) or
+`reversed` (one call per item with choice options reversed).
 
 `--check` compares report.md with the logs; it does not fail on the engine errors a report counts.
 """

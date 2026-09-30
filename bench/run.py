@@ -3,7 +3,7 @@
     uv run python bench/run.py --smoke --engine clm      # README example, CLM tolerances
     uv run python bench/run.py --smoke --engine ollaya   # README example, shape only
     uv run python bench/run.py                           # questions.jsonl on clm and ollaya
-    uv run python bench/run.py --engine kev --questions bench/questions_ko.jsonl   # one engine, one set
+    uv run python bench/run.py --engine kev-4b --questions bench/questions_ko.jsonl   # one engine, one set
 
 Every engine speaks the same format, so one client serves all; only the base URL and model differ. Each run writes
 every call to bench/runs/<set>/<engine>.jsonl (replacing that engine's earlier log) and regenerates
@@ -32,8 +32,17 @@ ENGINES: dict[str, dict[str, Any]] = {
     # One AnyJev adapter serves both correction levels; the model field picks the level.
     "anyjev-raw": {"url": os.environ.get("ANYJEV_URL", "http://127.0.0.1:8710"), "model": "anyjev-raw"},
     "anyjev-l0": {"url": os.environ.get("ANYJEV_URL", "http://127.0.0.1:8710"), "model": "anyjev-l0"},
-    "kev": {"url": os.environ.get("KEV_URL", "http://127.0.0.1:8009"), "model": "kev-latest"},
+    # Ollaya answers an unpulled tag with 404 MODEL_NOT_FOUND and refuses a request without `model`, so the
+    # request's model pins what is measured on the shared port.
+    "winnow": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+               "model": os.environ.get("WINNOW_MODEL", "winnow:e4b")},
+    "jeff": {"url": os.environ.get("JEFF_URL", "http://127.0.0.1:8765"), "model": "jeff-latest",
+             "served": ("/health", ("model",), "jeff-qwen3.5-2b")},
 }
+# Kev serves one adapter at a time on one port (scripts/serve-kev.sh, KEV_RUN); `served` checks which one is up.
+for size in ("0.8b", "4b", "9b"):
+    ENGINES[f"kev-{size}"] = {"url": os.environ.get("KEV_URL", "http://127.0.0.1:8009"), "model": "kev-latest",
+                              "served": ("/v1/models", ("models", 0, "run"), f"jaredpalmer/kev-{size}")}
 # A bare benchmark runs the two engines that can share the machine. The others each need most of the Metal
 # memory, so they are started, measured with --engine, and stopped one at a time.
 DEFAULT_ENGINES = ["clm", "ollaya"]
@@ -79,6 +88,24 @@ def ask(engine: str, state: str, questions: dict, timeout: float = 120.0) -> tup
     return answers, ms
 
 
+def served(engine: str) -> str | None:
+    """What the engine's server says it runs, when the engine name alone does not pin it (several engines share a
+    port). Raises EngineError when it is another model, so a log is never filed under the wrong name."""
+    if "served" not in ENGINES[engine]:
+        return None
+    path, keys, want = ENGINES[engine]["served"]
+    url = ENGINES[engine]["url"] + path
+    try:
+        got: Any = requests.get(url, timeout=30).json()
+        for k in keys:
+            got = got[k]
+    except (requests.RequestException, ValueError, KeyError, IndexError, TypeError) as e:
+        raise EngineError(f"{engine}: cannot read what {url} serves: {e}") from e
+    if got != want:
+        raise EngineError(f"{engine}: {url} serves {got!r}, not {want!r}; start the right model first")
+    return got
+
+
 def check_shape(engine: str, questions: dict, answers: dict) -> None:
     """Every question must come back with the value field its type promises."""
     for qid, q in questions.items():
@@ -97,6 +124,7 @@ def check_shape(engine: str, questions: dict, answers: dict) -> None:
 
 def smoke(engine: str) -> list[str]:
     """README example once; return failures (empty = pass)."""
+    served(engine)
     answers, ms = ask(engine, README_STATE, README_QUESTIONS)
     print(f"{engine}: {ms:.1f} ms  {json.dumps(answers)}")
     if engine != "clm":
@@ -258,11 +286,20 @@ def main() -> int:
     items = load_questions(args.questions, qwen_token_counter())
     out = args.runs / args.questions.stem
     out.mkdir(parents=True, exist_ok=True)
+    try:
+        for engine in engines:  # all of them before any log is replaced, and each again right before its own
+            served(engine)
+    except EngineError as e:
+        raise SystemExit(str(e)) from e
     errors = 0
     for engine in engines:
+        try:
+            identity = served(engine)
+        except EngineError as e:
+            raise SystemExit(str(e)) from e
         header = {"set": questions_label(args.questions), "set_sha256": score.sha256(args.questions),
                   "engine": engine, "model": ENGINES[engine]["model"], "reps": args.reps, "warmup": WARMUP,
-                  "started": now(), "host": host()}
+                  "started": now(), "host": host(), "served": identity}
         with (out / f"{engine}.jsonl").open("w") as raw:
             raw.write(json.dumps({"header": header}) + "\n")
             errors += bench(engine, items, raw, reps=args.reps)
