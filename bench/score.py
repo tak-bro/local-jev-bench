@@ -80,6 +80,9 @@ def load_dir(d: Path) -> tuple[dict, list[dict], dict[str, tuple[dict, list[dict
                              "one directory holds logs of one set and one reps setting")
         runs[header["engine"]] = (header, lines[1:-1])
     set_path = ROOT / common["set"]
+    if not set_path.exists():
+        raise SystemExit(f"{common['set']}: missing; the sets in bench/data/ are gitignored, "
+                         f"build it with `uv run python bench/make_sets.py {set_path.stem}`")
     if (now := sha256(set_path)) != common["set_sha256"]:
         stale = [p.name for p in logs]
         raise SystemExit(f"{', '.join(stale)}: measured on {common['set']} sha256 {common['set_sha256'][:12]}, "

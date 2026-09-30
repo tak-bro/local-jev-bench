@@ -480,6 +480,23 @@ def test_main_measures_nothing_when_a_server_is_the_wrong_model(monkeypatch, tmp
     assert not (tmp_path / "runs").exists() or not list((tmp_path / "runs").rglob("*.jsonl"))
 
 
+def test_an_interrupted_run_keeps_the_previous_log(monkeypatch, tmp_path):
+    qs = tmp_path / "set.jsonl"
+    qs.write_text("".join(json.dumps(it) + "\n" for it in ITEMS))
+    old = tmp_path / "runs" / "set" / "clm.jsonl"
+    old.parent.mkdir(parents=True)
+    old.write_text("previous run\n")
+
+    def interrupted(engine, items, raw, reps):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(run, "served", lambda engine: "x")
+    monkeypatch.setattr(run, "bench", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        run_main(monkeypatch, tmp_path, "--engine", "clm", "--questions", str(qs))
+    assert old.read_text() == "previous run\n"
+
+
 def test_header_records_what_the_server_said_it_serves(engine, monkeypatch, tmp_path):
     srv = FakeServer({"/v1/systemone": lambda b: (200, {"answers": {"u": {"type": "noul", "noul": 0.9}}}),
                       "/health": lambda _: (200, {"model": "fake-1"})})

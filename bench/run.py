@@ -6,7 +6,7 @@
     uv run python bench/run.py --engine kev-4b --questions bench/questions_ko.jsonl   # one engine, one set
 
 Every engine speaks the same format, so one client serves all; only the base URL and model differ. Each run writes
-every call to bench/runs/<set>/<engine>.jsonl (replacing that engine's earlier log) and regenerates
+every call to bench/runs/<set>/<engine>.jsonl (replacing that engine's earlier log when it finishes) and regenerates
 bench/runs/<set>/report.md from all the logs there with bench/score.py.
 """
 
@@ -300,11 +300,14 @@ def main() -> int:
         header = {"set": questions_label(args.questions), "set_sha256": score.sha256(args.questions),
                   "engine": engine, "model": ENGINES[engine]["model"], "reps": args.reps, "warmup": WARMUP,
                   "started": now(), "host": host(), "served": identity}
-        with (out / f"{engine}.jsonl").open("w") as raw:
+        log = out / f"{engine}.jsonl"
+        partial = log.with_suffix(".jsonl.partial")  # not *.jsonl, so bench/score.py never reads it
+        with partial.open("w") as raw:
             raw.write(json.dumps({"header": header}) + "\n")
             errors += bench(engine, items, raw, reps=args.reps)
             # Only a run that got here has a footer; bench/score.py refuses a log without one.
             raw.write(json.dumps({"footer": {"finished": now()}}) + "\n")
+        partial.replace(log)  # an interrupted run leaves the previous log in place
     print(score.render(out), end="")
     return 1 if errors else 0
 

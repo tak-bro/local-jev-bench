@@ -103,6 +103,15 @@ def test_refuses_a_set_edited_after_measuring(runs):
         score.render(d)
 
 
+def test_names_the_generator_when_the_set_file_is_missing(runs):
+    # bench/data/ is gitignored: on a fresh clone the logs are there and the set is not.
+    d, s = runs
+    write_raw(d, "e", s, calls())
+    s.unlink()
+    with pytest.raises(SystemExit, match="make_sets.py"):
+        score.render(d)
+
+
 def test_refuses_mixed_reps(runs):
     d, s = runs
     write_raw(d, "a", s, calls())
