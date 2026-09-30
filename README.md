@@ -12,12 +12,18 @@ and paired McNemar tests separate them on only some sets:
 
 - **transfer-v4:** Kev beats Winnow (Kev-9B 81% vs 77%, p = 0.003), but only on the set's two held-out
   policy-structure sources, built from the kind of programmatic policy data Kev trains on (Kev-4B 160/176, Winnow
-  125/176). On the six public sources Kev never trained on, the three are level (454, 461 and 460 of 588, p > 0.45).
+  125/176). On the six public sources Kev never trained on, the three are level (454, 461 and 460 of 588, p > 0.45), and so is
+  training-free AnyJev (458 raw and L0).
 - **typed-decisions:** Winnow beats Kev-4B (73% vs 67%, p < 0.001) and is level with Kev-9B (72%, p = 0.529).
 - **NSMC and KLUE-YNAT (Korean):** the three cannot be told apart.
+- **AnyJev (training-free Qwen3-8B):** level with the top group on KLUE-YNAT (75-76%) and with Winnow on transfer-v4
+  (75%), but behind it on typed-decisions (61-63%), and far from the gold distributions there (KL 2.8-3.8 against
+  0.2-0.3). It reproduces its own README on BANKING77-20 again, and paired, L0's accuracy gain over raw is real there
+  (p = 0.005).
 
 Ollaya (Laya) is the fastest engine, at 15-55 ms first-call p50 outside typed-decisions' long states. It is also the least
-accurate and the worst calibrated (ECE) engine apart from CLM on every set but the 30 English items, where Jeff is lower. Kev-0.8B takes 28-58 ms on the same sets and is as
+accurate engine apart from CLM on every set but the 30 English items, where Jeff is lower, and the worst calibrated
+(ECE) of Kev, Winnow, Jeff and Ollaya on the same sets; AnyJev and CLM are worse calibrated still on some. Kev-0.8B takes 28-58 ms on the same sets and is as
 accurate as Ollaya or more on every set. Kev-4B reproduces its model card on transfer-v4 (534/656 against 0.817). Details are in
 [Results](#results-2026-09-30-m3-max-36-gb).
 
@@ -121,6 +127,8 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 | Kev-0.8B | 75% | 75% | 88%† | 65% | 46% | 80% | 63% |
 | Jeff-Qwen3.5-2B | 64% | 75% | 65% | 69%† | 52% | 79% | 74% |
 | Ollaya | 75% | 66% | 60% | 63% | 36% | 56% | 43% |
+| AnyJev L0 | 81% | 84% | 80% | 75% | 63% | 80% | 75% |
+| AnyJev raw | 82% | 83% | 75% | 75% | 61% | 81% | 76% |
 | CLM-8B | 39% | 41% | 20% | - | - | - | - |
 
 `†`: Kev (all three sizes) trained on BANKING77's train split, and Jeff on PAWS's. PAWS's test split is 80 of
@@ -137,6 +145,8 @@ First-call p50, ms:
 | Kev-0.8B | 54.1 | 52.0 | 57.6 | 40.3 | 152.4 | 27.9 | 42.3 |
 | Jeff-Qwen3.5-2B | 251.1 | 258.7 | 129.8 | 99.3 | 986.5 | 69.7 | 103.9 |
 | Ollaya | 36.6 | 55.3 | 28.3 | 22.1 | 292.9 | 14.7 | 21.7 |
+| AnyJev L0 | 937.3 | 1056.2 | 7860.1 | 571.7 | 2319.5 | 391.3 | 2554.0 |
+| AnyJev raw | 436.5 | 576.5 | 582.3 | 292.2 | 1507.6 | 204.1 | 465.4 |
 | CLM-8B | 326.6 | 354.0 | 142.3 | - | - | - | - |
 
 What each engine was trained on, as far as its authors publish it:
@@ -158,12 +168,14 @@ Read these results with the following caveats:
 - **Memory pressure:** it reached `critical` on 3 of Jeff's 604 KLUE-YNAT calls, with no errors or slow calls. All other runs stayed at `normal` or `warn`.
 - **Ollaya errors:** Ollaya refused 7 typed-decisions items (35 decisions) with `STATE_TRUNCATED`, because the state
   did not fit `laya:en`'s context. They are counted as failed, not wrong.
-- **AnyJev:** not measured this round, because the same leftover server held its port 8092. Its 2026-09-29 rows, from the
-  previous harness, are in `git show e15efed:bench/report.md`, `report_ko.md` and `report_banking77.md`.
+- **AnyJev:** measured afterwards (18:59-22:02), once the leftover server that held its port 8092 was stopped, so its
+  latencies come from an idle machine and do not compare directly with the rows above. `measure.sh` starts a fresh
+  generate server for it. The 2026-09-29 AnyJev rows came from a server warmed by an earlier, discarded run over the
+  same items, which is why its first-call p50 was lower then (raw English 178.5 ms, here 436.5 ms).
 - **CLM:** measured on the 30-item and BANKING77 sets only. It picks a choice by comparing embeddings of the option
   texts, so its 0 order-flips may be structural rather than a sign of order robustness (not verified).
 
-Which engine to use. Engines count as different when the exact McNemar p is below 0.05. With 15-21 pairs per set, some p values under 0.05 come by chance.
+Which engine to use. Engines count as different when the exact McNemar p is below 0.05. With 28-36 pairs per set, some p values under 0.05 come by chance.
 
 - **Most accurate:** Kev-9B, Kev-4B or Winnow.
   - **Kev-9B vs Kev-4B:** they differ only on typed-decisions (72% vs 67%, 265 vs 165 discordant, p < 0.001).
@@ -189,6 +201,17 @@ Which engine to use. Engines count as different when the exact McNemar p is belo
   - **NSMC:** Kev-9B, Winnow and Kev-4B (83-86%) cannot be told apart, and Kev-9B beats Jeff (p = 0.008) and Kev-0.8B (p = 0.012).
   - **KLUE-YNAT:** Kev-4B, Jeff, Winnow and Kev-9B (73-74%) cannot be told apart (p ≥ 0.86). Kev-0.8B (63%) and
     Ollaya (43%) are below them (p < 0.001).
+- **AnyJev:**
+  - **KLUE-YNAT:** raw 76% and L0 75% are level with Kev-4B, Kev-9B, Winnow and Jeff (p ≥ 0.33).
+  - **transfer-v4:** 75% for both, level with Winnow (p > 0.24) and below Kev-4B and Kev-9B (p < 0.001). The whole gap
+    to Kev is on the two policy holdouts (Kev-4B 49 vs 2 discordant). On the six public sources AnyJev scores 458 of 588
+    against Kev-4B's 454 (p = 0.76).
+  - **typed-decisions:** raw 61% and L0 63% are below Kev-4B, Kev-9B and Winnow (p < 0.001). Their forecasts are
+    far from gold: KL 3.783 (raw) and 2.813 (L0), ECE 0.35 and 0.31.
+  - **NSMC:** 80-81%, below Kev-9B (p = 0.040 raw, 0.033 L0) and level with the rest of the top group.
+  - **L0 vs raw:** L0 cuts order-flips on every set where raw flips any (Korean 30 2 → 0, BANKING77 68 → 22, transfer-v4 76 → 27,
+    typed-decisions 101 → 31, KLUE-YNAT 46 → 26). It is more accurate on BANKING77 (p = 0.005) and typed-decisions
+    (p < 0.001), and it costs 1.5-13.5x the first-call time.
 - **Jeff-Qwen3.5-2B:** 52% on typed-decisions. The card lists another checkpoint, Jeff-Gemma4-E2B, at 0.561. Jeff is
   level with the 4B and 9B models on KLUE-YNAT, and flips 24% of BANKING77 choices.
 - **Kev-4B reproduces its model card on transfer-v4:** 534/656 (81.4%, Wilson 78-84) on the clean questions against the
@@ -217,17 +240,20 @@ Order-flip on this set (2026-09-30):
 | Winnow-E4B | 38/300 (13%) |
 | Jeff-Qwen3.5-2B | 73/300 (24%) |
 | Ollaya `laya` | 93/300 (31%) |
+| AnyJev L0 | 22/300 (7%) |
+| AnyJev raw | 68/300 (23%) |
 | CLM-8B | 0/300 (0%) |
 
 - **Kev's BANKING77 numbers are in-distribution.** All three Kev cards list `legacy-datasets/banking77` as training data. Here
   Kev-0.8B cannot be told apart from the larger sizes (p ≥ 0.80), unlike on transfer-v4, typed-decisions and KLUE-YNAT
   (p < 0.001). Do not compare them with engines that did not train on it.
-- **AnyJev reproduced its README here on 2026-09-29, with the previous harness** (`git show e15efed:bench/report_banking77.md`).
-  Its README reports, for Qwen3-8B on BANKING77 20-way with 300 test items, order-flip 0.230 raw → 0.073 L0 and
-  accuracy 0.747 → 0.803. That run gave 68/300 (0.227) → 22/300 (0.073) and 224/300 (0.747) → 241/300 (0.803): L0 cut
-  order-flips, while its accuracy gain was not shown on 300 items (Wilson 69-79 and 75-84 overlap).
-  L0 prefills the prompt once per cyclic shift, up to 20 times on a 20-way question: 8489.3 ms first-call p50 against
-  624.0 ms raw.
+- **AnyJev reproduces its README here.** Its README reports, for Qwen3-8B on BANKING77 20-way with 300 test items,
+  order-flip 0.230 raw → 0.073 L0 and accuracy 0.747 → 0.803. This run gives 68/300 (0.227) → 22/300 (0.073) and
+  224/300 (0.747) → 241/300 (0.803), the same counts as the 2026-09-29 run. The Wilson intervals overlap (69-79 and
+  75-84), but the paired test shows the accuracy gain: 25 decisions only L0 got right against 8 only raw got right,
+  p = 0.005. L0 is level with Winnow here (p = 0.868).
+- **L0 is slow on many options.** It prefills the prompt once per cyclic shift, up to 20 times on a 20-way question:
+  7860.1 ms first-call p50 against 582.3 ms raw.
 - For scale, not comparison: Laya zero-shot is quoted at 38% on all 77 intents, against 76% for Jev
   (dhruvmehra/jevbench, as reported in a Laya fine-tuning write-up; not verified here). That set is 77-way, this
   one 20-way.
@@ -249,10 +275,11 @@ Ollaya running Laya: 14.7-55.3 ms first-call p50, or 292.9 ms on typed-decisions
 
 **Does AnyJev work on vllm-metal?**
 Yes, with one change: vllm-metal 0.30.0 reports raw logprobs whatever `--logprobs-mode` says, so the adapter asks for
-each label by `logprob_token_ids`. With that, AnyJev reproduced its README on BANKING77-20 (2026-09-29).
+each label by `logprob_token_ids`. With that, AnyJev reproduces its README on BANKING77-20.
 
 **Can these models answer in Korean?**
 Kev-4B, Kev-9B, Winnow and Jeff can: 83-86% on NSMC for the first three, and 73-74% on KLUE-YNAT for all four.
+AnyJev can too, with no training: 80-81% on NSMC and 75-76% on KLUE-YNAT.
 Ollaya needs `laya:multilingual` and reaches 56% and 43%.
 
 **How much memory do they need?**

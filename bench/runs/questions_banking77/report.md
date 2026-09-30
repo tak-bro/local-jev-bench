@@ -15,6 +15,8 @@ questions count only in sets graded by argmax, which read their level probabilit
 
 | engine | model | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | calls | accuracy | Brier (n) | ECE | rep-disagree | order-flip | errors | worst memory pressure |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| anyjev-l0 | anyjev-l0 | 14031.3 | 7860.1 | 7860.1 | 8890.7 | 300 | 241/300 (80%, 75-84) | 0.372 (300) | 0.183 | n/a | 22/300 (7%) | 0 | normal |
+| anyjev-raw | anyjev-raw | 3378.8 | 582.3 | 582.3 | 1004.9 | 300 | 224/300 (75%, 69-79) | 0.491 (300) | 0.247 | n/a | 68/300 (23%) | 0 | normal |
 | clm | - | 781.6 | 142.3 | 142.3 | 198.9 | 300 | 61/300 (20%, 16-25) | 0.932 (300) | 0.151 | n/a | 0/300 (0%) | 0 | normal |
 | jeff | jeff-latest | 195.1 | 129.8 | 129.8 | 171.9 | 300 | 195/300 (65%, 59-70) | 0.480 (300) | 0.062 | n/a | 73/300 (24%) | 0 | normal |
 | kev-0.8b | kev-latest | 121.9 | 57.6 | 57.6 | 99.8 | 300 | 265/300 (88%, 84-91) | 0.213 (300) | 0.144 | n/a | 23/300 (8%) | 0 | warn |
@@ -30,6 +32,21 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 | engine A | engine B | both graded | b | c | p |
 |---|---|---|---|---|---|
+| anyjev-l0 | anyjev-raw | 300 | 25 | 8 | 0.005 |
+| anyjev-l0 | clm | 300 | 184 | 4 | <0.001 |
+| anyjev-l0 | jeff | 300 | 58 | 12 | <0.001 |
+| anyjev-l0 | kev-0.8b | 300 | 9 | 33 | <0.001 |
+| anyjev-l0 | kev-4b | 300 | 8 | 33 | <0.001 |
+| anyjev-l0 | kev-9b | 300 | 7 | 33 | <0.001 |
+| anyjev-l0 | ollaya | 300 | 80 | 19 | <0.001 |
+| anyjev-l0 | winnow | 300 | 17 | 19 | 0.868 |
+| anyjev-raw | clm | 300 | 167 | 4 | <0.001 |
+| anyjev-raw | jeff | 300 | 40 | 11 | <0.001 |
+| anyjev-raw | kev-0.8b | 300 | 6 | 47 | <0.001 |
+| anyjev-raw | kev-4b | 300 | 8 | 50 | <0.001 |
+| anyjev-raw | kev-9b | 300 | 5 | 48 | <0.001 |
+| anyjev-raw | ollaya | 300 | 71 | 27 | <0.001 |
+| anyjev-raw | winnow | 300 | 10 | 29 | 0.003 |
 | clm | jeff | 300 | 11 | 145 | <0.001 |
 | clm | kev-0.8b | 300 | 2 | 206 | <0.001 |
 | clm | kev-4b | 300 | 1 | 206 | <0.001 |

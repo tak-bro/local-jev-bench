@@ -15,6 +15,8 @@ questions count only in sets graded by argmax, which read their level probabilit
 
 | engine | model | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | calls | accuracy | Brier (n) | ECE | rep-disagree | order-flip | errors | worst memory pressure |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| anyjev-l0 | anyjev-l0 | 1372.9 | 1056.2 | 361.0 | 1179.1 | 90 | 88/105 (84%, 76-90) | 0.143 (75) | 0.065 | 1/105 | 0/30 (0%) | 0 | normal |
+| anyjev-raw | anyjev-raw | 1025.2 | 576.5 | 198.0 | 657.9 | 90 | 87/105 (83%, 75-89) | 0.172 (75) | 0.089 | 0/105 | 2/30 (7%) | 0 | normal |
 | clm | - | 594.4 | 354.0 | 3.1 | 458.2 | 90 | 43/105 (41%, 32-51) | 0.642 (75) | 0.250 | 0/105 | 0/30 (0%) | 0 | normal |
 | jeff | jeff-latest | 235.1 | 258.7 | 273.3 | 339.1 | 90 | 79/105 (75%, 66-83) | 0.221 (75) | 0.114 | 0/105 | 1/30 (3%) | 0 | normal |
 | kev-0.8b | kev-latest | 68.0 | 52.0 | 47.7 | 70.3 | 90 | 79/105 (75%, 66-83) | 0.290 (75) | 0.110 | 0/105 | 1/30 (3%) | 0 | warn |
@@ -30,6 +32,21 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 | engine A | engine B | both graded | b | c | p |
 |---|---|---|---|---|---|
+| anyjev-l0 | anyjev-raw | 105 | 2 | 1 | 1.000 |
+| anyjev-l0 | clm | 105 | 52 | 7 | <0.001 |
+| anyjev-l0 | jeff | 105 | 13 | 4 | 0.049 |
+| anyjev-l0 | kev-0.8b | 105 | 19 | 10 | 0.136 |
+| anyjev-l0 | kev-4b | 105 | 6 | 9 | 0.607 |
+| anyjev-l0 | kev-9b | 105 | 6 | 12 | 0.238 |
+| anyjev-l0 | ollaya | 105 | 27 | 8 | 0.002 |
+| anyjev-l0 | winnow | 105 | 3 | 5 | 0.727 |
+| anyjev-raw | clm | 105 | 50 | 6 | <0.001 |
+| anyjev-raw | jeff | 105 | 14 | 6 | 0.115 |
+| anyjev-raw | kev-0.8b | 105 | 18 | 10 | 0.185 |
+| anyjev-raw | kev-4b | 105 | 6 | 10 | 0.454 |
+| anyjev-raw | kev-9b | 105 | 6 | 13 | 0.167 |
+| anyjev-raw | ollaya | 105 | 26 | 8 | 0.003 |
+| anyjev-raw | winnow | 105 | 3 | 6 | 0.508 |
 | clm | jeff | 105 | 15 | 51 | <0.001 |
 | clm | kev-0.8b | 105 | 7 | 43 | <0.001 |
 | clm | kev-4b | 105 | 4 | 52 | <0.001 |

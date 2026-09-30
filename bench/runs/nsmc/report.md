@@ -15,6 +15,8 @@ questions count only in sets graded by argmax, which read their level probabilit
 
 | engine | model | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | calls | accuracy | Brier (n) | ECE | rep-disagree | order-flip | errors | worst memory pressure |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| anyjev-l0 | anyjev-l0 | 766.0 | 391.3 | 391.3 | 568.3 | 300 | 241/300 (80%, 75-84) | 0.370 (300) | 0.188 | n/a | n/a | 0 | normal |
+| anyjev-raw | anyjev-raw | 546.3 | 204.1 | 204.1 | 369.2 | 300 | 242/300 (81%, 76-85) | 0.357 (300) | 0.180 | n/a | n/a | 0 | normal |
 | jeff | jeff-latest | 131.3 | 69.7 | 69.7 | 100.5 | 300 | 237/300 (79%, 74-83) | 0.320 (300) | 0.077 | n/a | n/a | 0 | warn |
 | kev-0.8b | kev-latest | 29.1 | 27.9 | 27.9 | 41.3 | 300 | 240/300 (80%, 75-84) | 0.290 (300) | 0.036 | n/a | n/a | 0 | warn |
 | kev-4b | kev-latest | 175.9 | 158.5 | 158.5 | 236.9 | 300 | 250/300 (83%, 79-87) | 0.233 (300) | 0.051 | n/a | n/a | 0 | normal |
@@ -29,6 +31,19 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 | engine A | engine B | both graded | b | c | p |
 |---|---|---|---|---|---|
+| anyjev-l0 | anyjev-raw | 300 | 1 | 2 | 1.000 |
+| anyjev-l0 | jeff | 300 | 28 | 24 | 0.678 |
+| anyjev-l0 | kev-0.8b | 300 | 32 | 31 | 1.000 |
+| anyjev-l0 | kev-4b | 300 | 13 | 22 | 0.175 |
+| anyjev-l0 | kev-9b | 300 | 17 | 33 | 0.033 |
+| anyjev-l0 | ollaya | 300 | 95 | 21 | <0.001 |
+| anyjev-l0 | winnow | 300 | 12 | 23 | 0.090 |
+| anyjev-raw | jeff | 300 | 28 | 23 | 0.576 |
+| anyjev-raw | kev-0.8b | 300 | 31 | 29 | 0.897 |
+| anyjev-raw | kev-4b | 300 | 13 | 21 | 0.229 |
+| anyjev-raw | kev-9b | 300 | 16 | 31 | 0.040 |
+| anyjev-raw | ollaya | 300 | 97 | 22 | <0.001 |
+| anyjev-raw | winnow | 300 | 12 | 22 | 0.121 |
 | jeff | kev-0.8b | 300 | 29 | 32 | 0.798 |
 | jeff | kev-4b | 300 | 13 | 26 | 0.053 |
 | jeff | kev-9b | 300 | 16 | 36 | 0.008 |
@@ -47,6 +62,6 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 ## By source
 
-| source | decisions | jeff | kev-0.8b | kev-4b | kev-9b | ollaya | winnow |
-|---|---|---|---|---|---|---|---|
-| nsmc | 300 | 237/300 (79%) | 240/300 (80%) | 250/300 (83%) | 257/300 (86%) | 167/300 (56%) | 252/300 (84%) |
+| source | decisions | anyjev-l0 | anyjev-raw | jeff | kev-0.8b | kev-4b | kev-9b | ollaya | winnow |
+|---|---|---|---|---|---|---|---|---|---|
+| nsmc | 300 | 241/300 (80%) | 242/300 (81%) | 237/300 (79%) | 240/300 (80%) | 250/300 (83%) | 257/300 (86%) | 167/300 (56%) | 252/300 (84%) |

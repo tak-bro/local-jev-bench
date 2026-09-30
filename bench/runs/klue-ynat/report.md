@@ -15,6 +15,8 @@ questions count only in sets graded by argmax, which read their level probabilit
 
 | engine | model | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | calls | accuracy | Brier (n) | ECE | rep-disagree | order-flip | errors | worst memory pressure |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| anyjev-l0 | anyjev-l0 | 5613.2 | 2554.0 | 2554.0 | 2844.1 | 300 | 226/300 (75%, 70-80) | 0.469 (300) | 0.234 | n/a | 26/300 (9%) | 0 | normal |
+| anyjev-raw | anyjev-raw | 679.4 | 465.4 | 465.4 | 581.8 | 300 | 228/300 (76%, 71-80) | 0.453 (300) | 0.225 | n/a | 46/300 (15%) | 0 | normal |
 | jeff | jeff-latest | 89.8 | 103.9 | 103.9 | 134.9 | 300 | 222/300 (74%, 69-79) | 0.378 (300) | 0.087 | n/a | 16/300 (5%) | 0 | critical |
 | kev-0.8b | kev-latest | 50.1 | 42.3 | 42.3 | 76.8 | 300 | 188/300 (63%, 57-68) | 0.486 (300) | 0.064 | n/a | 35/300 (12%) | 0 | warn |
 | kev-4b | kev-latest | 210.8 | 243.0 | 243.0 | 304.7 | 300 | 222/300 (74%, 69-79) | 0.377 (300) | 0.069 | n/a | 27/300 (9%) | 0 | normal |
@@ -29,6 +31,19 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 | engine A | engine B | both graded | b | c | p |
 |---|---|---|---|---|---|
+| anyjev-l0 | anyjev-raw | 300 | 9 | 11 | 0.824 |
+| anyjev-l0 | jeff | 300 | 26 | 22 | 0.665 |
+| anyjev-l0 | kev-0.8b | 300 | 57 | 19 | <0.001 |
+| anyjev-l0 | kev-4b | 300 | 25 | 21 | 0.659 |
+| anyjev-l0 | kev-9b | 300 | 26 | 20 | 0.461 |
+| anyjev-l0 | ollaya | 300 | 126 | 29 | <0.001 |
+| anyjev-l0 | winnow | 300 | 23 | 18 | 0.533 |
+| anyjev-raw | jeff | 300 | 31 | 25 | 0.504 |
+| anyjev-raw | kev-0.8b | 300 | 54 | 14 | <0.001 |
+| anyjev-raw | kev-4b | 300 | 29 | 23 | 0.488 |
+| anyjev-raw | kev-9b | 300 | 30 | 22 | 0.332 |
+| anyjev-raw | ollaya | 300 | 127 | 28 | <0.001 |
+| anyjev-raw | winnow | 300 | 29 | 22 | 0.401 |
 | jeff | kev-0.8b | 300 | 57 | 23 | <0.001 |
 | jeff | kev-4b | 300 | 29 | 29 | 1.000 |
 | jeff | kev-9b | 300 | 32 | 30 | 0.899 |
@@ -47,6 +62,6 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 ## By source
 
-| source | decisions | jeff | kev-0.8b | kev-4b | kev-9b | ollaya | winnow |
-|---|---|---|---|---|---|---|---|
-| klue-ynat | 300 | 222/300 (74%) | 188/300 (63%) | 222/300 (74%) | 220/300 (73%) | 129/300 (43%) | 221/300 (74%) |
+| source | decisions | anyjev-l0 | anyjev-raw | jeff | kev-0.8b | kev-4b | kev-9b | ollaya | winnow |
+|---|---|---|---|---|---|---|---|---|---|
+| klue-ynat | 300 | 226/300 (75%) | 228/300 (76%) | 222/300 (74%) | 188/300 (63%) | 222/300 (74%) | 220/300 (73%) | 129/300 (43%) | 221/300 (74%) |
