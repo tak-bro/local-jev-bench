@@ -10,7 +10,6 @@ their own licenses). The same revision gives the same bytes, so a report's set s
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import random
 import sys
@@ -20,6 +19,8 @@ from typing import Any, Callable
 
 import pyarrow.parquet as pq
 from huggingface_hub import hf_hub_download
+
+from score import sha256
 
 DATA = Path(__file__).with_name("data")
 
@@ -38,10 +39,6 @@ YNAT_TOPICS = {"IT과학": "정보기술, 과학, 인터넷, 모바일", "경제
 def hf_file(repo: str, path: str, revision: str) -> Path:
     """One file of a dataset repo at a pinned revision; a revision that no longer exists is an error."""
     return Path(hf_hub_download(repo_id=repo, filename=path, repo_type="dataset", revision=revision))
-
-
-def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def write_set(items: list[dict], path: Path) -> str:
