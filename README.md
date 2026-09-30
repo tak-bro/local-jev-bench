@@ -64,16 +64,19 @@ scripts/smoke-embed.sh 8091                   # vector returned, L2-normalised
 scripts/smoke-embed.sh 8090 4096              # Qwen3-8B: 4096 dims, normalised
 uv run python bench/run.py --smoke --engine clm      # CLM README example within tolerance
 uv run python bench/run.py --smoke --engine ollaya   # same example, shape only
-uv run python bench/run.py --out bench/report.md     # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
+uv run python bench/run.py                           # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
 uv run python bench/run.py --smoke --engine anyjev-raw --engine anyjev-l0 --engine kev   # shape only
-uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl --out bench/report_banking77.md --append
+uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
+uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 
 AnyJev and Kev each need most of the Metal memory, so every engine is measured alone: start its servers, run
-`bench/run.py --engine <e> --questions <set> --out <report> --append`, stop them. `--append` replaces that engine's
-rows and refuses a report written for another question set. Restart the AnyJev adapter before each run: the L0
-batch prior accumulates across every call the adapter has served.
+`bench/run.py --engine <e> --questions <set>`, stop them. Each run logs every call (answers with probabilities,
+latency, memory pressure) to `bench/runs/<set>/<engine>.jsonl`, replacing that engine's earlier log, and
+`bench/score.py` rebuilds `bench/runs/<set>/report.md` from all the logs in that directory. It refuses a log measured
+on another version of the set or with another `--reps`. Restart the AnyJev adapter before each run: the L0 batch prior
+accumulates across every call the adapter has served.
 
 The benchmark rejects any item whose state plus question instructions (the text CLM actually embeds) exceeds 2048 Qwen3 tokens, because `clm-serve` would otherwise truncate it without an error. Treat the accuracy over 30 hand-written items as a sanity check, not a benchmark.
 

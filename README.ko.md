@@ -66,19 +66,20 @@ scripts/smoke-embed.sh 8091                   # vector returned, L2-normalised
 scripts/smoke-embed.sh 8090 4096              # Qwen3-8B: 4096 dims, normalised
 uv run python bench/run.py --smoke --engine clm      # CLM README example within tolerance
 uv run python bench/run.py --smoke --engine ollaya   # same example, shape only
-uv run python bench/run.py --out bench/report.md     # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
+uv run python bench/run.py                           # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
 uv run python bench/run.py --smoke --engine anyjev-raw --engine anyjev-l0 --engine kev   # shape only
-uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl --out bench/report_banking77.md --append
+uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
+uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 
 AnyJev와 Kev는 각각 Metal 메모리 대부분을 쓴다. 그래서 엔진은 하나씩 따로 측정한다.
 
 1. 그 엔진의 서버를 띄운다.
-2. `bench/run.py --engine <e> --questions <셋> --out <리포트> --append`를 실행한다.
+2. `bench/run.py --engine <e> --questions <셋>`을 실행한다.
 3. 서버를 내린다.
 
-`--append`는 그 엔진의 행만 교체하고, 다른 질문셋으로 만든 리포트에는 합치지 않는다. AnyJev 어댑터는 측정할 때마다 재시작한다. L0의 배치 prior가 어댑터가 처리한 모든 호출에 걸쳐 누적되기 때문이다.
+실행은 모든 호출(확률을 포함한 답·지연·메모리 압력)을 `bench/runs/<셋>/<엔진>.jsonl`에 남기고 그 엔진의 이전 기록을 덮어쓴다. `bench/score.py`는 그 디렉터리의 기록 전부로 `bench/runs/<셋>/report.md`를 다시 만든다. 다른 버전의 셋이나 다른 `--reps`로 잰 기록은 거부한다. AnyJev 어댑터는 측정할 때마다 재시작한다. L0의 배치 prior가 어댑터가 처리한 모든 호출에 걸쳐 누적되기 때문이다.
 
 벤치마크는 상태와 질문 지시문을 합친 텍스트가 Qwen3 토큰 2048개를 넘는 문항을 거부한다. 이 텍스트가 CLM이 실제로 임베딩하는 입력인데, `clm-serve`는 긴 입력을 오류 없이 잘라 버리기 때문이다. 손으로 만든 30문항 정확도는 동작 확인용이지 벤치마크가 아니다.
 
