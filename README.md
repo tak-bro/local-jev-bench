@@ -81,7 +81,8 @@ uv run pytest -q                              # offline tests, fake servers, no 
 ```
 
 AnyJev and Kev each need most of the Metal memory, so every engine is measured alone: start its servers, run
-`bench/run.py --engine <e> --questions <set>`, stop them. Each run logs every call (answers with probabilities,
+`bench/run.py --engine <e> --questions <set>`, stop them. `scripts/measure.sh [--reps N] <engine> <set>...` does
+all three and stops the servers even when a step fails; server output goes to `logs/<name>.log`. Each run logs every call (answers with probabilities,
 latency, memory pressure) to `bench/runs/<set>/<engine>.jsonl`, replacing that engine's earlier log, and
 `bench/score.py` rebuilds `bench/runs/<set>/report.md` from all the logs in that directory. It refuses a log measured
 on another version of the set or with another `--reps`. Restart the AnyJev adapter before each run: the L0 batch prior
