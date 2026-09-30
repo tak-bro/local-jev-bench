@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import itertools
 import json
 import math
 import statistics
@@ -100,23 +101,68 @@ def gold(q: dict, expected: Any) -> Any:
     return bool(expected) if q["type"] == "noul" else int(expected) if q["type"] == "score" else expected
 
 
+def graded(items: list[dict], records: list[dict]) -> dict[tuple[str, str], tuple[dict, dict, Any]]:
+    """{(item, question): (question, rep-0 answer, expected)} for every decision whose rep 0 was answered. Repeats of
+    the same input are not independent samples, so each decision is graded once, from rep 0."""
+    answered = timed(records)
+    return {(it["id"], qid): (it["questions"][qid], a[qid], want)
+            for it in items if (a := answered.get((it["id"], 0))) is not None
+            for qid, want in it["expected"].items()}
+
+
+def is_right(q: dict, answer: dict, expected: Any) -> bool:
+    return decide(q, answer) == gold(q, expected)
+
+
 def timed(records: list[dict]) -> dict[tuple[str, int], dict]:
     """Answered timed calls by (item, rep)."""
     return {(r["item"], r["rep"]): r["answers"] for r in records if r["call"] == "timed" and not r["error"]}
 
 
-def accuracy(items: list[dict], records: list[dict]) -> tuple[int, int]:
-    """(right, graded) over decisions (item x expected question), each graded once from rep 0. Repeats of the
-    same input are not independent samples; a decision whose rep 0 failed is not graded."""
-    answered, right, n = timed(records), 0, 0
-    for it in items:
-        if (a := answered.get((it["id"], 0))) is None:
-            continue
-        for qid, want in it["expected"].items():
-            q = it["questions"][qid]
-            n += 1
-            right += decide(q, a[qid]) == gold(q, want)
-    return right, n
+def forecast(q: dict, answer: dict) -> list[float] | None:
+    """Probability of each option, in the question's order (a noul is [yes, no]); None for a score question, whose
+    probabilities engines key differently (criterion text or index)."""
+    if q["type"] == "noul":
+        return [answer["noul"], 1 - answer["noul"]]
+    if q["type"] == "choice":
+        return [answer["probabilities"].get(k, 0.0) for k in q["criteria"]]
+    return None
+
+
+def outcome(q: dict, value: Any) -> int:
+    """Index of `value` (an expected answer or a decision) among the forecast's options."""
+    return (0 if value else 1) if q["type"] == "noul" else list(q["criteria"]).index(value)
+
+
+def brier(decisions: list[tuple[dict, dict, Any]]) -> tuple[float, int] | None:
+    """(mean multi-class Brier score, n) over noul and choice decisions: sum over options of (p - 1[option is
+    right])^2, so 0 is perfect and 2 is sure and wrong. None when there are none."""
+    scores = [sum((p - (i == outcome(q, gold(q, want)))) ** 2 for i, p in enumerate(f))
+              for q, a, want in decisions if (f := forecast(q, a)) is not None]
+    return (sum(scores) / len(scores), len(scores)) if scores else None
+
+
+def ece(points: list[tuple[float, bool]], bins: int = 15) -> float:
+    """Expected calibration error (Guo et al. 2017): confidences split into equal-width bins (lo, hi], the gap
+    between each bin's accuracy and mean confidence, weighted by the bin's share of the points."""
+    groups: dict[int, list[tuple[float, bool]]] = {}
+    for conf, right in points:
+        groups.setdefault(max(math.ceil(conf * bins) - 1, 0), []).append((conf, right))
+    return sum(abs(sum(r for _, r in g) - sum(c for c, _ in g)) for g in groups.values()) / len(points)
+
+
+def confidence_points(decisions: list[tuple[dict, dict, Any]]) -> list[tuple[float, bool]]:
+    """(probability the engine gave its own decision, whether that decision is right) for noul and choice."""
+    return [(f[outcome(q, decide(q, a))], is_right(q, a, want))
+            for q, a, want in decisions if (f := forecast(q, a)) is not None]
+
+
+def mcnemar_exact(b: int, c: int) -> float:
+    """Two-sided exact McNemar p value from the discordant pairs: b decisions only the first engine got right, c
+    only the second. 2 * P(X <= min(b, c)) for X ~ Binomial(b + c, 1/2), capped at 1."""
+    n = b + c
+    tail = sum(math.comb(n, k) for k in range(min(b, c) + 1)) / 2 ** n
+    return min(1.0, 2 * tail)
 
 
 def rep_disagree(items: list[dict], records: list[dict]) -> tuple[int, int]:
@@ -177,7 +223,21 @@ def row(header: dict, reps: int, items: list[dict], records: list[dict]) -> tupl
     p50, p95 = (f"{pct(all_ms, 50):.1f}", f"{pct(all_ms, 95):.1f}") if all_ms else ("failed", "failed")
     first = f"{pct(first_ms, 50):.1f}" if first_ms else "failed"
 
-    right, n = accuracy(items, records)
+    engine = header["engine"]
+    g = graded(items, records)
+    for (item, qid), (q, a, _) in g.items():
+        if q["type"] == "choice" and a["choice"] not in a["probabilities"]:
+            # keyed by option text or index instead: every option would read as probability 0
+            raise SystemExit(f"{engine} {item} {qid}: chose {a['choice']!r} but its probabilities are keyed "
+                             f"{sorted(a['probabilities'])}; an engine must key choice probabilities by option key")
+    decisions = list(g.values())
+    right, n = sum(is_right(*d) for d in decisions), len(decisions)
+    b = brier(decisions)
+    calib = confidence_points(decisions)
+    has_forecast = any(q["type"] in ("noul", "choice") for it in items for q in it["questions"].values())
+    missing = "failed" if has_forecast else "n/a"
+    brier_cell = f"{b[0]:.3f} ({b[1]})" if b else missing
+    ece_cell = f"{ece(calib):.3f}" if calib else missing
     if n:
         lo, hi = wilson(right, n)
         acc = f"{right}/{n} ({right / n:.0%}, {lo * 100:.0f}-{hi * 100:.0f})"
@@ -193,9 +253,8 @@ def row(header: dict, reps: int, items: list[dict], records: list[dict]) -> tupl
     worst = max(pressure, key=LEVELS.index, default="unsampled") if all(p in LEVELS for p in pressure) \
         else ", ".join(sorted(set(pressure)))
     errors = [r for r in records if r["error"]]
-    engine = header["engine"]
     line = (f"| {engine} | {header['model'] or '-'} | {cold} | {first} | {p50} | {p95} | {len(all_ms)} | {acc} "
-            f"| {disagree} | {flip} | {len(errors)} | {worst} |")
+            f"| {brier_cell} | {ece_cell} | {disagree} | {flip} | {len(errors)} | {worst} |")
     return line, [f"- {engine} error: {r['item']} {r['call']}: {r['error']}" for r in errors[:5]]
 
 
@@ -208,18 +267,51 @@ def report(common: dict, items: list[dict], runs: dict[str, tuple[dict, list[dic
         f"{common['reps']} timed calls per item, sequential, {common['warmup']} warm-up calls excluded. "
         "Generated by `bench/score.py` from the raw logs next to this file.",
         "Accuracy grades each decision (item x question) once, from the first timed call (rep 0), with a 95% Wilson",
-        "interval; overlapping intervals are not a difference. `rep-disagree` counts decisions that a later timed call",
-        "answered differently.",
+        "interval. Whether two engines differ is the pairwise McNemar table, not the intervals. `rep-disagree`",
+        "counts decisions that a later timed call answered differently.",
         "`first-call p50` covers only each item's first call. Repeats of the same state can be served from an engine's",
         "embedding cache (CLM caches state vectors), so all-call percentiles understate uncached latency.",
         "`order-flip` asks each item once more with every choice's options reversed and counts changed choices.",
+        "`Brier` is the mean multi-class Brier score of the graded noul and choice decisions (sum over options, a noul",
+        "being yes/no; 0 is perfect, 2 is sure and wrong), with their count. `ECE` is the expected calibration error of",
+        "the probability each engine gave its own decision on those, in 15 equal-width bins. Score questions are left",
+        "out of both: engines key their probabilities differently.",
         "",
         "| engine | model | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | calls | accuracy "
-        "| rep-disagree | order-flip | errors | worst memory pressure |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Brier (n) | ECE | rep-disagree | order-flip | errors | worst memory pressure |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
-    rows = [row(header, common["reps"], items, records) for header, records in (runs[e] for e in sorted(runs))]
-    return "\n".join(lines + [r for r, _ in rows] + [e for _, errs in rows for e in errs]) + "\n"
+    engines = sorted(runs)
+    rows = [row(runs[e][0], common["reps"], items, runs[e][1]) for e in engines]
+    lines += [r for r, _ in rows] + [e for _, errs in rows for e in errs]
+    if len(engines) > 1:
+        lines += pairs(items, {e: runs[e][1] for e in engines})
+    return "\n".join(lines) + "\n"
+
+
+def pairs(items: list[dict], runs: dict[str, list[dict]]) -> list[str]:
+    """McNemar table for every pair of engines, over the decisions both had graded."""
+    right = {e: {k: is_right(*v) for k, v in graded(items, records).items()} for e, records in runs.items()}
+    lines = [
+        "",
+        "## Pairwise differences (McNemar exact)",
+        "",
+        "Over the decisions both engines had graded: `b` = only engine A right, `c` = only engine B right, `p` = two-sided",
+        "exact McNemar p value. With many pairs, some p values under 0.05 come by chance.",
+        "",
+        "| engine A | engine B | both graded | b | c | p |",
+        "|---|---|---|---|---|---|",
+    ]
+    for a, b in itertools.combinations(runs, 2):
+        both = right[a].keys() & right[b].keys()
+        only_a = sum(right[a][k] and not right[b][k] for k in both)
+        only_b = sum(right[b][k] and not right[a][k] for k in both)
+        lines.append(f"| {a} | {b} | {len(both)} | {only_a} | {only_b} | {p_cell(mcnemar_exact(only_a, only_b))} |")
+    return lines
+
+
+def p_cell(p: float) -> str:
+    return "<0.001" if p < 0.001 else f"{p:.3f}"
 
 
 def render(d: Path) -> str:

@@ -71,7 +71,8 @@ def test_accuracy_counts_each_decision_once_from_rep_0(runs):
 def test_rep_disagree_is_na_with_one_rep(runs):
     d, s = runs
     write_raw(d, "e", s, calls(reps=1), reps=1)
-    assert "| 4/4 (100%, 51-100) | n/a |" in row(score.render(d), "e")
+    r = row(score.render(d), "e")
+    assert "| 4/4 (100%, 51-100) |" in r and "| n/a | 0/2 (0%) |" in r
 
 
 def test_failed_rep_0_drops_its_decisions(runs):
@@ -82,7 +83,7 @@ def test_failed_rep_0_drops_its_decisions(runs):
     r = row(score.render(d), "e")
     assert "| 2/2 (100%, 34-100) |" in r  # rep 1 of i1 answered, but only rep 0 is graded
     cols = [c.strip() for c in r.split("|")]
-    assert cols[7] == "5" and cols[11] == "1"  # the failed call is neither a latency sample nor graded
+    assert cols[7] == "5" and cols[13] == "1"  # the failed call is neither a latency sample nor graded
 
 
 def test_refuses_raw_from_another_set(runs):
@@ -179,7 +180,7 @@ def test_engine_that_failed_its_cold_call(runs):
     d, s = runs
     write_raw(d, "e", s, [rec("i0", "cold", error="down", pressure="normal")])
     assert row(score.render(d), "e") == \
-        "| e | - | failed | failed | failed | failed | 0 | failed | failed | failed | 1 | normal |"
+        "| e | - | failed | failed | failed | failed | 0 | failed | failed | failed | failed | failed | 1 | normal |"
 
 
 def test_worst_pressure(runs):
@@ -225,3 +226,92 @@ def test_check_flags_a_stale_report(runs, monkeypatch, capsys):
     (d / "report.md").write_text("hand edit\n")
     assert score.main() == 1
     assert "stale" in capsys.readouterr().err
+
+
+# --- slice 02: pairwise McNemar, Brier, ECE ------------------------------------------------------
+
+@pytest.mark.parametrize("b, c, p", [(0, 0, 1.0), (1, 9, 0.0215), (9, 1, 0.0215), (3, 5, 0.7266), (0, 1, 1.0)])
+def test_mcnemar_exact(b, c, p):
+    # two-sided exact binomial on the discordant pairs: 2 * P(X <= min(b, c)), X ~ Bin(b + c, 1/2), at most 1
+    assert round(score.mcnemar_exact(b, c), 4) == p
+
+
+def test_ece_is_zero_when_confidence_matches_accuracy():
+    assert score.ece([(1.0, True)] * 5) == 0.0
+    assert score.ece([(0.7, True)] * 7 + [(0.7, False)] * 3) == pytest.approx(0.0)
+
+
+def test_ece_of_an_overconfident_coin():
+    assert score.ece([(1.0, True), (1.0, False)] * 10) == pytest.approx(0.5)
+
+
+def test_ece_weights_bins_by_count():
+    # bin of 0.9: 4 decisions, all right (gap 0.1); bin of 0.6: 1 decision, wrong (gap 0.6) -> (4*0.1 + 0.6) / 5
+    assert score.ece([(0.9, True)] * 4 + [(0.6, False)]) == pytest.approx(0.2)
+
+
+def test_brier_and_ece_columns(runs):
+    d, s = runs
+    write_raw(d, "right", s, calls())
+    write_raw(d, "wrong", s, calls(rep0=WRONG))
+    text = score.render(d)
+    # RIGHT: noul 0.9 on a yes = (0.1)^2 + (0.1)^2 = 0.02, choice {a: .9, b: .1} on a = 0.02; confidence 0.9, all right
+    assert "| 0.020 (4) | 0.100 |" in row(text, "right")
+    # WRONG: noul 0.1 on a yes = 0.81 + 0.81 = 1.62, choice {a: .1, b: .9} on a = 1.62; confidence 0.9, all wrong
+    assert "| 1.620 (4) | 0.900 |" in row(text, "wrong")
+
+
+def test_brier_skips_score_questions(runs, tmp_path):
+    d, _ = runs
+    items = [{**it, "questions": {**it["questions"], "s": {"type": "score", "instructions": "?",
+                                                              "criteria": ["lo", "mid", "hi"]}},
+              "expected": {**it["expected"], "s": 1}} for it in ITEMS]
+    s = write_set(tmp_path, items)
+    ans = {**RIGHT, "s": {"type": "score", "score": 1.2, "probabilities": {"0": 0.1, "1": 0.6, "2": 0.3}}}
+    write_raw(d, "e", s, calls(rep0=ans, later=ans, reversed_=ans))
+    r = row(score.render(d), "e")
+    assert "| 6/6 (100%" in r and "| 0.020 (4) |" in r  # 6 decisions graded, 4 of them noul or choice
+
+
+def test_pairs_table(runs):
+    d, s = runs
+    half = {**RIGHT, "d": WRONG["d"]}  # right on the noul, wrong on the choice
+    write_raw(d, "a", s, calls())
+    write_raw(d, "b", s, calls(rep0=half))
+    write_raw(d, "c", s, calls(rep0=half))
+    text = score.render(d)
+    # a is right on 4, b on 2 (the nouls): b=2 discordant for a, c=0, p = 2 * P(X <= 0 | n=2) = 0.5
+    assert "| a | b | 4 | 2 | 0 | 0.500 |" in text
+    assert "overlapping" not in text  # the pairwise table, not interval overlap, says whether engines differ
+    assert "| b | c | 4 | 0 | 0 | 1.000 |" in text
+    pair_rows = [line[:9] for line in text.splitlines() if line.count("|") == 7 and line[2] in "abc"]
+    assert pair_rows == ["| a | b |", "| a | c |", "| b | c |"]
+
+
+def test_pairs_leave_out_a_decision_either_engine_failed(runs):
+    d, s = runs
+    failed_i1 = [r if (r["item"], r["call"], r["rep"]) != ("i1", "timed", 0) else {**r, "answers": None, "error": "x"}
+                 for r in calls()]
+    write_raw(d, "a", s, calls())
+    write_raw(d, "b", s, failed_i1)
+    assert "| a | b | 2 | 0 | 0 | 1.000 |" in score.render(d)  # i1 is out on both sides
+
+
+def test_no_pairs_table_for_one_engine(runs):
+    d, s = runs
+    write_raw(d, "a", s, calls())
+    assert "## Pairwise" not in score.render(d)
+
+
+def test_choice_probabilities_keyed_otherwise_are_an_error(runs):
+    # An engine that keys probabilities by option text (or index) would otherwise score every option 0.
+    d, s = runs
+    by_text = {**RIGHT, "d": {"type": "choice", "choice": "a", "probabilities": {"A": 0.9, "B": 0.1}}}
+    write_raw(d, "e", s, calls(rep0=by_text, later=by_text, reversed_=by_text))
+    with pytest.raises(SystemExit, match="e i0 d: chose 'a'.*probabilities"):
+        score.render(d)
+
+
+def test_small_p_values_are_not_printed_as_zero(runs):
+    assert score.p_cell(score.mcnemar_exact(40, 80)) == "<0.001"
+    assert score.p_cell(0.5) == "0.500"
