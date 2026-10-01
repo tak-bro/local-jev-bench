@@ -15,9 +15,9 @@ local-jev-bench는 Jev 스타일의 System One 결정 모델을 Apple Silicon �
 - **transfer-v4**: Kev가 Winnow보다 낫다(Kev-9B 81% vs 77%, p = 0.003). 하지만 차이는 정책 구조 홀드아웃 출처 두 개에서만 난다. 이 두 출처는 Kev가 학습하는 프로그램 생성 정책 데이터에서 구조만 뺀 것이다(Kev-4B 160/176, Winnow 125/176). Kev가 학습하지 않은 공개 출처 여섯 개에서는 셋이 같고(588개 중 454, 461, 460, p > 0.45), 학습 없는 AnyJev도 같다(raw·L0 모두 458).
 - **typed-decisions**: Winnow가 Kev-4B보다 낫고(73% vs 67%, p < 0.001), Kev-9B와는 같다(72%, p = 0.529).
 - **NSMC와 KLUE-YNAT(한국어)**: 셋을 구분할 수 없다.
-- **AnyJev(학습 없는 Qwen3-8B)**: KLUE-YNAT에서는 상위 그룹과 같고(75~76%), transfer-v4에서는 Winnow와 같다(75%). typed-decisions에서는 뒤진다(61~63%). 거기서는 gold 분포와의 거리도 멀다(KL 2.8~3.8, 상위 그룹은 0.2~0.3). BANKING77-20에서는 자기 README를 다시 재현했고, 대응 검정으로 보면 L0의 정확도 향상이 실제로 있다(p = 0.005).
+- **AnyJev(학습 없는 Qwen3-8B)**: KLUE-YNAT에서는 상위 그룹과 같고(75-76%), transfer-v4에서는 Winnow와 같다(75%). typed-decisions에서는 뒤진다(61-63%). 거기서는 gold 분포와의 거리도 멀다(KL 2.8-3.8, 상위 그룹은 0.2-0.3). BANKING77-20에서는 자기 README를 다시 재현했고, 대응 검정으로 보면 L0의 정확도 향상이 실제로 있다(p = 0.005).
 
-가장 빠른 엔진은 Ollaya(Laya)다. typed-decisions의 긴 state를 빼면 첫 호출 p50이 15~55ms다. 대신 CLM을 빼면 정확도가 가장 낮다. 예외는 영어 30문항으로, 여기서는 Jeff가 더 낮다. 같은 셋들에서 보정(ECE)은 Kev·Winnow·Jeff·Ollaya 중 가장 나쁘다. AnyJev와 CLM은 일부 셋에서 그보다도 나쁘다. Kev-0.8B는 같은 셋에서 28~58ms이고, 모든 셋에서 정확도가 Ollaya와 같거나 더 높다. Kev-4B는 transfer-v4에서 모델 카드 수치를 재현했다(534/656, 카드 0.817). 자세한 내용은 [결과](#결과-2026-09-30-m3-max-36gb) 절에 있다.
+가장 빠른 엔진은 Ollaya(Laya)다. typed-decisions의 긴 state를 빼면 첫 호출 p50이 15-55ms다. 대신 CLM을 빼면 정확도가 가장 낮다. 예외는 영어 30문항으로, 여기서는 Jeff가 더 낮다. 같은 셋들에서 보정(ECE)은 Kev·Winnow·Jeff·Ollaya 중 가장 나쁘다. AnyJev와 CLM은 일부 셋에서 그보다도 나쁘다. Kev-0.8B는 같은 셋에서 28-58ms이고, 모든 셋에서 정확도가 Ollaya와 같거나 더 높다. Kev-4B는 transfer-v4에서 모델 카드 수치를 재현했다(534/656, 카드 0.817). 자세한 내용은 [결과](#결과-2026-09-30-m3-max-36gb) 절에 있다.
 
 엔진은 여섯 가지다.
 
@@ -166,10 +166,10 @@ AnyJev와 Kev는 각각 Metal 메모리 대부분을 쓴다. 그래서 엔진은
 - **메모리**: 테스트에서 남은 vLLM Qwen3-8B 서버(`--gpu-memory-utilization 0.7`, 유휴)가 측정 내내 떠 있었다. 그래서 지연은 한가한 기계보다 높게 나왔을 수 있다. 예를 들어 Kev-4B의 영어 첫 호출 p50은 이번 289.4ms, 2026-09-29에는 225.9ms였다.
 - **메모리 압력**: Jeff의 KLUE-YNAT 호출 604번 중 3번이 `critical`이었다. 에러도, 느려진 호출도 없었다. 나머지 측정은 모두 `normal`이나 `warn`이었다.
 - **Ollaya 에러**: typed-decisions 7문항(판단 35개)을 `STATE_TRUNCATED`로 거부했다. state가 `laya:en` 컨텍스트에 들어가지 않았기 때문이다. 이 판단들은 오답이 아니라 실패로 센다.
-- **AnyJev**: 포트 8092를 잡고 있던 남은 서버를 내린 뒤 따로 쟀다(18:59~22:02). 그래서 AnyJev의 지연은 한가한 기계에서 잰 값이라 위의 다른 행과 바로 비교할 수 없다. `measure.sh`는 AnyJev용 생성 서버를 새로 띄운다. 2026-09-29 AnyJev 수치는 같은 문항을 한 번 돌려(그 결과는 버림) 데워진 서버에서 쟀기 때문에 첫 호출 p50이 더 낮았다(raw 영어 178.5ms, 이번 436.5ms).
+- **AnyJev**: 포트 8092를 잡고 있던 남은 서버를 내린 뒤 따로 쟀다(18:59-22:02). 그래서 AnyJev의 지연은 한가한 기계에서 잰 값이라 위의 다른 행과 바로 비교할 수 없다. `measure.sh`는 AnyJev용 생성 서버를 새로 띄운다. 2026-09-29 AnyJev 수치는 같은 문항을 한 번 돌려(그 결과는 버림) 데워진 서버에서 쟀기 때문에 첫 호출 p50이 더 낮았다(raw 영어 178.5ms, 이번 436.5ms).
 - **CLM**: 30문항 셋과 BANKING77만 쟀다. CLM은 선택지 텍스트 임베딩끼리의 유사도로 답을 고른다. 그래서 order-flip 0은 순서에 강해서라기보다 구조 때문일 수 있다(미검증).
 
-어떤 엔진을 쓸까. 정확 McNemar p가 0.05 미만이면 차이가 있는 것으로 본다. 셋마다 비교 쌍이 28~36개라서, 0.05 미만 가운데 일부는 우연히 나온다.
+어떤 엔진을 쓸까. 정확 McNemar p가 0.05 미만이면 차이가 있는 것으로 본다. 셋마다 비교 쌍이 28-36개라서, 0.05 미만 가운데 일부는 우연히 나온다.
 
 - **가장 정확한 쪽**: Kev-9B, Kev-4B, Winnow.
   - Kev-9B와 Kev-4B는 typed-decisions에서만 다르다(72% vs 67%, 불일치 265 vs 165, p < 0.001).
@@ -183,27 +183,27 @@ AnyJev와 Kev는 각각 Metal 메모리 대부분을 쓴다. 그래서 엔진은
 - **typed-decisions**: Winnow(0.7265)와 Kev-9B(0.720)는 데이터셋 카드가 Jev 1.13.0에 매긴 값(0.727, 천장 0.735) 근처다. 카드 수치는 카드 쪽 하네스 값이고, 여기서 다시 돌리지 않았다.
   - gold 분포에 가장 가까운 것은 Kev-9B다. KL 0.209, Brier 0.107로, Winnow의 0.286, 0.128보다 가깝다.
   - report의 uniform 행은 카드의 KL 0.444, Brier 0.238을 재현한다.
-- **60ms 미만**: Kev-0.8B(28~58ms)나 Ollaya(15~55ms). typed-decisions의 긴 state는 빼고 본 값이다.
+- **60ms 미만**: Kev-0.8B(28-58ms)나 Ollaya(15-55ms). typed-decisions의 긴 state는 빼고 본 값이다.
   - Kev-0.8B가 typed-decisions, NSMC, KLUE-YNAT(p < 0.001)와 BANKING77(학습 분포 안)에서 더 정확하다. 30문항 셋과 transfer-v4에서는 차이가 없다.
-  - 선택지를 뒤집으면 Ollaya는 BANKING77, typed-decisions, KLUE-YNAT에서 답의 30~45%가 바뀐다. Kev-0.8B는 8~19%다.
+  - 선택지를 뒤집으면 Ollaya는 BANKING77, typed-decisions, KLUE-YNAT에서 답의 30-45%가 바뀐다. Kev-0.8B는 8-19%다.
 - **한국어**:
-  - NSMC에서는 Kev-9B, Winnow, Kev-4B(83~86%)를 구분할 수 없다. Kev-9B는 Jeff(p = 0.008)와 Kev-0.8B(p = 0.012)보다 낫다.
-  - KLUE-YNAT에서는 Kev-4B, Jeff, Winnow, Kev-9B(73~74%)를 구분할 수 없다(p ≥ 0.86). Kev-0.8B(63%)와 Ollaya(43%)는 그보다 낮다(p < 0.001).
+  - NSMC에서는 Kev-9B, Winnow, Kev-4B(83-86%)를 구분할 수 없다. Kev-9B는 Jeff(p = 0.008)와 Kev-0.8B(p = 0.012)보다 낫다.
+  - KLUE-YNAT에서는 Kev-4B, Jeff, Winnow, Kev-9B(73-74%)를 구분할 수 없다(p ≥ 0.86). Kev-0.8B(63%)와 Ollaya(43%)는 그보다 낮다(p < 0.001).
 - **AnyJev**:
   - KLUE-YNAT에서 raw 76%, L0 75%로 Kev-4B, Kev-9B, Winnow, Jeff와 같다(p ≥ 0.33).
   - transfer-v4에서는 둘 다 75%로 Winnow와 같고(p > 0.24), Kev-4B와 Kev-9B보다 낮다(p < 0.001). Kev와의 차이는 전부 정책 홀드아웃 두 출처에서 난다(Kev-4B와의 불일치 49 대 2). 공개 출처 여섯 개에서는 AnyJev가 588개 중 458개로 Kev-4B의 454개와 같다(p = 0.76).
   - typed-decisions에서 raw 61%, L0 63%로 Kev-4B, Kev-9B, Winnow보다 낮다(p < 0.001). 예측이 gold에서 멀다. KL은 raw 3.783, L0 2.813이고, ECE는 0.35와 0.31이다.
-  - NSMC에서는 80~81%다. Kev-9B보다 낮고(raw p = 0.040, L0 p = 0.033), 상위 그룹의 나머지와는 같다.
+  - NSMC에서는 80-81%다. Kev-9B보다 낮고(raw p = 0.040, L0 p = 0.033), 상위 그룹의 나머지와는 같다.
   - L0 vs raw:
     - L0는 raw가 한 번이라도 뒤집힌 모든 셋에서 order-flip을 줄인다(한국어 30 2 → 0, BANKING77 68 → 22, transfer-v4 76 → 27, typed-decisions 101 → 31, KLUE-YNAT 46 → 26).
     - BANKING77(p = 0.005)과 typed-decisions(p < 0.001)에서는 더 정확하다.
-    - 대신 첫 호출 시간이 1.5~13.5배 걸린다.
+    - 대신 첫 호출 시간이 1.5-13.5배 걸린다.
 - **Jeff-Qwen3.5-2B**:
   - typed-decisions에서 52%다. 카드는 다른 체크포인트인 Jeff-Gemma4-E2B를 0.561로 올려 두었다.
   - KLUE-YNAT에서는 4B, 9B 모델과 같다.
   - BANKING77에서는 선택지를 뒤집으면 답의 24%가 바뀐다.
 - **Kev-4B는 transfer-v4에서 모델 카드를 재현한다.**
-  - clean 질문에서 534/656(81.4%, Wilson 78~84)이다. 카드는 같은 656개에서 0.817이다.
+  - clean 질문에서 534/656(81.4%, Wilson 78-84)이다. 카드는 같은 656개에서 0.817이다.
   - 나머지 108개 판단은 none_absent, none_present, permuted 변형이 36개씩이다(report의 `## By variant`).
 
 CLM에 대한 이전 발견 (2026-09-28):
@@ -255,13 +255,13 @@ CLM에 대한 이전 발견 (2026-09-28):
 Kev-9B, Kev-4B, Winnow-E4B다. Kev의 transfer-v4 셋에서는 Kev가 앞선다(81%, 80% 대 77%). 다만 정책 구조 홀드아웃 두 출처에서만 앞선다. typed-decisions에서는 Winnow와 Kev-9B가 앞선다(73%, 72% 대 Kev-4B 67%). 한국어 셋에서는 셋을 구분할 수 없다.
 
 **가장 빠른 것은?**
-Laya를 돌리는 Ollaya다. 첫 호출 p50이 14.7~55.3ms이고, typed-decisions의 긴 state에서는 292.9ms다. 다음은 Kev-0.8B(27.9~57.6ms)이고, 모든 셋에서 정확도가 Ollaya와 같거나 더 높다.
+Laya를 돌리는 Ollaya다. 첫 호출 p50이 14.7-55.3ms이고, typed-decisions의 긴 state에서는 292.9ms다. 다음은 Kev-0.8B(27.9-57.6ms)이고, 모든 셋에서 정확도가 Ollaya와 같거나 더 높다.
 
 **AnyJev가 vllm-metal에서 동작하나?**
 한 가지만 바꾸면 동작한다. vllm-metal 0.30.0은 `--logprobs-mode` 설정과 상관없이 raw logprob을 주므로, 어댑터가 라벨마다 `logprob_token_ids`로 요청한다. 그렇게 하면 AnyJev는 BANKING77-20에서 자기 README를 재현한다.
 
 **한국어로도 답하나?**
-Kev-4B, Kev-9B, Winnow, Jeff는 된다. NSMC에서 앞의 셋이 83~86%, KLUE-YNAT에서 넷 모두 73~74%다. AnyJev도 학습 없이 된다(NSMC 80~81%, KLUE-YNAT 75~76%). Ollaya는 `laya:multilingual`이 필요하고, 56%와 43%가 나온다.
+Kev-4B, Kev-9B, Winnow, Jeff는 된다. NSMC에서 앞의 셋이 83-86%, KLUE-YNAT에서 넷 모두 73-74%다. AnyJev도 학습 없이 된다(NSMC 80-81%, KLUE-YNAT 75-76%). Ollaya는 `laya:multilingual`이 필요하고, 56%와 43%가 나온다.
 
 **메모리는 얼마나 필요한가?**
 Kev-4B 서버는 기동 직후 RSS 2.7GB였다. Winnow는 내려받는 크기가 8.0GB다. AnyJev와 CLM은 vllm-metal에서 Qwen3-8B를 돌리는데, vllm-metal이 약 20GB(Metal wired 한도 28.1GB의 0.7)를 예약한다. 그래서 하나씩 측정한다.
