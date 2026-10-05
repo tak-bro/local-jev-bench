@@ -17,6 +17,7 @@ questions count only in sets graded by argmax, which read their level probabilit
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | anyjev-l0 | anyjev-l0 | 1372.9 | 1056.2 | 361.0 | 1179.1 | 90 | 88/105 (84%, 76-90) | 0.143 (75) | 0.065 | 1/105 | 0/30 (0%) | 0 | normal |
 | anyjev-raw | anyjev-raw | 1025.2 | 576.5 | 198.0 | 657.9 | 90 | 87/105 (83%, 75-89) | 0.172 (75) | 0.089 | 0/105 | 2/30 (7%) | 0 | normal |
+| clef | Clef-Q4_K_M@5f70656 | 3692.9 | 3774.5 | 3744.3 | 4364.8 | 90 | 96/105 (91%, 85-95) | 0.160 (75) | 0.073 | 0/105 | 0/30 (0%) | 0 | warn |
 | clef-flash | Clef-Flash-Q8_0@4a7a08c | 985.1 | 1113.0 | 1100.1 | 4954.1 | 90 | 89/105 (85%, 77-90) | 0.122 (75) | 0.059 | 0/105 | 0/30 (0%) | 0 | warn |
 | clm | - | 594.4 | 354.0 | 3.1 | 458.2 | 90 | 43/105 (41%, 32-51) | 0.642 (75) | 0.250 | 0/105 | 0/30 (0%) | 0 | normal |
 | jeff | jeff-latest | 235.1 | 258.7 | 273.3 | 339.1 | 90 | 79/105 (75%, 66-83) | 0.221 (75) | 0.114 | 0/105 | 1/30 (3%) | 0 | normal |
@@ -35,6 +36,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | engine A | engine B | both graded | b | c | p |
 |---|---|---|---|---|---|
 | anyjev-l0 | anyjev-raw | 105 | 2 | 1 | 1.000 |
+| anyjev-l0 | clef | 105 | 3 | 11 | 0.057 |
 | anyjev-l0 | clef-flash | 105 | 8 | 9 | 1.000 |
 | anyjev-l0 | clm | 105 | 52 | 7 | <0.001 |
 | anyjev-l0 | jeff | 105 | 13 | 4 | 0.049 |
@@ -44,6 +46,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | ollaya | 105 | 27 | 8 | 0.002 |
 | anyjev-l0 | von | 105 | 48 | 11 | <0.001 |
 | anyjev-l0 | winnow | 105 | 3 | 5 | 0.727 |
+| anyjev-raw | clef | 105 | 2 | 11 | 0.022 |
 | anyjev-raw | clef-flash | 105 | 6 | 8 | 0.791 |
 | anyjev-raw | clm | 105 | 50 | 6 | <0.001 |
 | anyjev-raw | jeff | 105 | 14 | 6 | 0.115 |
@@ -53,6 +56,15 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-raw | ollaya | 105 | 26 | 8 | 0.003 |
 | anyjev-raw | von | 105 | 47 | 11 | <0.001 |
 | anyjev-raw | winnow | 105 | 3 | 6 | 0.508 |
+| clef | clef-flash | 105 | 10 | 3 | 0.092 |
+| clef | clm | 105 | 56 | 3 | <0.001 |
+| clef | jeff | 105 | 23 | 6 | 0.002 |
+| clef | kev-0.8b | 105 | 24 | 7 | 0.003 |
+| clef | kev-4b | 105 | 9 | 4 | 0.267 |
+| clef | kev-9b | 105 | 8 | 6 | 0.791 |
+| clef | ollaya | 105 | 32 | 5 | <0.001 |
+| clef | von | 105 | 54 | 9 | <0.001 |
+| clef | winnow | 105 | 8 | 2 | 0.109 |
 | clef-flash | clm | 105 | 49 | 3 | <0.001 |
 | clef-flash | jeff | 105 | 19 | 9 | 0.087 |
 | clef-flash | kev-0.8b | 105 | 21 | 11 | 0.110 |
