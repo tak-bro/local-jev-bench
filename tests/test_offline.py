@@ -120,6 +120,8 @@ def fake_on_path(tmp_path, *names) -> dict:
     ("scripts/serve-anyjev.sh", []),
     ("scripts/serve-kev.sh", []),
     ("scripts/serve-jeff.sh", []),
+    ("scripts/serve-llama.sh", ["clef-flash"]),
+    ("scripts/serve-von.sh", []),
 ])
 def test_serve_refuses_busy_port(tmp_path, script, args):
     with socket.socket() as s:
@@ -127,7 +129,8 @@ def test_serve_refuses_busy_port(tmp_path, script, args):
         s.listen()
         port = s.getsockname()[1]
         env = {**fake_on_path(tmp_path, "vllm", "uv"), "CLM_PORT": str(port), "ANYJEV_PORT": str(port),
-               "KEV_PORT": str(port), "JEFF_PORT": str(port)}
+               "KEV_PORT": str(port), "JEFF_PORT": str(port), "LLAMA_PORT": str(port),
+               "VON_PORT": str(port)}
         r = sh(script, *[a.format(port=port) for a in args], env=env)
     assert r.returncode == 1, (r.returncode, r.stderr)
     assert "already in use" in r.stderr
@@ -189,6 +192,48 @@ def test_serve_jeff_refuses_another_commit(tmp_path):
     assert r.returncode == 1 and "f067882" in r.stderr
 
 
+@pytest.mark.parametrize("engine", ["clef-flash", "clef"])
+def test_serve_llama_alias_is_what_the_bench_expects(engine):
+    # The alias pins the GGUF file and revision; bench/run.py checks /v1/models against the same string.
+    r = sh("scripts/serve-llama.sh", "--print-alias", engine)
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.strip() == run.ENGINES[engine]["model"] == run.ENGINES[engine]["served"][2]
+
+
+def test_clef_and_clef_flash_refuse_each_other(monkeypatch):
+    # Both share llama-server's port; the alias tells which GGUF is loaded.
+    srv = FakeServer({"/v1/models": lambda _: (200, {"data": [{"id": "Clef-Flash-Q8_0@4a7a08c"}]})})
+    monkeypatch.setitem(run.ENGINES, "clef", {**run.ENGINES["clef"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        with pytest.raises(run.EngineError, match="Clef-Flash-Q8_0@4a7a08c.*Clef-Q4_K_M@5f70656"):
+            run.served("clef")
+    finally:
+        srv.close()
+
+
+def test_serve_von_pins_the_version_the_bench_expects():
+    pinned = [line.split("=", 1)[1] for line in (ROOT / "scripts/serve-von.sh").read_text().splitlines()
+              if line.startswith("sdk=")]
+    assert pinned == [run.ENGINES["von"]["served"][2]]
+
+
+def test_serve_llama_refuses_an_unknown_engine():
+    r = sh("scripts/serve-llama.sh", "kev-4b")
+    assert r.returncode == 2 and "unknown engine" in r.stderr
+
+
+def test_serve_llama_refuses_another_build(tmp_path):
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    fake = tmp_path / "llama-server"
+    fake.write_text("#!/bin/sh\necho 'version: 0.5.0 (build 11146, commit 7fe450e19)' >&2\nexit 0\n")
+    fake.chmod(0o755)
+    r = sh("scripts/serve-llama.sh", "clef-flash",
+           env={**fake_on_path(tmp_path, "uv"), "LLAMA_PORT": str(port), "LLAMA_SERVER": str(fake)})
+    assert r.returncode == 1 and "11403" in r.stderr
+
+
 def test_serve_kev_needs_a_checkout(tmp_path):
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
@@ -212,7 +257,8 @@ def systemone_server(status_for=lambda body: 200):
             elif q["type"] == "choice":
                 first = next(iter(q["criteria"]))
                 answers[qid] = {"type": "choice", "choice": first, "confidence": 0.9,
-                                "probabilities": {first: 0.9}}
+                                "probabilities": {k: 0.9 if k == first else 0.1 / (len(q["criteria"]) - 1)
+                                                  for k in q["criteria"]}}
             else:
                 answers[qid] = {"type": "score", "score": 1.0, "confidence": 0.9, "probabilities": {}}
         return 200, {"answers": answers}
@@ -245,6 +291,9 @@ def test_ask_rejects_missing_answer_field(engine):
     {"urgency": {"type": "noul", "noul": "0.4"}},                       # number sent as a string
     {"urgency": {"type": "noul", "noul": True}},
     {"department": {"type": "choice", "choice": "billing"}},           # no probabilities
+    {"department": {"type": "choice", "choice": "billing", "probabilities": {"billing": 1.0}}},  # an option missing
+    {"department": {"type": "choice", "choice": "billing",                                       # an extra option
+                    "probabilities": {"billing": 0.8, "technical": 0.1, "other": 0.1}}},
 ])
 def test_ask_rejects_wrongly_typed_answers(engine, answers):
     qs = {k: run.README_QUESTIONS[k] for k in answers}
@@ -429,7 +478,9 @@ def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
 
 @pytest.mark.parametrize("name, model", [("anyjev-raw", "anyjev-raw"), ("anyjev-l0", "anyjev-l0"),
                                          ("kev-0.8b", "kev-latest"), ("kev-4b", "kev-latest"), ("kev-9b", "kev-latest"),
-                                         ("winnow", "winnow:e4b"), ("jeff", "jeff-latest")])
+                                         ("winnow", "winnow:e4b"), ("jeff", "jeff-latest"),
+                                         ("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656"),
+                                         ("von", "von-latest")])
 def test_new_engines_send_their_model(monkeypatch, name, model):
     seen = []
     def handle(body):
@@ -447,6 +498,9 @@ def test_new_engines_send_their_model(monkeypatch, name, model):
 @pytest.mark.parametrize("name, route, body", [
     ("kev-9b", "/v1/models", {"models": [{"name": "kev-latest", "run": "jaredpalmer/kev-9b"}]}),
     ("jeff", "/health", {"status": "ready", "model": "jeff-qwen3.5-2b"}),
+    ("clef-flash", "/v1/models", {"object": "list", "data": [{"id": "Clef-Flash-Q8_0@4a7a08c"}]}),
+    ("clef", "/v1/models", {"object": "list", "data": [{"id": "Clef-Q4_K_M@5f70656"}]}),
+    ("von", "/health", {"status": "ok", "version": "1.3.7", "engine": "von-1.3"}),
 ])
 def test_served_identity_matches(monkeypatch, name, route, body):
     srv = FakeServer({route: lambda _: (200, body)})

@@ -23,7 +23,7 @@ fi
 engine=$1
 shift
 case $engine in
-    ollaya | winnow | kev-0.8b | kev-4b | kev-9b | jeff | anyjev-raw | anyjev-l0 | clm) ;;
+    ollaya | winnow | kev-0.8b | kev-4b | kev-9b | jeff | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | von) ;;
     *)
         echo "unknown engine: $engine" >&2
         exit 2
@@ -123,6 +123,13 @@ else
         kev-0.8b | kev-4b | kev-9b)
             start "$engine" "${KEV_URL:-http://127.0.0.1:8009}/v1/models" 200 \
                 env KEV_RUN="jaredpalmer/$engine" "$scripts/serve-kev.sh"
+            ;;
+        clef-flash | clef)
+            # /health answers 503 until the GGUF is loaded
+            start "$engine" "${LLAMA_URL:-http://127.0.0.1:8020}/health" 200 "$scripts/serve-llama.sh" "$engine"
+            ;;
+        von)
+            start von "${VON_URL:-http://127.0.0.1:8030}/health" 200 "$scripts/serve-von.sh"
             ;;
         jeff)
             start jeff "${JEFF_URL:-http://127.0.0.1:8765}/health" 200 "$scripts/serve-jeff.sh"
