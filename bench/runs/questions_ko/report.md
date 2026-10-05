@@ -17,12 +17,14 @@ questions count only in sets graded by argmax, which read their level probabilit
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | anyjev-l0 | anyjev-l0 | 1372.9 | 1056.2 | 361.0 | 1179.1 | 90 | 88/105 (84%, 76-90) | 0.143 (75) | 0.065 | 1/105 | 0/30 (0%) | 0 | normal |
 | anyjev-raw | anyjev-raw | 1025.2 | 576.5 | 198.0 | 657.9 | 90 | 87/105 (83%, 75-89) | 0.172 (75) | 0.089 | 0/105 | 2/30 (7%) | 0 | normal |
+| clef-flash | Clef-Flash-Q8_0@4a7a08c | 985.1 | 1113.0 | 1100.1 | 4954.1 | 90 | 89/105 (85%, 77-90) | 0.122 (75) | 0.059 | 0/105 | 0/30 (0%) | 0 | warn |
 | clm | - | 594.4 | 354.0 | 3.1 | 458.2 | 90 | 43/105 (41%, 32-51) | 0.642 (75) | 0.250 | 0/105 | 0/30 (0%) | 0 | normal |
 | jeff | jeff-latest | 235.1 | 258.7 | 273.3 | 339.1 | 90 | 79/105 (75%, 66-83) | 0.221 (75) | 0.114 | 0/105 | 1/30 (3%) | 0 | normal |
 | kev-0.8b | kev-latest | 68.0 | 52.0 | 47.7 | 70.3 | 90 | 79/105 (75%, 66-83) | 0.290 (75) | 0.110 | 0/105 | 1/30 (3%) | 0 | warn |
 | kev-4b | kev-latest | 281.1 | 306.9 | 245.4 | 349.8 | 90 | 91/105 (87%, 79-92) | 0.162 (75) | 0.100 | 0/105 | 1/30 (3%) | 0 | warn |
 | kev-9b | kev-latest | 492.2 | 538.6 | 416.9 | 580.8 | 90 | 94/105 (90%, 82-94) | 0.107 (75) | 0.087 | 0/105 | 2/30 (7%) | 0 | normal |
 | ollaya | laya:multilingual | 662.3 | 55.3 | 53.9 | 130.8 | 90 | 69/105 (66%, 56-74) | 0.337 (75) | 0.146 | 0/105 | 6/30 (20%) | 0 | warn |
+| von | von-latest | 299.5 | 158.1 | 149.0 | 219.4 | 90 | 51/105 (49%, 39-58) | 0.515 (75) | 0.101 | 0/105 | 0/30 (0%) | 0 | normal |
 | winnow | winnow:e4b | 796.5 | 632.3 | 509.1 | 777.1 | 90 | 90/105 (86%, 78-91) | 0.137 (75) | 0.070 | 0/105 | 1/30 (3%) | 0 | warn |
 
 ## Pairwise differences (McNemar exact)
@@ -33,38 +35,57 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | engine A | engine B | both graded | b | c | p |
 |---|---|---|---|---|---|
 | anyjev-l0 | anyjev-raw | 105 | 2 | 1 | 1.000 |
+| anyjev-l0 | clef-flash | 105 | 8 | 9 | 1.000 |
 | anyjev-l0 | clm | 105 | 52 | 7 | <0.001 |
 | anyjev-l0 | jeff | 105 | 13 | 4 | 0.049 |
 | anyjev-l0 | kev-0.8b | 105 | 19 | 10 | 0.136 |
 | anyjev-l0 | kev-4b | 105 | 6 | 9 | 0.607 |
 | anyjev-l0 | kev-9b | 105 | 6 | 12 | 0.238 |
 | anyjev-l0 | ollaya | 105 | 27 | 8 | 0.002 |
+| anyjev-l0 | von | 105 | 48 | 11 | <0.001 |
 | anyjev-l0 | winnow | 105 | 3 | 5 | 0.727 |
+| anyjev-raw | clef-flash | 105 | 6 | 8 | 0.791 |
 | anyjev-raw | clm | 105 | 50 | 6 | <0.001 |
 | anyjev-raw | jeff | 105 | 14 | 6 | 0.115 |
 | anyjev-raw | kev-0.8b | 105 | 18 | 10 | 0.185 |
 | anyjev-raw | kev-4b | 105 | 6 | 10 | 0.454 |
 | anyjev-raw | kev-9b | 105 | 6 | 13 | 0.167 |
 | anyjev-raw | ollaya | 105 | 26 | 8 | 0.003 |
+| anyjev-raw | von | 105 | 47 | 11 | <0.001 |
 | anyjev-raw | winnow | 105 | 3 | 6 | 0.508 |
+| clef-flash | clm | 105 | 49 | 3 | <0.001 |
+| clef-flash | jeff | 105 | 19 | 9 | 0.087 |
+| clef-flash | kev-0.8b | 105 | 21 | 11 | 0.110 |
+| clef-flash | kev-4b | 105 | 8 | 10 | 0.815 |
+| clef-flash | kev-9b | 105 | 4 | 9 | 0.267 |
+| clef-flash | ollaya | 105 | 27 | 7 | <0.001 |
+| clef-flash | von | 105 | 47 | 9 | <0.001 |
+| clef-flash | winnow | 105 | 7 | 8 | 1.000 |
 | clm | jeff | 105 | 15 | 51 | <0.001 |
 | clm | kev-0.8b | 105 | 7 | 43 | <0.001 |
 | clm | kev-4b | 105 | 4 | 52 | <0.001 |
 | clm | kev-9b | 105 | 5 | 56 | <0.001 |
 | clm | ollaya | 105 | 7 | 33 | <0.001 |
+| clm | von | 105 | 14 | 22 | 0.243 |
 | clm | winnow | 105 | 5 | 52 | <0.001 |
 | jeff | kev-0.8b | 105 | 19 | 19 | 1.000 |
 | jeff | kev-4b | 105 | 7 | 19 | 0.029 |
 | jeff | kev-9b | 105 | 5 | 20 | 0.004 |
 | jeff | ollaya | 105 | 25 | 15 | 0.154 |
+| jeff | von | 105 | 44 | 16 | <0.001 |
 | jeff | winnow | 105 | 5 | 16 | 0.027 |
 | kev-0.8b | kev-4b | 105 | 5 | 17 | 0.017 |
 | kev-0.8b | kev-9b | 105 | 5 | 20 | 0.004 |
 | kev-0.8b | ollaya | 105 | 18 | 8 | 0.076 |
+| kev-0.8b | von | 105 | 34 | 6 | <0.001 |
 | kev-0.8b | winnow | 105 | 9 | 20 | 0.061 |
 | kev-4b | kev-9b | 105 | 4 | 7 | 0.549 |
 | kev-4b | ollaya | 105 | 27 | 5 | <0.001 |
+| kev-4b | von | 105 | 45 | 5 | <0.001 |
 | kev-4b | winnow | 105 | 4 | 3 | 1.000 |
 | kev-9b | ollaya | 105 | 27 | 2 | <0.001 |
+| kev-9b | von | 105 | 48 | 5 | <0.001 |
 | kev-9b | winnow | 105 | 8 | 4 | 0.388 |
+| ollaya | von | 105 | 23 | 5 | <0.001 |
 | ollaya | winnow | 105 | 7 | 28 | <0.001 |
+| von | winnow | 105 | 9 | 48 | <0.001 |

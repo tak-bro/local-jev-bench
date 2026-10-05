@@ -17,12 +17,14 @@ questions count only in sets graded by argmax, which read their level probabilit
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | anyjev-l0 | anyjev-l0 | 14031.3 | 7860.1 | 7860.1 | 8890.7 | 300 | 241/300 (80%, 75-84) | 0.372 (300) | 0.183 | n/a | 22/300 (7%) | 0 | normal |
 | anyjev-raw | anyjev-raw | 3378.8 | 582.3 | 582.3 | 1004.9 | 300 | 224/300 (75%, 69-79) | 0.491 (300) | 0.247 | n/a | 68/300 (23%) | 0 | normal |
+| clef-flash | Clef-Flash-Q8_0@4a7a08c | 1436.2 | 1274.5 | 1274.5 | 1779.6 | 300 | 290/300 (97%, 94-98) | 0.051 (300) | 0.035 | n/a | 0/300 (0%) | 0 | normal |
 | clm | - | 781.6 | 142.3 | 142.3 | 198.9 | 300 | 61/300 (20%, 16-25) | 0.932 (300) | 0.151 | n/a | 0/300 (0%) | 0 | normal |
 | jeff | jeff-latest | 195.1 | 129.8 | 129.8 | 171.9 | 300 | 195/300 (65%, 59-70) | 0.480 (300) | 0.062 | n/a | 73/300 (24%) | 0 | normal |
 | kev-0.8b | kev-latest | 121.9 | 57.6 | 57.6 | 99.8 | 300 | 265/300 (88%, 84-91) | 0.213 (300) | 0.144 | n/a | 23/300 (8%) | 0 | warn |
 | kev-4b | kev-latest | 982.7 | 290.1 | 290.1 | 359.4 | 300 | 266/300 (89%, 85-92) | 0.196 (300) | 0.134 | n/a | 23/300 (8%) | 0 | warn |
 | kev-9b | kev-latest | 15415.7 | 545.6 | 545.6 | 724.3 | 300 | 267/300 (89%, 85-92) | 0.171 (300) | 0.077 | n/a | 30/300 (10%) | 0 | normal |
 | ollaya | laya | 516.3 | 28.3 | 28.3 | 39.8 | 300 | 180/300 (60%, 54-65) | 0.579 (300) | 0.202 | n/a | 93/300 (31%) | 0 | warn |
+| von | von-latest | 1096.4 | 38.1 | 38.1 | 45.9 | 300 | 240/300 (80%, 75-84) | 0.361 (300) | 0.175 | n/a | 0/300 (0%) | 0 | normal |
 | winnow | winnow:e4b | 2474.8 | 574.8 | 574.8 | 958.4 | 300 | 243/300 (81%, 76-85) | 0.293 (300) | 0.082 | n/a | 38/300 (13%) | 0 | warn |
 
 ## Pairwise differences (McNemar exact)
@@ -33,38 +35,57 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | engine A | engine B | both graded | b | c | p |
 |---|---|---|---|---|---|
 | anyjev-l0 | anyjev-raw | 300 | 25 | 8 | 0.005 |
+| anyjev-l0 | clef-flash | 300 | 1 | 50 | <0.001 |
 | anyjev-l0 | clm | 300 | 184 | 4 | <0.001 |
 | anyjev-l0 | jeff | 300 | 58 | 12 | <0.001 |
 | anyjev-l0 | kev-0.8b | 300 | 9 | 33 | <0.001 |
 | anyjev-l0 | kev-4b | 300 | 8 | 33 | <0.001 |
 | anyjev-l0 | kev-9b | 300 | 7 | 33 | <0.001 |
 | anyjev-l0 | ollaya | 300 | 80 | 19 | <0.001 |
+| anyjev-l0 | von | 300 | 27 | 26 | 1.000 |
 | anyjev-l0 | winnow | 300 | 17 | 19 | 0.868 |
+| anyjev-raw | clef-flash | 300 | 0 | 66 | <0.001 |
 | anyjev-raw | clm | 300 | 167 | 4 | <0.001 |
 | anyjev-raw | jeff | 300 | 40 | 11 | <0.001 |
 | anyjev-raw | kev-0.8b | 300 | 6 | 47 | <0.001 |
 | anyjev-raw | kev-4b | 300 | 8 | 50 | <0.001 |
 | anyjev-raw | kev-9b | 300 | 5 | 48 | <0.001 |
 | anyjev-raw | ollaya | 300 | 71 | 27 | <0.001 |
+| anyjev-raw | von | 300 | 22 | 38 | 0.052 |
 | anyjev-raw | winnow | 300 | 10 | 29 | 0.003 |
+| clef-flash | clm | 300 | 229 | 0 | <0.001 |
+| clef-flash | jeff | 300 | 96 | 1 | <0.001 |
+| clef-flash | kev-0.8b | 300 | 26 | 1 | <0.001 |
+| clef-flash | kev-4b | 300 | 26 | 2 | <0.001 |
+| clef-flash | kev-9b | 300 | 24 | 1 | <0.001 |
+| clef-flash | ollaya | 300 | 110 | 0 | <0.001 |
+| clef-flash | von | 300 | 51 | 1 | <0.001 |
+| clef-flash | winnow | 300 | 47 | 0 | <0.001 |
 | clm | jeff | 300 | 11 | 145 | <0.001 |
 | clm | kev-0.8b | 300 | 2 | 206 | <0.001 |
 | clm | kev-4b | 300 | 1 | 206 | <0.001 |
 | clm | kev-9b | 300 | 1 | 207 | <0.001 |
 | clm | ollaya | 300 | 13 | 132 | <0.001 |
+| clm | von | 300 | 4 | 183 | <0.001 |
 | clm | winnow | 300 | 4 | 186 | <0.001 |
 | jeff | kev-0.8b | 300 | 7 | 77 | <0.001 |
 | jeff | kev-4b | 300 | 7 | 78 | <0.001 |
 | jeff | kev-9b | 300 | 7 | 79 | <0.001 |
 | jeff | ollaya | 300 | 60 | 45 | 0.172 |
+| jeff | von | 300 | 17 | 62 | <0.001 |
 | jeff | winnow | 300 | 10 | 58 | <0.001 |
 | kev-0.8b | kev-4b | 300 | 9 | 10 | 1.000 |
 | kev-0.8b | kev-9b | 300 | 7 | 9 | 0.804 |
 | kev-0.8b | ollaya | 300 | 88 | 3 | <0.001 |
+| kev-0.8b | von | 300 | 34 | 9 | <0.001 |
 | kev-0.8b | winnow | 300 | 28 | 6 | <0.001 |
 | kev-4b | kev-9b | 300 | 7 | 8 | 1.000 |
 | kev-4b | ollaya | 300 | 92 | 6 | <0.001 |
+| kev-4b | von | 300 | 33 | 7 | <0.001 |
 | kev-4b | winnow | 300 | 30 | 7 | <0.001 |
 | kev-9b | ollaya | 300 | 92 | 5 | <0.001 |
+| kev-9b | von | 300 | 36 | 9 | <0.001 |
 | kev-9b | winnow | 300 | 29 | 5 | <0.001 |
+| ollaya | von | 300 | 12 | 72 | <0.001 |
 | ollaya | winnow | 300 | 13 | 76 | <0.001 |
+| von | winnow | 300 | 20 | 23 | 0.761 |
