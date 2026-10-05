@@ -192,11 +192,23 @@ def test_serve_jeff_refuses_another_commit(tmp_path):
     assert r.returncode == 1 and "f067882" in r.stderr
 
 
-def test_serve_llama_alias_is_what_the_bench_expects():
+@pytest.mark.parametrize("engine", ["clef-flash", "clef"])
+def test_serve_llama_alias_is_what_the_bench_expects(engine):
     # The alias pins the GGUF file and revision; bench/run.py checks /v1/models against the same string.
-    r = sh("scripts/serve-llama.sh", "--print-alias", "clef-flash")
+    r = sh("scripts/serve-llama.sh", "--print-alias", engine)
     assert r.returncode == 0, r.stderr
-    assert r.stdout.strip() == run.ENGINES["clef-flash"]["model"] == run.ENGINES["clef-flash"]["served"][2]
+    assert r.stdout.strip() == run.ENGINES[engine]["model"] == run.ENGINES[engine]["served"][2]
+
+
+def test_clef_and_clef_flash_refuse_each_other(monkeypatch):
+    # Both share llama-server's port; the alias tells which GGUF is loaded.
+    srv = FakeServer({"/v1/models": lambda _: (200, {"data": [{"id": "Clef-Flash-Q8_0@4a7a08c"}]})})
+    monkeypatch.setitem(run.ENGINES, "clef", {**run.ENGINES["clef"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        with pytest.raises(run.EngineError, match="Clef-Flash-Q8_0@4a7a08c.*Clef-Q4_K_M@5f70656"):
+            run.served("clef")
+    finally:
+        srv.close()
 
 
 def test_serve_von_pins_the_version_the_bench_expects():
@@ -467,7 +479,7 @@ def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
 @pytest.mark.parametrize("name, model", [("anyjev-raw", "anyjev-raw"), ("anyjev-l0", "anyjev-l0"),
                                          ("kev-0.8b", "kev-latest"), ("kev-4b", "kev-latest"), ("kev-9b", "kev-latest"),
                                          ("winnow", "winnow:e4b"), ("jeff", "jeff-latest"),
-                                         ("clef-flash", "Clef-Flash-Q8_0@4a7a08c"),
+                                         ("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656"),
                                          ("von", "von-latest")])
 def test_new_engines_send_their_model(monkeypatch, name, model):
     seen = []
@@ -487,6 +499,7 @@ def test_new_engines_send_their_model(monkeypatch, name, model):
     ("kev-9b", "/v1/models", {"models": [{"name": "kev-latest", "run": "jaredpalmer/kev-9b"}]}),
     ("jeff", "/health", {"status": "ready", "model": "jeff-qwen3.5-2b"}),
     ("clef-flash", "/v1/models", {"object": "list", "data": [{"id": "Clef-Flash-Q8_0@4a7a08c"}]}),
+    ("clef", "/v1/models", {"object": "list", "data": [{"id": "Clef-Q4_K_M@5f70656"}]}),
     ("von", "/health", {"status": "ok", "version": "1.3.7", "engine": "von-1.3"}),
 ])
 def test_served_identity_matches(monkeypatch, name, route, body):

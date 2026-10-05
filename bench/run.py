@@ -43,9 +43,11 @@ ENGINES: dict[str, dict[str, Any]] = {
 for size in ("0.8b", "4b", "9b"):
     ENGINES[f"kev-{size}"] = {"url": os.environ.get("KEV_URL", "http://127.0.0.1:8009"), "model": "kev-latest",
                               "served": ("/v1/models", ("models", 0, "run"), f"jaredpalmer/kev-{size}")}
-# llama-server (scripts/serve-llama.sh) names the GGUF file and its repo revision in its alias; `served` checks it.
-ENGINES["clef-flash"] = {"url": os.environ.get("LLAMA_URL", "http://127.0.0.1:8020"), "model": "Clef-Flash-Q8_0@4a7a08c",
-                         "served": ("/v1/models", ("data", 0, "id"), "Clef-Flash-Q8_0@4a7a08c")}
+# llama-server (scripts/serve-llama.sh) serves one Clef GGUF at a time on one port and names the file and its repo
+# revision in its alias; `served` checks it.
+for name, alias in (("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656")):
+    ENGINES[name] = {"url": os.environ.get("LLAMA_URL", "http://127.0.0.1:8020"), "model": alias,
+                     "served": ("/v1/models", ("data", 0, "id"), alias)}
 # Von's /health reports only its von-sdk version, so `served` checks that; the weights' revision is pinned in
 # scripts/serve-von.sh, not checked here.
 ENGINES["von"] = {"url": os.environ.get("VON_URL", "http://127.0.0.1:8030"), "model": "von-latest",

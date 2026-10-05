@@ -8,6 +8,8 @@ import subprocess
 import time
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -166,7 +168,8 @@ def test_anyjev_adapter_restarts_before_every_set(tmp_path):
     assert all(wait_gone(p) for p in adapters + llms)
 
 
-def test_clef_flash_starts_llama_server_once(tmp_path):
+@pytest.mark.parametrize("engine", ["clef-flash", "clef"])
+def test_clef_engines_start_llama_server_once(tmp_path, engine):
     port = free_port()
     (tmp_path / "health").write_text("ok")
     bench = tmp_path / "bench.sh"
@@ -175,13 +178,13 @@ def test_clef_flash_starts_llama_server_once(tmp_path):
     env = {**os.environ, "MEASURE_SCRIPTS": str(fake_scripts(tmp_path, llama=port)),
            "LLAMA_URL": f"http://127.0.0.1:{port}", "MEASURE_BENCH": str(bench),
            "MEASURE_LOGS": str(tmp_path / "logs")}
-    r = subprocess.run(["bash", "scripts/measure.sh", "clef-flash", "a.jsonl", "b.jsonl"], cwd=ROOT,
+    r = subprocess.run(["bash", "scripts/measure.sh", engine, "a.jsonl", "b.jsonl"], cwd=ROOT,
                        capture_output=True, text=True, env=env, timeout=60)
     assert r.returncode == 0, r.stderr
     pids = [int(p) for p in (tmp_path / "llama.pids").read_text().split()]
     assert len(pids) == 1 and wait_gone(pids[0])
     assert (tmp_path / "bench.log").read_text().splitlines() == [
-        "--engine clef-flash --questions a.jsonl", "--engine clef-flash --questions b.jsonl"]
+        f"--engine {engine} --questions a.jsonl", f"--engine {engine} --questions b.jsonl"]
 
 
 def test_von_is_started_once(tmp_path):
