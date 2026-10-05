@@ -1,4 +1,4 @@
-# local-jev-bench: Apple Silicon 맥에서 돌리는 Jev 스타일 결정 모델 (Kev, Winnow, Jeff, AnyJev, Laya, CLM)
+# local-jev-bench: Apple Silicon 맥에서 돌리는 Jev 스타일 결정 모델 (Kev, Winnow, Clef, Von, Jeff, AnyJev, Laya, CLM)
 
 [English](README.md) | 한국어
 
@@ -19,7 +19,7 @@ local-jev-bench는 Jev 스타일의 System One 결정 모델을 Apple Silicon �
 
 가장 빠른 엔진은 Ollaya(Laya)다. typed-decisions의 긴 state를 빼면 첫 호출 p50이 15-55ms다. 대신 CLM을 빼면 정확도가 가장 낮다. 예외는 영어 30문항으로, 여기서는 Jeff가 더 낮다. 같은 셋들에서 보정(ECE)은 Kev·Winnow·Jeff·Ollaya 중 가장 나쁘다. AnyJev와 CLM은 일부 셋에서 그보다도 나쁘다. Kev-0.8B는 같은 셋에서 28-58ms이고, 모든 셋에서 정확도가 Ollaya와 같거나 더 높다. Kev-4B는 transfer-v4에서 모델 카드 수치를 재현했다(534/656, 카드 0.817). 자세한 내용은 [결과](#결과-2026-09-30-m3-max-36gb) 절에 있다.
 
-엔진은 여섯 가지다.
+엔진은 여덟 가지다.
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): [vllm-metal](https://github.com/vllm-project/vllm-metal)로 서빙하는 Qwen3-8B 인코더와 75MB짜리 CLM 헤드.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): `laya` 모델을 MLX로 돌린다.
@@ -27,6 +27,8 @@ local-jev-bench는 Jev 스타일의 System One 결정 모델을 Apple Silicon �
 - **AnyJev** ([nokia-applied-research/AnyJev](https://github.com/nokia-applied-research/AnyJev)): 학습이 필요 없다. vllm-metal 위 Qwen3-8B에서 라벨 logprob을 읽는다. `anyjev-raw`는 보정 없이, `anyjev-l0`는 선택지를 순환 이동하고 배치 prior로 보정한다.
 - **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): Qwen3.5-0.8B·4B·9B Base 위의 LoRA와 포인터 헤드(`kev-0.8b`, `kev-4b`, `kev-9b`). MLX로 돌린다.
 - **Jeff** ([firelex/jeff](https://github.com/firelex/jeff)): Jeff-Qwen3.5-2B. Qwen3.5-2B를 파인튜닝하고 답 readout을 학습한 모델이다. MLX로 돌린다.
+- **Clef-flash** ([Cloudflare/clef-flash](https://huggingface.co/Cloudflare/clef-flash)): Qwen3.5-9B 기반 Cloudflare 9B 결정 모델. `ggml-org/Clef-Flash-GGUF` Q8_0을 llama.cpp의 `llama-server`로 돌린다(`clef-flash`). 한 요청의 질문을 한 프롬프트로 함께 판단한다. 다른 엔진은 질문마다 따로 답한다.
+- **Von** ([wfzyx/von](https://github.com/wfzyx/von)): 395M ModernBERT 인코더와 옵션 마커 헤드. 자체 `von serve`로 Metal에서 돌린다(`von`).
 
 모든 엔진은 TypeSafe의 `POST /v1/systemone` 형식으로 응답한다.
 
@@ -52,6 +54,10 @@ uv sync
 
 [Jeff](https://github.com/firelex/jeff)도 자기 uv 환경을 둔다. `pyproject.toml`이 uv 0.12.19 이상을 요구해서 `uvx`를 쓴다. `git clone https://github.com/firelex/jeff ~/workspace/tak-bro/jeff && git -C ~/workspace/tak-bro/jeff checkout f06788292874c21a5b5c41549ac220dd9e15da7f` 뒤 그 안에서 `uvx --from 'uv>=0.12.19' uv sync --no-default-groups --extra mac`, `uvx --from 'uv>=0.12.19' uv run --no-default-groups hf download mstrasser/Jeff-Qwen3.5-2B --local-dir checkpoints/jeff-2b`를 실행한다. `scripts/serve-jeff.sh`는 MLX로 띄운다. MLX는 Jeff의 Qwen 모델만 돌리므로 Jeff-Gemma4-E2B는 쓰지 않는다.
 
+[Clef-flash](https://huggingface.co/ggml-org/Clef-Flash-GGUF)는 llama.cpp 빌드 11403이 필요하다. `/v1/systemone`과 clef 아키텍처가 Homebrew 0.5.0 뒤에 들어왔다. [b11403 릴리스](https://github.com/ggml-org/llama.cpp/releases/tag/b11403)의 `llama-b11403-bin-macos-arm64.tar.gz`를 `~/.local/opt/llama.cpp/b11403/`에 푼다(또는 `LLAMA_SERVER`로 그 `llama-server`를 가리킨다). `scripts/serve-llama.sh clef-flash`가 빌드를 확인하고, GGUF를 고정된 리비전으로 받아(9.7GB) 프롬프트 전체를 한 배치(`-ub 8192`)로 서빙한다. clef는 이렇게 해야 돈다.
+
+[Von](https://github.com/wfzyx/von)은 PyPI의 `von-sdk==1.3.7`을 `uvx`로 돌리고, 가중치는 `wfzyx/von`의 한 리비전으로 고정한다(3.2GB). `scripts/serve-von.sh`는 Metal에서 `--noul-decision raw`로 띄운다. 기본값은 noul 확률을 모두 0.2-0.8 밖으로 옮기는데, 판단은 그대로지만 여기서 채점하는 보정이 사라진다.
+
 `contrastive-lm`은 `vllm`을 의존성으로 선언하지만, 실제로는 임베딩 엔드포인트를 HTTP로 호출할 뿐이다. 그래서 `pyproject.toml`에서 이 의존성을 빼서 vLLM이 두 번 설치되지 않게 했다.
 
 ## 포트
@@ -68,6 +74,8 @@ uv sync
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
 | 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (또는 `kev-0.8b`, `kev-9b`) |
 | 8765 | Jeff System One API (`jeff-latest`) | `scripts/serve-jeff.sh` |
+| 8020 | llama-server System One API (`Clef-Flash-Q8_0@4a7a08c`) | `scripts/serve-llama.sh clef-flash` |
+| 8030 | Von System One API (`von-latest`) | `scripts/serve-von.sh` |
 
 포트가 이미 쓰이고 있으면 serve 스크립트는 시작하지 않는다.
 

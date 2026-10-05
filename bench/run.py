@@ -43,6 +43,13 @@ ENGINES: dict[str, dict[str, Any]] = {
 for size in ("0.8b", "4b", "9b"):
     ENGINES[f"kev-{size}"] = {"url": os.environ.get("KEV_URL", "http://127.0.0.1:8009"), "model": "kev-latest",
                               "served": ("/v1/models", ("models", 0, "run"), f"jaredpalmer/kev-{size}")}
+# llama-server (scripts/serve-llama.sh) names the GGUF file and its repo revision in its alias; `served` checks it.
+ENGINES["clef-flash"] = {"url": os.environ.get("LLAMA_URL", "http://127.0.0.1:8020"), "model": "Clef-Flash-Q8_0@4a7a08c",
+                         "served": ("/v1/models", ("data", 0, "id"), "Clef-Flash-Q8_0@4a7a08c")}
+# Von's /health reports only its von-sdk version, so `served` checks that; the weights' revision is pinned in
+# scripts/serve-von.sh, not checked here.
+ENGINES["von"] = {"url": os.environ.get("VON_URL", "http://127.0.0.1:8030"), "model": "von-latest",
+                  "served": ("/health", ("version",), "1.3.7")}
 # A bare benchmark runs the two engines that can share the machine. The others each need most of the Metal
 # memory, so they are started, measured with --engine, and stopped one at a time.
 DEFAULT_ENGINES = ["clm", "ollaya"]
@@ -118,6 +125,9 @@ def check_shape(engine: str, questions: dict, answers: dict) -> None:
                 raise EngineError(f"{engine}: {qid!r} chose {value!r}, not one of {list(q['criteria'])}")
             if not isinstance(a.get("probabilities"), dict):
                 raise EngineError(f"{engine}: choice {qid!r} has no probabilities: {a}")
+            if set(a["probabilities"]) != set(q["criteria"]):
+                raise EngineError(f"{engine}: choice {qid!r} has probabilities for {sorted(a['probabilities'])}, "
+                                  f"not the options {sorted(q['criteria'])}")
         elif isinstance(value, bool) or not isinstance(value, (int, float)):
             raise EngineError(f"{engine}: answer {qid!r} has no numeric {kind!r}: {a}")
 

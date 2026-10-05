@@ -166,6 +166,40 @@ def test_anyjev_adapter_restarts_before_every_set(tmp_path):
     assert all(wait_gone(p) for p in adapters + llms)
 
 
+def test_clef_flash_starts_llama_server_once(tmp_path):
+    port = free_port()
+    (tmp_path / "health").write_text("ok")
+    bench = tmp_path / "bench.sh"
+    bench.write_text(f'#!/bin/sh\necho "$@" >> {tmp_path}/bench.log\n')
+    bench.chmod(0o755)
+    env = {**os.environ, "MEASURE_SCRIPTS": str(fake_scripts(tmp_path, llama=port)),
+           "LLAMA_URL": f"http://127.0.0.1:{port}", "MEASURE_BENCH": str(bench),
+           "MEASURE_LOGS": str(tmp_path / "logs")}
+    r = subprocess.run(["bash", "scripts/measure.sh", "clef-flash", "a.jsonl", "b.jsonl"], cwd=ROOT,
+                       capture_output=True, text=True, env=env, timeout=60)
+    assert r.returncode == 0, r.stderr
+    pids = [int(p) for p in (tmp_path / "llama.pids").read_text().split()]
+    assert len(pids) == 1 and wait_gone(pids[0])
+    assert (tmp_path / "bench.log").read_text().splitlines() == [
+        "--engine clef-flash --questions a.jsonl", "--engine clef-flash --questions b.jsonl"]
+
+
+def test_von_is_started_once(tmp_path):
+    port = free_port()
+    (tmp_path / "health").write_text("ok")
+    bench = tmp_path / "bench.sh"
+    bench.write_text(f'#!/bin/sh\necho "$@" >> {tmp_path}/bench.log\n')
+    bench.chmod(0o755)
+    env = {**os.environ, "MEASURE_SCRIPTS": str(fake_scripts(tmp_path, von=port)),
+           "VON_URL": f"http://127.0.0.1:{port}", "MEASURE_BENCH": str(bench), "MEASURE_LOGS": str(tmp_path / "logs")}
+    r = subprocess.run(["bash", "scripts/measure.sh", "von", "a.jsonl"], cwd=ROOT,
+                       capture_output=True, text=True, env=env, timeout=60)
+    assert r.returncode == 0, r.stderr
+    pids = [int(p) for p in (tmp_path / "von.pids").read_text().split()]
+    assert len(pids) == 1 and wait_gone(pids[0])
+    assert (tmp_path / "bench.log").read_text().splitlines() == ["--engine von --questions a.jsonl"]
+
+
 def test_ollaya_daemon_is_reused_and_the_model_unloaded(tmp_path):
     port = free_port()
     (tmp_path / "api").mkdir()

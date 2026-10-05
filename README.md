@@ -1,4 +1,4 @@
-# local-jev-bench: local Jev-style decision models on Apple Silicon (Kev, Winnow, Jeff, AnyJev, Laya, CLM)
+# local-jev-bench: local Jev-style decision models on Apple Silicon (Kev, Winnow, Clef, Von, Jeff, AnyJev, Laya, CLM)
 
 English | [한국어](README.ko.md)
 
@@ -27,7 +27,7 @@ accurate engine apart from CLM on every set but the 30 English items, where Jeff
 accurate as Ollaya or more on every set. Kev-4B reproduces its model card on transfer-v4 (534/656 against 0.817). Details are in
 [Results](#results-2026-09-30-m3-max-36-gb).
 
-It sets up six engines:
+It sets up eight engines:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): the `laya` model, run on MLX.
@@ -35,6 +35,8 @@ It sets up six engines:
 - **AnyJev** ([nokia-applied-research/AnyJev](https://github.com/nokia-applied-research/AnyJev)): training-free; reads label logprobs from Qwen3-8B on vllm-metal, with no correction (`anyjev-raw`) or with cyclic option shifts plus a batch prior (`anyjev-l0`).
 - **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): a LoRA plus pointer head on Qwen3.5-0.8B, 4B or 9B Base (`kev-0.8b`, `kev-4b`, `kev-9b`), run on MLX.
 - **Jeff** ([firelex/jeff](https://github.com/firelex/jeff)): Jeff-Qwen3.5-2B, a fine-tuned Qwen3.5-2B with a trained answer readout, run on MLX.
+- **Clef-flash** ([Cloudflare/clef-flash](https://huggingface.co/Cloudflare/clef-flash)): Cloudflare's 9B decision model on Qwen3.5-9B, as `ggml-org/Clef-Flash-GGUF` Q8_0, served by llama.cpp's `llama-server` (`clef-flash`). It decides all the questions of a request jointly, in one prompt; the other engines answer each question on its own.
+- **Von** ([wfzyx/von](https://github.com/wfzyx/von)): a 395M ModernBERT encoder with an option-marker head, served by its own `von serve` on Metal (`von`).
 
 All speak TypeSafe's `POST /v1/systemone` wire format.
 
@@ -55,6 +57,10 @@ uv sync
 
 [Jeff](https://github.com/firelex/jeff) keeps its own uv environment too, and its `pyproject.toml` requires uv 0.12.19 or newer, hence `uvx`: `git clone https://github.com/firelex/jeff ~/workspace/tak-bro/jeff && git -C ~/workspace/tak-bro/jeff checkout f06788292874c21a5b5c41549ac220dd9e15da7f`, then in it `uvx --from 'uv>=0.12.19' uv sync --no-default-groups --extra mac` and `uvx --from 'uv>=0.12.19' uv run --no-default-groups hf download mstrasser/Jeff-Qwen3.5-2B --local-dir checkpoints/jeff-2b`. `scripts/serve-jeff.sh` serves it on MLX, which runs Jeff's Qwen models only, so Jeff-Gemma4-E2B is not used here.
 
+[Clef-flash](https://huggingface.co/ggml-org/Clef-Flash-GGUF) needs llama.cpp build 11403: `/v1/systemone` and the clef architecture landed after Homebrew's 0.5.0. Unpack the [b11403 release](https://github.com/ggml-org/llama.cpp/releases/tag/b11403) `llama-b11403-bin-macos-arm64.tar.gz` into `~/.local/opt/llama.cpp/b11403/` (or point `LLAMA_SERVER` at its `llama-server`). `scripts/serve-llama.sh clef-flash` checks the build, downloads the GGUF at a pinned revision (9.7 GB) and serves it with the whole prompt in one batch (`-ub 8192`), which clef requires.
+
+[Von](https://github.com/wfzyx/von) runs from PyPI through `uvx` (`von-sdk==1.3.7`), with weights pinned to one revision of `wfzyx/von` (3.2 GB). `scripts/serve-von.sh` serves it on Metal with `--noul-decision raw`: by default Von moves every noul probability outside 0.2-0.8, which keeps the decision but not the calibration scored here.
+
 `contrastive-lm` declares `vllm` as a dependency, but it only calls the embeddings endpoint over HTTP. `pyproject.toml` overrides that dependency away so a second vLLM is not installed.
 
 ## Ports
@@ -71,6 +77,8 @@ Every server binds to `127.0.0.1` only.
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
 | 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (or `kev-0.8b`, `kev-9b`) |
 | 8765 | Jeff System One API (`jeff-latest`) | `scripts/serve-jeff.sh` |
+| 8020 | llama-server System One API (`Clef-Flash-Q8_0@4a7a08c`) | `scripts/serve-llama.sh clef-flash` |
+| 8030 | Von System One API (`von-latest`) | `scripts/serve-von.sh` |
 
 The serve scripts refuse to start when their port is already taken.
 
