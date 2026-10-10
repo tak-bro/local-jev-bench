@@ -19,6 +19,7 @@ questions count only in sets graded by argmax, which read their level probabilit
 | anyjev-raw | anyjev-raw | 546.3 | 204.1 | 204.1 | 369.2 | 300 | 242/300 (81%, 76-85) | 0.357 (300) | 0.180 | n/a | n/a | 0 | normal |
 | clef | Clef-Q4_K_M@5f70656 | 1531.7 | 1599.5 | 1599.5 | 2086.7 | 300 | 261/300 (87%, 83-90) | 0.205 (300) | 0.060 | n/a | n/a | 0 | warn |
 | clef-flash | Clef-Flash-Q8_0@4a7a08c | 365.1 | 488.2 | 488.2 | 611.8 | 300 | 257/300 (86%, 81-89) | 0.205 (300) | 0.052 | n/a | n/a | 0 | normal |
+| decider-4b | decider:4b | 12339.6 | 1691.9 | 1691.9 | 2922.3 | 300 | 248/300 (83%, 78-87) | 0.224 (300) | 0.077 | n/a | n/a | 0 | normal |
 | jeff | jeff-latest | 131.3 | 69.7 | 69.7 | 100.5 | 300 | 237/300 (79%, 74-83) | 0.320 (300) | 0.077 | n/a | n/a | 0 | warn |
 | jeff-0.8b | jeff-latest | 60.7 | 27.8 | 27.8 | 37.4 | 300 | 217/300 (72%, 67-77) | 0.402 (300) | 0.132 | n/a | n/a | 0 | warn |
 | kev-0.8b | kev-latest | 29.1 | 27.9 | 27.9 | 41.3 | 300 | 240/300 (80%, 75-84) | 0.290 (300) | 0.036 | n/a | n/a | 0 | warn |
@@ -39,6 +40,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | anyjev-raw | 300 | 1 | 2 | 1.000 |
 | anyjev-l0 | clef | 300 | 7 | 27 | <0.001 |
 | anyjev-l0 | clef-flash | 300 | 12 | 28 | 0.017 |
+| anyjev-l0 | decider-4b | 300 | 16 | 23 | 0.337 |
 | anyjev-l0 | jeff | 300 | 28 | 24 | 0.678 |
 | anyjev-l0 | jeff-0.8b | 300 | 40 | 16 | 0.002 |
 | anyjev-l0 | kev-0.8b | 300 | 32 | 31 | 1.000 |
@@ -50,6 +52,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | winnow-12b | 300 | 7 | 29 | <0.001 |
 | anyjev-raw | clef | 300 | 8 | 27 | 0.002 |
 | anyjev-raw | clef-flash | 300 | 13 | 28 | 0.028 |
+| anyjev-raw | decider-4b | 300 | 16 | 22 | 0.418 |
 | anyjev-raw | jeff | 300 | 28 | 23 | 0.576 |
 | anyjev-raw | jeff-0.8b | 300 | 42 | 17 | 0.002 |
 | anyjev-raw | kev-0.8b | 300 | 31 | 29 | 0.897 |
@@ -60,6 +63,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-raw | winnow | 300 | 12 | 22 | 0.121 |
 | anyjev-raw | winnow-12b | 300 | 7 | 28 | <0.001 |
 | clef | clef-flash | 300 | 15 | 11 | 0.557 |
+| clef | decider-4b | 300 | 18 | 5 | 0.011 |
 | clef | jeff | 300 | 35 | 11 | <0.001 |
 | clef | jeff-0.8b | 300 | 55 | 11 | <0.001 |
 | clef | kev-0.8b | 300 | 34 | 13 | 0.003 |
@@ -69,6 +73,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef | von | 300 | 124 | 15 | <0.001 |
 | clef | winnow | 300 | 18 | 9 | 0.122 |
 | clef | winnow-12b | 300 | 9 | 11 | 0.824 |
+| clef-flash | decider-4b | 300 | 21 | 12 | 0.163 |
 | clef-flash | jeff | 300 | 36 | 16 | 0.008 |
 | clef-flash | jeff-0.8b | 300 | 55 | 15 | <0.001 |
 | clef-flash | kev-0.8b | 300 | 31 | 14 | 0.016 |
@@ -78,6 +83,15 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef-flash | von | 300 | 125 | 20 | <0.001 |
 | clef-flash | winnow | 300 | 18 | 13 | 0.473 |
 | clef-flash | winnow-12b | 300 | 15 | 21 | 0.405 |
+| decider-4b | jeff | 300 | 26 | 15 | 0.117 |
+| decider-4b | jeff-0.8b | 300 | 42 | 11 | <0.001 |
+| decider-4b | kev-0.8b | 300 | 27 | 19 | 0.302 |
+| decider-4b | kev-4b | 300 | 8 | 10 | 0.815 |
+| decider-4b | kev-9b | 300 | 16 | 29 | 0.072 |
+| decider-4b | ollaya | 300 | 100 | 19 | <0.001 |
+| decider-4b | von | 300 | 116 | 20 | <0.001 |
+| decider-4b | winnow | 300 | 13 | 17 | 0.585 |
+| decider-4b | winnow-12b | 300 | 10 | 25 | 0.017 |
 | jeff | jeff-0.8b | 300 | 34 | 14 | 0.006 |
 | jeff | kev-0.8b | 300 | 29 | 32 | 0.798 |
 | jeff | kev-4b | 300 | 13 | 26 | 0.053 |
@@ -117,6 +131,6 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 ## By source
 
-| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | jeff | jeff-0.8b | kev-0.8b | kev-4b | kev-9b | ollaya | von | winnow | winnow-12b |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| nsmc | 300 | 241/300 (80%) | 242/300 (81%) | 261/300 (87%) | 257/300 (86%) | 237/300 (79%) | 217/300 (72%) | 240/300 (80%) | 250/300 (83%) | 261/300 (87%) | 167/300 (56%) | 152/300 (51%) | 252/300 (84%) | 263/300 (88%) |
+| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | decider-4b | jeff | jeff-0.8b | kev-0.8b | kev-4b | kev-9b | ollaya | von | winnow | winnow-12b |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| nsmc | 300 | 241/300 (80%) | 242/300 (81%) | 261/300 (87%) | 257/300 (86%) | 248/300 (83%) | 237/300 (79%) | 217/300 (72%) | 240/300 (80%) | 250/300 (83%) | 261/300 (87%) | 167/300 (56%) | 152/300 (51%) | 252/300 (84%) | 263/300 (88%) |
