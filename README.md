@@ -160,6 +160,7 @@ uv run python bench/make_sets.py transfer-v4        # Kev's out-of-distribution 
 uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test (400 cases, 2,000 decisions) with gold distributions
 uv run python bench/make_sets.py nsmc               # 300 Korean movie reviews, positive or not (HF card: CC BY 2.0)
 uv run python bench/make_sets.py klue-ynat          # 300 Korean headlines, 7 topics (KLUE, CC BY-SA 4.0)
+uv run python bench/make_sets.py clinc-oos          # CLINC150 top-20 intents (300 choice) + 100 out-of-scope noul
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 

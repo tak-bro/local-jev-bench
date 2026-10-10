@@ -590,3 +590,23 @@ def test_unreadable_identity_is_an_error(monkeypatch):
             run.served("kev-4b")
     finally:
         srv.close()
+
+
+def test_hub_revision_resolves_kev_adapters(monkeypatch):
+    import huggingface_hub
+
+    monkeypatch.setattr(huggingface_hub.HfApi, "model_info", lambda self, repo: type("I", (), {"sha": "abc123"})())
+    assert run.hub_revision("kev-4b") == "abc123"
+
+
+def test_hub_revision_is_none_off_hub_or_offline(monkeypatch):
+    assert run.hub_revision("winnow") is None
+    assert run.hub_revision("von") is None
+
+    def boom(*a, **k):
+        raise OSError("offline")
+
+    import huggingface_hub
+
+    monkeypatch.setattr(huggingface_hub.HfApi, "model_info", boom)
+    assert run.hub_revision("kev-9b") is None  # unreachable Hub is None, never an error

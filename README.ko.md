@@ -121,6 +121,7 @@ uv run python bench/make_sets.py transfer-v4        # Kev의 분포 밖 developm
 uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test(400케이스, 2,000판단), gold 분포 포함
 uv run python bench/make_sets.py nsmc               # 한국어 영화 리뷰 300개, 긍정 여부 (HF 카드: CC BY 2.0)
 uv run python bench/make_sets.py klue-ynat          # 한국어 뉴스 제목 300개, 7개 분야 (KLUE, CC BY-SA 4.0)
+uv run python bench/make_sets.py clinc-oos          # CLINC150 상위 20개 인텐트(300 choice) + 분포 밖 100개(noul)
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 

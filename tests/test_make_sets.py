@@ -135,3 +135,27 @@ def test_klue_ynat_items():
     assert q["type"] == "choice" and q["instructions"] == "이 기사 제목의 분야는?"
     # KLUE's ClassLabel names, in label order (ynat parquet metadata)
     assert list(q["criteria"]) == ["IT과학", "경제", "사회", "생활문화", "세계", "스포츠", "정치"]
+
+
+CLINC_NAMES = ["transfer", "translate", "oos_irrelevant"]
+
+
+def test_clinc_oos_top_k_and_oos_items():
+    train = [{"text": "t", "intent": 1}, {"text": "t", "intent": 1}, {"text": "t", "intent": 0}]
+    test = [{"text": "turn on bluetooth", "intent": 1}, {"text": "rare one", "intent": 2}]
+    items = make_sets.clinc_oos(train, test, ["what is the meaning of life?"], CLINC_NAMES,
+                                k=2, n=2, m=1, seed=0)
+    in_scope = [it for it in items if it["meta"]["source"] == "clinc150"]
+    oos = [it for it in items if it["meta"]["source"] == "clinc-oos"]
+    # top-2 by train frequency are intents 1 and 0 (2 and 1 rows); the intent-2 row is out of scope
+    assert len(in_scope) == 1 and in_scope[0]["expected"] == {"intent": "translate"}
+    assert list(in_scope[0]["questions"]["intent"]["criteria"]) == ["transfer", "translate"]
+    assert len(oos) == 1 and oos[0]["expected"] == {"in_scope": False}
+    assert oos[0]["questions"]["in_scope"]["type"] == "noul"
+
+
+def test_clinc_names_reads_classlabel_metadata():
+    import json
+
+    meta = json.dumps({"info": {"features": {"intent": {"names": CLINC_NAMES}}}}).encode()
+    assert make_sets.clinc_names(meta) == CLINC_NAMES

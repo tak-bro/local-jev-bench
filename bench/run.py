@@ -135,6 +135,21 @@ def served(engine: str) -> str | None:
     return got
 
 
+def hub_revision(engine: str) -> str | None:
+    """The Hub snapshot revision behind a weights-from-Hub engine, for the log header. Only Kev resolves its
+    adapter from the Hub at serve time (`jaredpalmer/kev-<size>`); the llama-server alias already names its GGUF
+    revision and Von's weights revision is pinned in scripts/serve-von.sh. Anything unreachable (offline tests,
+    no network) is None, never an error."""
+    if not engine.startswith("kev-"):
+        return None
+    try:
+        from huggingface_hub import HfApi
+
+        return HfApi().model_info(f"jaredpalmer/{engine}").sha
+    except Exception:
+        return None
+
+
 def check_shape(engine: str, questions: dict, answers: dict) -> None:
     """Every question must come back with the value field its type promises."""
     for qid, q in questions.items():
@@ -331,7 +346,8 @@ def main() -> int:
             raise SystemExit(str(e)) from e
         header = {"set": questions_label(args.questions), "set_sha256": score.sha256(args.questions),
                   "engine": engine, "model": ENGINES[engine]["model"], "reps": args.reps, "warmup": WARMUP,
-                  "started": now(), "host": host(), "served": identity}
+                  "started": now(), "host": host(), "served": identity,
+                  "hub_revision": hub_revision(engine)}
         log = out / f"{engine}.jsonl"
         partial = log.with_suffix(".jsonl.partial")  # not *.jsonl, so bench/score.py never reads it
         with partial.open("w") as raw:
