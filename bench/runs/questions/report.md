@@ -20,13 +20,25 @@ questions count only in sets graded by argmax, which read their level probabilit
 | clef | Clef-Q4_K_M@5f70656 | 2802.7 | 3480.6 | 3497.6 | 8268.8 | 90 | 95/105 (90%, 83-95) | 0.153 (75) | 0.074 | 0/105 | 0/30 (0%) | 0 | warn |
 | clef-flash | Clef-Flash-Q8_0@4a7a08c | 918.3 | 769.5 | 769.5 | 955.8 | 90 | 90/105 (86%, 78-91) | 0.130 (75) | 0.061 | 0/105 | 0/30 (0%) | 0 | warn |
 | clm | - | 4071.2 | 326.6 | 3.9 | 387.4 | 90 | 41/105 (39%, 30-49) | 0.733 (75) | 0.373 | 0/105 | 0/30 (0%) | 0 | normal |
+| decider-2b | decider | 78074.5 | 4052.9 | 3983.8 | 9554.1 | 90 | 88/105 (84%, 76-90) | 0.104 (75) | 0.013 | 0/105 | 0/30 (0%) | 0 | warn |
+| decider-4b | decider:4b | 20472.6 | 9251.1 | 9244.1 | 10716.6 | 90 | 94/105 (90%, 82-94) | 0.094 (75) | 0.061 | 0/105 | 0/30 (0%) | 0 | normal |
+| decision-eos | decision | 6591.2 | 1065.4 | 1066.2 | 1609.7 | 90 | 79/105 (75%, 66-83) | 0.251 (75) | 0.050 | 0/105 | 3/30 (10%) | 0 | normal |
 | jeff | jeff-latest | 264.4 | 251.1 | 246.8 | 332.8 | 90 | 67/105 (64%, 54-72) | 0.490 (75) | 0.237 | 0/105 | 0/30 (0%) | 0 | normal |
+| jeff-0.8b | jeff-latest | 1376.2 | 103.3 | 102.2 | 113.1 | 90 | 87/105 (83%, 75-89) | 0.168 (75) | 0.047 | 0/105 | 2/30 (7%) | 0 | warn |
+| jevk5 | jevk5 | 22446.4 | 1205.0 | 1170.8 | 1426.2 | 69 | 73/84 (87%, 78-93) | 0.134 (61) | 0.060 | 0/84 | 1/23 (4%) | 21 | warn |
 | kev-0.8b | kev-latest | 118.3 | 54.1 | 40.8 | 61.8 | 90 | 79/105 (75%, 66-83) | 0.260 (75) | 0.085 | 0/105 | 1/30 (3%) | 0 | warn |
-| kev-4b | kev-latest | 1046.1 | 289.4 | 237.9 | 340.5 | 90 | 93/105 (89%, 81-93) | 0.126 (75) | 0.086 | 0/105 | 1/30 (3%) | 0 | warn |
-| kev-9b | kev-latest | 4499.0 | 534.7 | 406.6 | 612.4 | 90 | 95/105 (90%, 83-95) | 0.098 (75) | 0.088 | 0/105 | 0/30 (0%) | 0 | normal |
+| kev-4b | kev-latest | 784.3 | 211.2 | 181.2 | 247.9 | 90 | 93/105 (89%, 81-93) | 0.126 (75) | 0.086 | 0/105 | 1/30 (3%) | 0 | normal |
+| kev-9b | kev-latest | 7199.2 | 414.0 | 377.2 | 522.7 | 90 | 93/105 (89%, 81-93) | 0.109 (75) | 0.082 | 0/105 | 1/30 (3%) | 0 | normal |
 | ollaya | laya | 863.5 | 36.6 | 36.2 | 53.7 | 90 | 79/105 (75%, 66-83) | 0.225 (75) | 0.128 | 0/105 | 2/30 (7%) | 0 | warn |
+| ollaya-td | laya:typed-decisions | 1506.6 | 375.6 | 376.1 | 1515.8 | 90 | 84/105 (80%, 71-87) | 0.207 (75) | 0.136 | 0/105 | 1/30 (3%) | 0 | normal |
 | von | von-latest | 3586.5 | 126.4 | 118.0 | 156.2 | 90 | 77/105 (73%, 64-81) | 0.277 (75) | 0.150 | 0/105 | 0/30 (0%) | 0 | normal |
 | winnow | winnow:e4b | 5430.6 | 720.0 | 556.2 | 1078.4 | 90 | 93/105 (89%, 81-93) | 0.136 (75) | 0.049 | 0/105 | 0/30 (0%) | 0 | warn |
+| winnow-12b | winnow:12b | 1921.7 | 1380.6 | 1204.0 | 1609.4 | 90 | 96/105 (91%, 85-95) | 0.151 (75) | 0.082 | 0/105 | 0/30 (0%) | 0 | normal |
+- jevk5 error: m09 timed: jevk5: HTTP 500: {"error":"model files: llama_decode failed (-3); see the llama.cpp log","code":"INFERENCE_FAILED"}
+- jevk5 error: m09 timed: jevk5: HTTP 500: {"error":"model files: llama_decode failed (-3); see the llama.cpp log","code":"INFERENCE_FAILED"}
+- jevk5 error: m09 timed: jevk5: HTTP 500: {"error":"model files: llama_decode failed (-3); see the llama.cpp log","code":"INFERENCE_FAILED"}
+- jevk5 error: m10 timed: jevk5: HTTP 500: {"error":"model files: llama_decode failed (-3); see the llama.cpp log","code":"INFERENCE_FAILED"}
+- jevk5 error: m10 timed: jevk5: HTTP 500: {"error":"model files: llama_decode failed (-3); see the llama.cpp log","code":"INFERENCE_FAILED"}
 
 ## Pairwise differences (McNemar exact)
 
@@ -39,65 +51,170 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | clef | 105 | 3 | 13 | 0.021 |
 | anyjev-l0 | clef-flash | 105 | 5 | 10 | 0.302 |
 | anyjev-l0 | clm | 105 | 49 | 5 | <0.001 |
+| anyjev-l0 | decider-2b | 105 | 4 | 7 | 0.549 |
+| anyjev-l0 | decider-4b | 105 | 2 | 11 | 0.022 |
+| anyjev-l0 | decision-eos | 105 | 14 | 8 | 0.286 |
 | anyjev-l0 | jeff | 105 | 26 | 8 | 0.003 |
+| anyjev-l0 | jeff-0.8b | 105 | 10 | 12 | 0.832 |
+| anyjev-l0 | jevk5 | 84 | 3 | 10 | 0.092 |
 | anyjev-l0 | kev-0.8b | 105 | 14 | 8 | 0.286 |
 | anyjev-l0 | kev-4b | 105 | 3 | 11 | 0.057 |
-| anyjev-l0 | kev-9b | 105 | 3 | 13 | 0.021 |
+| anyjev-l0 | kev-9b | 105 | 3 | 11 | 0.057 |
 | anyjev-l0 | ollaya | 105 | 12 | 6 | 0.238 |
+| anyjev-l0 | ollaya-td | 105 | 8 | 7 | 1.000 |
 | anyjev-l0 | von | 105 | 13 | 5 | 0.096 |
 | anyjev-l0 | winnow | 105 | 2 | 10 | 0.039 |
+| anyjev-l0 | winnow-12b | 105 | 1 | 12 | 0.003 |
 | anyjev-raw | clef | 105 | 4 | 13 | 0.049 |
 | anyjev-raw | clef-flash | 105 | 7 | 11 | 0.481 |
 | anyjev-raw | clm | 105 | 49 | 4 | <0.001 |
+| anyjev-raw | decider-2b | 105 | 6 | 8 | 0.791 |
+| anyjev-raw | decider-4b | 105 | 4 | 12 | 0.077 |
+| anyjev-raw | decision-eos | 105 | 13 | 6 | 0.167 |
 | anyjev-raw | jeff | 105 | 27 | 8 | 0.002 |
+| anyjev-raw | jeff-0.8b | 105 | 10 | 11 | 1.000 |
+| anyjev-raw | jevk5 | 84 | 3 | 9 | 0.146 |
 | anyjev-raw | kev-0.8b | 105 | 15 | 8 | 0.210 |
 | anyjev-raw | kev-4b | 105 | 5 | 12 | 0.143 |
-| anyjev-raw | kev-9b | 105 | 4 | 13 | 0.049 |
+| anyjev-raw | kev-9b | 105 | 5 | 12 | 0.143 |
 | anyjev-raw | ollaya | 105 | 12 | 5 | 0.143 |
+| anyjev-raw | ollaya-td | 105 | 9 | 7 | 0.804 |
 | anyjev-raw | von | 105 | 12 | 3 | 0.035 |
 | anyjev-raw | winnow | 105 | 3 | 10 | 0.092 |
+| anyjev-raw | winnow-12b | 105 | 2 | 12 | 0.013 |
 | clef | clef-flash | 105 | 8 | 3 | 0.227 |
 | clef | clm | 105 | 56 | 2 | <0.001 |
+| clef | decider-2b | 105 | 12 | 5 | 0.143 |
+| clef | decider-4b | 105 | 5 | 4 | 1.000 |
+| clef | decision-eos | 105 | 22 | 6 | 0.004 |
 | clef | jeff | 105 | 29 | 1 | <0.001 |
+| clef | jeff-0.8b | 105 | 17 | 9 | 0.169 |
+| clef | jevk5 | 84 | 7 | 4 | 0.549 |
 | clef | kev-0.8b | 105 | 22 | 6 | 0.004 |
 | clef | kev-4b | 105 | 6 | 4 | 0.754 |
-| clef | kev-9b | 105 | 6 | 6 | 1.000 |
+| clef | kev-9b | 105 | 7 | 5 | 0.774 |
 | clef | ollaya | 105 | 19 | 3 | <0.001 |
+| clef | ollaya-td | 105 | 14 | 3 | 0.013 |
 | clef | von | 105 | 22 | 4 | <0.001 |
 | clef | winnow | 105 | 5 | 3 | 0.727 |
+| clef | winnow-12b | 105 | 3 | 4 | 1.000 |
 | clef-flash | clm | 105 | 53 | 4 | <0.001 |
+| clef-flash | decider-2b | 105 | 7 | 5 | 0.774 |
+| clef-flash | decider-4b | 105 | 2 | 6 | 0.289 |
+| clef-flash | decision-eos | 105 | 19 | 8 | 0.052 |
 | clef-flash | jeff | 105 | 28 | 5 | <0.001 |
+| clef-flash | jeff-0.8b | 105 | 17 | 14 | 0.720 |
+| clef-flash | jevk5 | 84 | 4 | 7 | 0.549 |
 | clef-flash | kev-0.8b | 105 | 18 | 7 | 0.043 |
 | clef-flash | kev-4b | 105 | 3 | 6 | 0.508 |
-| clef-flash | kev-9b | 105 | 4 | 9 | 0.267 |
+| clef-flash | kev-9b | 105 | 3 | 6 | 0.508 |
 | clef-flash | ollaya | 105 | 17 | 6 | 0.035 |
+| clef-flash | ollaya-td | 105 | 11 | 5 | 0.210 |
 | clef-flash | von | 105 | 19 | 6 | 0.015 |
 | clef-flash | winnow | 105 | 4 | 7 | 0.549 |
+| clef-flash | winnow-12b | 105 | 2 | 8 | 0.109 |
+| clm | decider-2b | 105 | 2 | 49 | <0.001 |
+| clm | decider-4b | 105 | 1 | 54 | <0.001 |
+| clm | decision-eos | 105 | 6 | 44 | <0.001 |
 | clm | jeff | 105 | 13 | 39 | <0.001 |
+| clm | jeff-0.8b | 105 | 10 | 56 | <0.001 |
+| clm | jevk5 | 84 | 1 | 43 | <0.001 |
 | clm | kev-0.8b | 105 | 10 | 48 | <0.001 |
 | clm | kev-4b | 105 | 4 | 56 | <0.001 |
-| clm | kev-9b | 105 | 5 | 59 | <0.001 |
+| clm | kev-9b | 105 | 5 | 57 | <0.001 |
 | clm | ollaya | 105 | 6 | 44 | <0.001 |
+| clm | ollaya-td | 105 | 2 | 45 | <0.001 |
 | clm | von | 105 | 9 | 45 | <0.001 |
 | clm | winnow | 105 | 2 | 54 | <0.001 |
+| clm | winnow-12b | 105 | 2 | 57 | <0.001 |
+| decider-2b | decider-4b | 105 | 2 | 8 | 0.109 |
+| decider-2b | decision-eos | 105 | 18 | 9 | 0.122 |
+| decider-2b | jeff | 105 | 28 | 7 | <0.001 |
+| decider-2b | jeff-0.8b | 105 | 13 | 12 | 1.000 |
+| decider-2b | jevk5 | 84 | 3 | 7 | 0.344 |
+| decider-2b | kev-0.8b | 105 | 17 | 8 | 0.108 |
+| decider-2b | kev-4b | 105 | 5 | 10 | 0.302 |
+| decider-2b | kev-9b | 105 | 4 | 9 | 0.267 |
+| decider-2b | ollaya | 105 | 16 | 7 | 0.093 |
+| decider-2b | ollaya-td | 105 | 10 | 6 | 0.454 |
+| decider-2b | von | 105 | 18 | 7 | 0.043 |
+| decider-2b | winnow | 105 | 5 | 10 | 0.302 |
+| decider-2b | winnow-12b | 105 | 3 | 11 | 0.057 |
+| decider-4b | decision-eos | 105 | 20 | 5 | 0.004 |
+| decider-4b | jeff | 105 | 30 | 3 | <0.001 |
+| decider-4b | jeff-0.8b | 105 | 16 | 9 | 0.230 |
+| decider-4b | jevk5 | 84 | 3 | 3 | 1.000 |
+| decider-4b | kev-0.8b | 105 | 19 | 4 | 0.003 |
+| decider-4b | kev-4b | 105 | 4 | 3 | 1.000 |
+| decider-4b | kev-9b | 105 | 5 | 4 | 1.000 |
+| decider-4b | ollaya | 105 | 18 | 3 | 0.001 |
+| decider-4b | ollaya-td | 105 | 12 | 2 | 0.013 |
+| decider-4b | von | 105 | 20 | 3 | <0.001 |
+| decider-4b | winnow | 105 | 5 | 4 | 1.000 |
+| decider-4b | winnow-12b | 105 | 3 | 5 | 0.727 |
+| decision-eos | jeff | 105 | 21 | 9 | 0.043 |
+| decision-eos | jeff-0.8b | 105 | 6 | 14 | 0.115 |
+| decision-eos | jevk5 | 84 | 2 | 16 | 0.001 |
+| decision-eos | kev-0.8b | 105 | 9 | 9 | 1.000 |
+| decision-eos | kev-4b | 105 | 4 | 18 | 0.004 |
+| decision-eos | kev-9b | 105 | 4 | 18 | 0.004 |
+| decision-eos | ollaya | 105 | 9 | 9 | 1.000 |
+| decision-eos | ollaya-td | 105 | 8 | 13 | 0.383 |
+| decision-eos | von | 105 | 12 | 10 | 0.832 |
+| decision-eos | winnow | 105 | 5 | 19 | 0.007 |
+| decision-eos | winnow-12b | 105 | 2 | 19 | <0.001 |
+| jeff | jeff-0.8b | 105 | 5 | 25 | <0.001 |
+| jeff | jevk5 | 84 | 2 | 22 | <0.001 |
 | jeff | kev-0.8b | 105 | 11 | 23 | 0.058 |
 | jeff | kev-4b | 105 | 2 | 28 | <0.001 |
-| jeff | kev-9b | 105 | 1 | 29 | <0.001 |
+| jeff | kev-9b | 105 | 2 | 28 | <0.001 |
 | jeff | ollaya | 105 | 10 | 22 | 0.050 |
+| jeff | ollaya-td | 105 | 8 | 25 | 0.005 |
 | jeff | von | 105 | 12 | 22 | 0.121 |
 | jeff | winnow | 105 | 3 | 29 | <0.001 |
+| jeff | winnow-12b | 105 | 0 | 29 | <0.001 |
+| jeff-0.8b | jevk5 | 84 | 7 | 12 | 0.359 |
+| jeff-0.8b | kev-0.8b | 105 | 14 | 6 | 0.115 |
+| jeff-0.8b | kev-4b | 105 | 8 | 14 | 0.286 |
+| jeff-0.8b | kev-9b | 105 | 8 | 14 | 0.286 |
+| jeff-0.8b | ollaya | 105 | 15 | 7 | 0.134 |
+| jeff-0.8b | ollaya-td | 105 | 13 | 10 | 0.678 |
+| jeff-0.8b | von | 105 | 17 | 7 | 0.064 |
+| jeff-0.8b | winnow | 105 | 8 | 14 | 0.286 |
+| jeff-0.8b | winnow-12b | 105 | 6 | 15 | 0.078 |
+| jevk5 | kev-0.8b | 84 | 17 | 3 | 0.003 |
+| jevk5 | kev-4b | 84 | 3 | 3 | 1.000 |
+| jevk5 | kev-9b | 84 | 6 | 5 | 1.000 |
+| jevk5 | ollaya | 84 | 12 | 1 | 0.003 |
+| jevk5 | ollaya-td | 84 | 10 | 3 | 0.092 |
+| jevk5 | von | 84 | 16 | 2 | 0.001 |
+| jevk5 | winnow | 84 | 5 | 5 | 1.000 |
+| jevk5 | winnow-12b | 84 | 2 | 4 | 0.688 |
 | kev-0.8b | kev-4b | 105 | 4 | 18 | 0.004 |
-| kev-0.8b | kev-9b | 105 | 3 | 19 | <0.001 |
+| kev-0.8b | kev-9b | 105 | 3 | 17 | 0.003 |
 | kev-0.8b | ollaya | 105 | 10 | 10 | 1.000 |
+| kev-0.8b | ollaya-td | 105 | 8 | 13 | 0.383 |
 | kev-0.8b | von | 105 | 11 | 9 | 0.824 |
 | kev-0.8b | winnow | 105 | 5 | 19 | 0.007 |
-| kev-4b | kev-9b | 105 | 3 | 5 | 0.727 |
+| kev-0.8b | winnow-12b | 105 | 3 | 20 | <0.001 |
+| kev-4b | kev-9b | 105 | 4 | 4 | 1.000 |
 | kev-4b | ollaya | 105 | 18 | 4 | 0.004 |
+| kev-4b | ollaya-td | 105 | 13 | 4 | 0.049 |
 | kev-4b | von | 105 | 20 | 4 | 0.002 |
 | kev-4b | winnow | 105 | 5 | 5 | 1.000 |
-| kev-9b | ollaya | 105 | 20 | 4 | 0.002 |
-| kev-9b | von | 105 | 21 | 3 | <0.001 |
-| kev-9b | winnow | 105 | 6 | 4 | 0.754 |
+| kev-4b | winnow-12b | 105 | 0 | 3 | 0.250 |
+| kev-9b | ollaya | 105 | 18 | 4 | 0.004 |
+| kev-9b | ollaya-td | 105 | 13 | 4 | 0.049 |
+| kev-9b | von | 105 | 19 | 3 | <0.001 |
+| kev-9b | winnow | 105 | 4 | 4 | 1.000 |
+| kev-9b | winnow-12b | 105 | 2 | 5 | 0.453 |
+| ollaya | ollaya-td | 105 | 4 | 9 | 0.267 |
 | ollaya | von | 105 | 8 | 6 | 0.791 |
 | ollaya | winnow | 105 | 4 | 18 | 0.004 |
+| ollaya | winnow-12b | 105 | 2 | 19 | <0.001 |
+| ollaya-td | von | 105 | 13 | 6 | 0.167 |
+| ollaya-td | winnow | 105 | 3 | 12 | 0.035 |
+| ollaya-td | winnow-12b | 105 | 3 | 15 | 0.008 |
 | von | winnow | 105 | 3 | 19 | <0.001 |
+| von | winnow-12b | 105 | 2 | 21 | <0.001 |
+| winnow | winnow-12b | 105 | 2 | 5 | 0.453 |

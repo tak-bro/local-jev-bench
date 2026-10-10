@@ -23,7 +23,7 @@ fi
 engine=$1
 shift
 case $engine in
-    ollaya | winnow | kev-0.8b | kev-4b | kev-9b | jeff | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | von) ;;
+    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | von) ;;
     *)
         echo "unknown engine: $engine" >&2
         exit 2
@@ -106,9 +106,15 @@ if [ -n "${MEASURE_START:-}" ]; then
     start "$engine" "${MEASURE_READY_URL:?MEASURE_READY_URL with MEASURE_START}" 200 bash -c "$MEASURE_START"
 else
     case $engine in
-        ollaya | winnow)
+        ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5)
             model=${OLLAYA_MODEL:-laya}
             [ "$engine" = winnow ] && model=${WINNOW_MODEL:-winnow:e4b}
+            [ "$engine" = winnow-12b ] && model=${WINNOW_12B_MODEL:-winnow:12b}
+            [ "$engine" = ollaya-td ] && model=${OLLAYA_TD_MODEL:-laya:typed-decisions}
+            [ "$engine" = decider-2b ] && model=${DECIDER_2B_MODEL:-decider}
+            [ "$engine" = decider-4b ] && model=${DECIDER_4B_MODEL:-decider:4b}
+            [ "$engine" = decision-eos ] && model=${DECISION_EOS_MODEL:-decision}
+            [ "$engine" = jevk5 ] && model=${JEVK5_MODEL:-jevk5}
             if [ "$(http_code "$ollaya_url/api/tags")" != 200 ]; then
                 start ollaya "$ollaya_url/api/tags" 200 env OLLAYA_HOST="${ollaya_url#http://}" ollaya serve
             fi
@@ -131,8 +137,11 @@ else
         von)
             start von "${VON_URL:-http://127.0.0.1:8030}/health" 200 "$scripts/serve-von.sh"
             ;;
-        jeff)
-            start jeff "${JEFF_URL:-http://127.0.0.1:8765}/health" 200 "$scripts/serve-jeff.sh"
+        jeff | jeff-0.8b)
+            checkpoint=checkpoints/jeff-2b
+            [ "$engine" = jeff-0.8b ] && checkpoint=checkpoints/jeff-0.8b
+            start jeff "${JEFF_URL:-http://127.0.0.1:8765}/health" 200 \
+                env JEFF_CHECKPOINT="$checkpoint" "$scripts/serve-jeff.sh"
             ;;
         anyjev-raw | anyjev-l0)
             start llm "${ANYJEV_LLM_URL:-http://127.0.0.1:8092}/v1/models" 200 \

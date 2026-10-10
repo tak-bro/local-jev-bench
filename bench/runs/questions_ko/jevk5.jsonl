@@ -1,0 +1,3 @@
+{"header": {"set": "bench/questions_ko.jsonl", "set_sha256": "395ae0972148fe51b893ef3c503cc2b3a65cc7f6f3a0b8cc520a46a564e00020", "engine": "jevk5", "model": "jevk5", "reps": 3, "warmup": 3, "started": "2026-10-09T05:14:48+00:00", "host": "Apple M3 Max, 36 GB", "served": null}}
+{"item": "t01", "call": "cold", "rep": null, "answers": null, "error": "jevk5: HTTP 500: {\"error\":\"model files: llama_decode failed (-3); see the llama.cpp log\",\"code\":\"INFERENCE_FAILED\"}", "ms": null, "pressure": "normal"}
+{"footer": {"finished": "2026-10-09T05:14:48+00:00"}}

@@ -36,8 +36,28 @@ ENGINES: dict[str, dict[str, Any]] = {
     # request's model pins what is measured on the shared port.
     "winnow": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
                "model": os.environ.get("WINNOW_MODEL", "winnow:e4b")},
+    "winnow-12b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                   "model": os.environ.get("WINNOW_12B_MODEL", "winnow:12b")},
+    # Laya's typed-decisions fine-tune (0.766 accuracy claimed upstream, vs 0.362 for the base English
+    # checkpoint on the same decisions); pulled separately, measured under its own name.
+    "ollaya-td": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                  "model": os.environ.get("OLLAYA_TD_MODEL", "laya:typed-decisions")},
+    # Other Ollaya-registry decision models. `decider` is Mapika's 2B default tag; `decision` is
+    # Decision 1.0 Eos; `jevk5` is alibiserikbay's JevK5 v0.3.
+    "decider-2b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                   "model": os.environ.get("DECIDER_2B_MODEL", "decider")},
+    "decider-4b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                   "model": os.environ.get("DECIDER_4B_MODEL", "decider:4b")},
+    "decision-eos": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                     "model": os.environ.get("DECISION_EOS_MODEL", "decision")},
+    "jevk5": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+              "model": os.environ.get("JEVK5_MODEL", "jevk5")},
     "jeff": {"url": os.environ.get("JEFF_URL", "http://127.0.0.1:8765"), "model": "jeff-latest",
              "served": ("/health", ("model",), "jeff-qwen3.5-2b")},
+    # Jeff-Qwen3.5-0.8B shares the port; `served` tells the checkpoints apart (`service.name` is
+    # f"jeff-{base_model lower}", so Qwen/Qwen3.5-0.8B serves as jeff-qwen3.5-0.8b).
+    "jeff-0.8b": {"url": os.environ.get("JEFF_URL", "http://127.0.0.1:8765"), "model": "jeff-latest",
+                  "served": ("/health", ("model",), "jeff-qwen3.5-0.8b")},
 }
 # Kev serves one adapter at a time on one port (scripts/serve-kev.sh, KEV_RUN); `served` checks which one is up.
 for size in ("0.8b", "4b", "9b"):

@@ -478,7 +478,11 @@ def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
 
 @pytest.mark.parametrize("name, model", [("anyjev-raw", "anyjev-raw"), ("anyjev-l0", "anyjev-l0"),
                                          ("kev-0.8b", "kev-latest"), ("kev-4b", "kev-latest"), ("kev-9b", "kev-latest"),
-                                         ("winnow", "winnow:e4b"), ("jeff", "jeff-latest"),
+                                         ("winnow", "winnow:e4b"), ("winnow-12b", "winnow:12b"),
+                                         ("ollaya-td", "laya:typed-decisions"),
+                                         ("decider-2b", "decider"), ("decider-4b", "decider:4b"),
+                                         ("decision-eos", "decision"), ("jevk5", "jevk5"),
+                                         ("jeff", "jeff-latest"), ("jeff-0.8b", "jeff-latest"),
                                          ("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656"),
                                          ("von", "von-latest")])
 def test_new_engines_send_their_model(monkeypatch, name, model):
@@ -498,6 +502,7 @@ def test_new_engines_send_their_model(monkeypatch, name, model):
 @pytest.mark.parametrize("name, route, body", [
     ("kev-9b", "/v1/models", {"models": [{"name": "kev-latest", "run": "jaredpalmer/kev-9b"}]}),
     ("jeff", "/health", {"status": "ready", "model": "jeff-qwen3.5-2b"}),
+    ("jeff-0.8b", "/health", {"status": "ready", "model": "jeff-qwen3.5-0.8b"}),
     ("clef-flash", "/v1/models", {"object": "list", "data": [{"id": "Clef-Flash-Q8_0@4a7a08c"}]}),
     ("clef", "/v1/models", {"object": "list", "data": [{"id": "Clef-Q4_K_M@5f70656"}]}),
     ("von", "/health", {"status": "ok", "version": "1.3.7", "engine": "von-1.3"}),
