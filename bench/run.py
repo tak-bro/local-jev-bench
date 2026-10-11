@@ -234,7 +234,7 @@ def reversed_options(questions: dict) -> dict:
             for qid, q in questions.items()}
 
 
-def bench(engine: str, items: list[dict], raw: TextIO, reps: int = REPS) -> int:
+def bench(engine: str, items: list[dict], raw: TextIO, reps: int = REPS, timeout: float = 120.0) -> int:
     """Call the engine and log every call to `raw` as one JSON line (format: bench/score.py). Return the number of
     failed calls. Scoring is bench/score.py's job; nothing here grades an answer."""
     errors = 0
@@ -242,7 +242,7 @@ def bench(engine: str, items: list[dict], raw: TextIO, reps: int = REPS) -> int:
     def call(kind: str, item: dict, questions: dict, rep: int | None = None) -> dict | None:
         nonlocal errors
         try:
-            answers, ms = ask(engine, item["state"], questions)
+            answers, ms = ask(engine, item["state"], questions, timeout=timeout)
             error = None
         except EngineError as e:
             answers, ms, error = None, None, str(e)
@@ -307,6 +307,13 @@ def positive_int(text: str) -> int:
     return n
 
 
+def positive_float(text: str) -> float:
+    n = float(text)
+    if n <= 0:
+        raise argparse.ArgumentTypeError(f"must be positive, got {n}")
+    return n
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true")
@@ -315,6 +322,8 @@ def main() -> int:
     ap.add_argument("--runs", type=Path, default=Path(__file__).with_name("runs"),
                     help="raw logs go to <runs>/<questions file stem>/<engine>.jsonl")
     ap.add_argument("--reps", type=positive_int, default=REPS, help="timed calls per item (the public set uses 1)")
+    ap.add_argument("--timeout", type=positive_float, default=120.0,
+                    help="per-call HTTP timeout in seconds (CPU engines on long states need more)")
     args = ap.parse_args()
     engines = args.engine or DEFAULT_ENGINES
 
@@ -352,7 +361,7 @@ def main() -> int:
         partial = log.with_suffix(".jsonl.partial")  # not *.jsonl, so bench/score.py never reads it
         with partial.open("w") as raw:
             raw.write(json.dumps({"header": header}) + "\n")
-            errors += bench(engine, items, raw, reps=args.reps)
+            errors += bench(engine, items, raw, reps=args.reps, timeout=args.timeout)
             # Only a run that got here has a footer; bench/score.py refuses a log without one.
             raw.write(json.dumps({"footer": {"finished": now()}}) + "\n")
         partial.replace(log)  # an interrupted run leaves the previous log in place
