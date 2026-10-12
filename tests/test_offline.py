@@ -346,9 +346,33 @@ def test_bench_reps(engine):
     assert {r["rep"] for r in recs if r["call"] == "timed"} == {0}
 
 
+def test_bench_forwards_timeout_to_ask(engine, monkeypatch):
+    seen = []
+
+    def fake_ask(e, state, questions, timeout=120.0):
+        seen.append(timeout)
+        return ({"u": {"type": "noul", "noul": 0.9}}, 1.0)
+
+    monkeypatch.setattr(run, "ask", fake_ask)
+    errors, _ = bench_records(engine(free_port()), ITEMS, timeout=300)
+    assert errors == 0
+    assert seen and set(seen) == {300}
+
+
+def test_timeout_not_positive_is_refused(monkeypatch, tmp_path):
+    # --runs points away from bench/: if the check ever lapses, main() runs and must not overwrite real logs
+    monkeypatch.setattr(run, "bench", lambda engine, items, raw, reps, timeout: 0)
+    monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
+    monkeypatch.setattr(run, "qwen_token_counter", lambda: len)
+    monkeypatch.setattr(sys, "argv", ["run.py", "--engine", "kev-4b", "--timeout", "0", "--runs", str(tmp_path)])
+    with pytest.raises(SystemExit) as e:
+        run.main()
+    assert e.value.code == 2  # argparse usage error
+
+
 def test_reps_below_one_is_refused(monkeypatch, tmp_path):
     # --runs points away from bench/: if the check ever lapses, main() runs and must not overwrite real logs
-    monkeypatch.setattr(run, "bench", lambda engine, items, raw, reps: 0)
+    monkeypatch.setattr(run, "bench", lambda engine, items, raw, reps, timeout: 0)
     monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
     monkeypatch.setattr(run, "qwen_token_counter", lambda: len)
     monkeypatch.setattr(sys, "argv", ["run.py", "--engine", "kev-4b", "--reps", "0", "--runs", str(tmp_path)])
@@ -470,7 +494,7 @@ def test_main_exits_1_on_engine_errors(engine, monkeypatch, tmp_path):
 def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
     benched = []
     monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
-    monkeypatch.setattr(run, "bench", lambda engine, items, raw, reps: benched.append(engine) or 0)
+    monkeypatch.setattr(run, "bench", lambda engine, items, raw, reps, timeout: benched.append(engine) or 0)
     monkeypatch.setattr(run.score, "render", lambda d: "")
     run_main(monkeypatch, tmp_path)
     assert benched == ["clm", "ollaya"]  # new engines are measured one at a time, by name
@@ -546,7 +570,7 @@ def test_an_interrupted_run_keeps_the_previous_log(monkeypatch, tmp_path):
     old.parent.mkdir(parents=True)
     old.write_text("previous run\n")
 
-    def interrupted(engine, items, raw, reps):
+    def interrupted(engine, items, raw, reps, timeout):
         raise KeyboardInterrupt
 
     monkeypatch.setattr(run, "served", lambda engine: "x")
