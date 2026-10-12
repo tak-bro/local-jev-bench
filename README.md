@@ -7,7 +7,7 @@ Apple Silicon Mac, and benchmarks them on the same questions. The sets are Engli
 public BANKING77 20-way intent set, Kev's out-of-distribution transfer-v4 set, the typed-decisions leaderboard set,
 and two Korean sets: NSMC movie reviews and KLUE-YNAT news headlines.
 
-**Key results (M3 Max 36 GB, 2026-09-30; Clef, Clef-flash and Von 2026-10-05; eight more engines 2026-10-10).**
+**Key results (M3 Max 36 GB, 2026-09-30; Clef, Clef-flash and Von 2026-10-05; eight more engines 2026-10-10; CPU-trio backfill 2026-10-12).**
 Kev-9B, Kev-4B, Winnow-E4B, Winnow-12B, Decider-4B, Clef
 and Clef-flash are the most accurate engines overall, and paired McNemar tests separate them on only some sets.
 Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisions and only there:
@@ -44,6 +44,7 @@ Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisi
     calibration there (KL 0.134, Brier 0.071). Upstream claims 0.766; this run gives 0.753 (Wilson 73-77). But it is
     a specialist: 63% transfer-v4, 64% BANKING77-20, and 45% on the Korean 30 with 33% order-flips. Its card names
     the four typed-decisions workflows as its fine-tuning data, so mark that 75% in-distribution (†).
+    A 2026-10-12 backfill adds NSMC 53% and KLUE-YNAT 19% with 76% order-flips, confirming the collapse.
   - **Winnow-12B (`winnow:12b`, 13 GB Q8_0):** top-group everywhere. transfer-v4 83%, numerically first and ahead of
     its E4B sibling (p < 0.001), level with Kev-9B, Clef-flash and Clef. typed-decisions 71%, level with E4B and the
     Clefs, ahead of Kev-9B (p = 0.014). KLUE-YNAT 79% and NSMC 88%, level with or ahead of Kev and Clef. BANKING77-20
@@ -55,12 +56,15 @@ Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisi
     next to Clef's 474); on the policy holdouts it sits between Winnow and Kev (139/176). Decider-2B is a step below
     (transfer 73%, BANKING 91%, Korean 88%) with the lowest ECE of the new batch on English 30 (0.013). Both ran on
     CPU (F32) in Ollaya here, at 0.7-10 s first-call p50, so their latencies do not compare with the Metal rows.
+    A 2026-10-12 backfill adds typed-decisions (4B 68%, level with Kev-4B/9B; 2B 60%, ahead of Jeff), NSMC (83%, 83%)
+    and KLUE-YNAT (71%, 73%, both top-group).
   - **Jeff-Qwen3.5-0.8B:** 103-110 ms on the 30-item sets at 83-84%, level with Kev-4B/9B there and ahead of
     Jeff-2B (p < 0.001). The main sets do not reproduce it: transfer 67%, typed 50%, BANKING 57% with 28%
     order-flips, NSMC 72%. The exception is KLUE-YNAT, 69%, level with Kev-4B, Kev-9B and Winnow — the fastest
     engine at that accuracy (28-52 ms everywhere).
   - **Decision-Eos (Qwen3.5-0.8B endpoint head):** mid-tier throughout (transfer 59%, BANKING 80%, 72-75% on the
-    30-item sets), level with Kev-0.8B on 30-item English and BANKING.
+    30-item sets), level with Kev-0.8B on 30-item English and BANKING. Backfilled 2026-10-12: typed-decisions 49%
+    (level with Jeff-0.8B), NSMC 79%, KLUE-YNAT 63% (both level with Kev-0.8B).
   - **JevK5:** not measurable here. Two English-30 items fail every call (`llama_decode failed (-3)`) and the whole
     Korean 30 fails at the cold call, so it has no report row.
 - **Kev remeasure (2026-10-10, Hub revisions `6cfce5c` and `db029f08`, both dated 2026-10-01).** Kev-4B reproduces
@@ -195,14 +199,14 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 | Clef | 90% | 91% | 96% | 83% | 72% | 87% | 78% |
 | Winnow-E4B | 89% | 86% | 81% | 77% | 73% | 84% | 74% |
 | Winnow-12B | 91% | 91% | 84% | 83% | 71% | 88% | 79% |
-| Decider-4B | 90% | 93% | 90% | 80% | - | - | - |
-| Decider-2B | 84% | 88% | 91% | 73% | - | - | - |
-| Ollaya-td | 80% | 45% | 64% | 63% | 75%† | - | - |
+| Decider-4B | 90% | 93% | 90% | 80% | 68% | 83% | 71% |
+| Decider-2B | 84% | 88% | 91% | 73% | 60% | 83% | 73% |
+| Ollaya-td | 80% | 45% | 64% | 63% | 75%† | 53% | 19% |
 | Kev-0.8B | 75% | 75% | 88%† | 65% | 46% | 80% | 63% |
 | Jeff-Qwen3.5-2B | 64% | 75% | 65% | 69%† | 52% | 79% | 74% |
 | Jeff-Qwen3.5-0.8B | 83% | 84% | 57% | 67% | 50% | 72% | 69% |
 | Ollaya | 75% | 66% | 60% | 63% | 36% | 56% | 43% |
-| Decision-Eos | 75% | 72% | 80% | 59% | - | - | - |
+| Decision-Eos | 75% | 72% | 80% | 59% | 49% | 79% | 63% |
 | AnyJev L0 | 81% | 84% | 80% | 75% | 63% | 80% | 75% |
 | AnyJev raw | 82% | 83% | 75% | 75% | 61% | 81% | 76% |
 | Von | 73% | 49% | 80%† | 69%† | 43% | 51% | 15% |
@@ -224,20 +228,20 @@ First-call p50, ms:
 | Clef | 3480.6 | 3774.5 | 4525.3 | 2186.5 | 8923.0 | 1599.5 | 2791.8 |
 | Winnow-E4B | 720.0 | 632.3 | 574.8 | 339.4 | 1545.8 | 291.4 | 426.4 |
 | Winnow-12B | 1380.6 | 1738.1 | 1220.2 | 764.8 | 3094.5 | 599.5 | 908.3 |
-| Decider-4B | 9251.1 | 10044.3 | 3097.9 | 1726.7 | - | - | - |
-| Decider-2B | 4052.9 | 3683.6 | 1302.9 | 692.3 | - | - | - |
-| Ollaya-td | 375.6 | 1329.1 | 428.2 | 258.2 | 3331.9 | - | - |
+| Decider-4B | 9251.1 | 10044.3 | 3097.9 | 1726.7 | 55696.8 | 1691.9 | 3838.6 |
+| Decider-2B | 4052.9 | 3683.6 | 1302.9 | 692.3 | 19745.1 | 362.9 | 894.1 |
+| Ollaya-td | 375.6 | 1329.1 | 428.2 | 258.2 | 3331.9 | 119.1 | 377.4 |
 | Kev-0.8B | 54.1 | 52.0 | 57.6 | 40.3 | 152.4 | 27.9 | 42.3 |
 | Jeff-Qwen3.5-2B | 251.1 | 258.7 | 129.8 | 99.3 | 986.5 | 69.7 | 103.9 |
 | Jeff-Qwen3.5-0.8B | 103.3 | 110.3 | 51.1 | 52.1 | 368.2 | 27.8 | 40.6 |
 | Ollaya | 36.6 | 55.3 | 28.3 | 22.1 | 292.9 | 14.7 | 21.7 |
-| Decision-Eos | 1065.4 | 1728.2 | 912.4 | 436.5 | - | - | - |
+| Decision-Eos | 1065.4 | 1728.2 | 912.4 | 436.5 | 4096.3 | 262.3 | 491.4 |
 | AnyJev L0 | 937.3 | 1056.2 | 7860.1 | 571.7 | 2319.5 | 391.3 | 2554.0 |
 | AnyJev raw | 436.5 | 576.5 | 582.3 | 292.2 | 1507.6 | 204.1 | 465.4 |
 | Von | 126.4 | 158.1 | 38.1 | 31.8 | 411.4 | 50.9 | 60.4 |
 | CLM-8B | 326.6 | 354.0 | 142.3 | - | - | - | - |
 
-Decider-4B, Decider-2B and Ollaya-td ran on CPU (F32) in Ollaya's runner on this machine (`ollaya ps`
+Decider-4B, Decider-2B, Decision-Eos and Ollaya-td ran on CPU (F32) in Ollaya's runner on this machine (`ollaya ps`
 reported `cpu` while they were loaded), so their latencies compare runtimes as much as models, like the
 llama.cpp rows. The other Ollaya rows (Laya, Winnow) ran on Metal.
 
@@ -282,7 +286,10 @@ Read these results with the following caveats:
 - **2026-10-10 engines:** Decider-4B, Decider-2B and Ollaya-td ran on CPU (F32) in Ollaya's runner, Winnow-12B on
   Metal (Q8_0). JevK5 fails two English-30 items on every call (`llama_decode failed (-3)`) and its Korean-30 cold
   call, so it has no report row; the English-30 accuracy table omits it (73/84 on the items that answered).
-  Decider and Decision-Eos were measured on the 30-item sets, transfer-v4 and BANKING77-20 only.
+- **2026-10-12 backfill:** Decider-4B, Decider-2B and Decision-Eos on typed-decisions, NSMC and KLUE-YNAT, plus
+  Ollaya-td on NSMC and KLUE-YNAT, on CPU as before. typed-decisions' long states need `--timeout 300`
+  (new `bench/run.py` flag; the 120 s default timed out 101 of 400 Decider-4B items on the first attempt).
+  Decider-2B and Decision-Eos are still missing on clinc-oos.
 - **Kev remeasure:** Kev-4B served Hub snapshot `6cfce5c`, Kev-9B `db029f08` (both dated 2026-10-01; the server log
   names the snapshot). The old logs are overwritten on success, so the Kev-9B typed-decisions dip has no paired
   test. Future runs should record the snapshot revision in the log header (`served` currently checks only the run
@@ -320,7 +327,11 @@ Which engine to use. Engines count as different when the exact McNemar p is belo
   after the remeasure; 0.209, 0.107 on 9-30) and Clef-flash (0.220, 0.113), against Winnow's 0.286
   and 0.128. The report's uniform row reproduces the
   card's KL 0.444 and Brier 0.238. Winnow-12B is accurate (71%, level with E4B) but poorly calibrated
-  (KL 0.625): it ships temperature 1.0, E4B a fitted 1.2574.
+  (KL 0.625): it ships temperature 1.0, E4B a fitted 1.2574. Decider-4B lands at 68%, level with Kev-4B (p = 0.647)
+  and Kev-9B (p = 0.256) and below Winnow (p < 0.001), and is well calibrated there (ECE 0.025, next to
+  Clef-flash's 0.021). Decider-2B (60%) beats Jeff (p < 0.001) and is level with AnyJev raw (p = 0.483).
+  Decision-Eos (49%) is level with Jeff-0.8B (p = 0.561) but flips 27% of its choices when the options
+  are reversed.
 - **Under 60 ms:** Kev-0.8B (28-58 ms) or Ollaya (15-55 ms), outside typed-decisions' long states. Von (32-51 ms
   on transfer-v4, BANKING77-20 and NSMC) is English only. Jeff-0.8B (28-52 ms) joins them: KLUE-YNAT 69% at 40 ms,
   level with the 4B/9B models, but 50-67% on the other main sets with 28% BANKING order-flips.
@@ -330,8 +341,15 @@ Which engine to use. Engines count as different when the exact McNemar p is belo
     are reversed. Kev-0.8B changes 8-19%.
 - **Korean:** not Von, which is English only.
   - **NSMC:** Kev-9B, Winnow and Kev-4B (83-86%) cannot be told apart, and Kev-9B beats Jeff (p = 0.008) and Kev-0.8B (p = 0.012).
+    Decider-4B and Decider-2B (both 83%) join that group (p = 0.815 and 1.0 against Kev-4B; p = 0.072 and 0.152
+    against Kev-9B). Decision-Eos (79%) is level with Jeff (p = 1.0). Ollaya-td (53%) is level with Ollaya
+    (p = 0.554) and Von (p = 0.582) and below everyone else.
   - **KLUE-YNAT:** Kev-4B, Jeff, Winnow and Kev-9B (73-74%) cannot be told apart (p ≥ 0.86). Kev-0.8B (63%) and
-    Ollaya (43%) are below them (p < 0.001).
+    Ollaya (43%) are below them (p < 0.001). Decider-2B (73%) joins the top group (p = 0.880 against Kev-4B,
+    0.875 against Kev-9B, 1.0 against Winnow, 0.888 against Jeff). Decider-4B (71%) is level with Kev-4B
+    (p = 0.154) and Kev-9B (p = 0.430) but below Clef (p = 0.001) and Clef-flash (p = 0.004). Decision-Eos (63%)
+    is level with Kev-0.8B (p = 1.0). Ollaya-td (19%) is below every engine but Von (p = 0.222) and flips 76%
+    of its choices when the options are reversed.
 - **AnyJev:**
   - **KLUE-YNAT:** raw 76% and L0 75% are level with Kev-4B, Kev-9B, Winnow and Jeff (p ≥ 0.33).
   - **transfer-v4:** 75% for both, level with Winnow (p > 0.24) and below Kev-4B and Kev-9B (p < 0.001). The whole gap
@@ -426,9 +444,10 @@ each label by `logprob_token_ids`. With that, AnyJev reproduces its README on BA
 
 **Can these models answer in Korean?**
 Kev-4B, Kev-9B, Winnow and Jeff can: 83-86% on NSMC for the first three, and 73-74% on KLUE-YNAT for all four.
-Winnow-12B (NSMC 88%, KLUE 79%), Decider-4B (Korean 30 93%) and Decider-2B (88%) join them; Jeff-0.8B reaches 69% on
-KLUE-YNAT at 40 ms. Ollaya-td cannot: 45% on the Korean 30 with 33% order-flips, an English-workflow fine-tune used
-without its router.
+Winnow-12B (NSMC 88%, KLUE 79%), Decider-4B (NSMC 83%, KLUE 71%), Decider-2B (NSMC 83%, KLUE 73%) and
+Decision-Eos (NSMC 79%, KLUE 63%) join them at various levels (see above); Jeff-0.8B reaches 69% on
+KLUE-YNAT at 40 ms. Ollaya-td cannot: 45% on the Korean 30 with 33% order-flips, NSMC 53% and KLUE-YNAT 19%
+with 76% order-flips — an English-workflow fine-tune used without its router.
 AnyJev can too, with no training: 80-81% on NSMC and 75-76% on KLUE-YNAT.
 Clef-flash and Clef can: 86-87% on NSMC and 77-78% on KLUE-YNAT, level with Kev and Winnow (Clef is ahead of Kev-4B on NSMC, p = 0.043, and of Kev-9B on KLUE-YNAT, p = 0.047).
 Ollaya needs `laya:multilingual` and reaches 56% and 43%. Von cannot: its card says English only, and it scores 51%
