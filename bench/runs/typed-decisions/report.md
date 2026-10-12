@@ -19,7 +19,7 @@ questions count only in sets graded by argmax, which read their level probabilit
 | anyjev-raw | anyjev-raw | 1647.7 | 1507.6 | 1507.6 | 2007.1 | 400 | 1213/2000 (61%, 58-63) | 0.724 (2000) | 0.348 | n/a | 101/600 (17%) | 0 | normal |
 | clef | Clef-Q4_K_M@5f70656 | 10071.9 | 8923.0 | 8923.0 | 11959.3 | 400 | 1448/2000 (72%, 70-74) | 0.378 (2000) | 0.033 | n/a | 0/600 (0%) | 0 | warn |
 | clef-flash | Clef-Flash-Q8_0@4a7a08c | 2212.1 | 2557.4 | 2557.4 | 3097.2 | 400 | 1412/2000 (71%, 69-73) | 0.396 (2000) | 0.021 | n/a | 0/600 (0%) | 0 | normal |
-| decider-4b | decider:4b | 104946.1 | 59773.2 | 59773.2 | 103260.8 | 300 | 1002/1500 (67%, 64-69) | 0.444 (1500) | 0.023 | n/a | 54/476 (11%) | 101 | warn |
+| decider-4b | decider:4b | 39399.5 | 55696.8 | 55696.8 | 74789.7 | 400 | 1351/2000 (68%, 65-70) | 0.442 (2000) | 0.025 | n/a | 70/600 (12%) | 0 | warn |
 | jeff | jeff-latest | 621.2 | 986.5 | 986.5 | 1600.2 | 400 | 1049/2000 (52%, 50-55) | 0.581 (2000) | 0.123 | n/a | 65/600 (11%) | 0 | warn |
 | jeff-0.8b | jeff-latest | 254.3 | 368.2 | 368.2 | 1233.2 | 400 | 1007/2000 (50%, 48-53) | 0.658 (2000) | 0.132 | n/a | 82/600 (14%) | 0 | warn |
 | kev-0.8b | kev-latest | 128.9 | 152.4 | 152.4 | 218.5 | 400 | 917/2000 (46%, 44-48) | 0.606 (2000) | 0.055 | n/a | 116/600 (19%) | 0 | warn |
@@ -30,11 +30,6 @@ questions count only in sets graded by argmax, which read their level probabilit
 | von | von-latest | 214.3 | 411.4 | 411.4 | 2143.2 | 400 | 859/2000 (43%, 41-45) | 0.639 (2000) | 0.042 | n/a | 0/600 (0%) | 0 | normal |
 | winnow | winnow:e4b | 1041.1 | 1545.8 | 1545.8 | 1954.5 | 400 | 1453/2000 (73%, 71-75) | 0.388 (2000) | 0.027 | n/a | 47/600 (8%) | 0 | warn |
 | winnow-12b | winnow:12b | 2594.5 | 3094.5 | 3094.5 | 3661.7 | 400 | 1427/2000 (71%, 69-73) | 0.433 (2000) | 0.153 | n/a | 67/600 (11%) | 0 | normal |
-- decider-4b error: customer_service_000027 reversed: decider-4b: cannot reach http://127.0.0.1:11435: HTTPConnectionPool(host='127.0.0.1', port=11435): Read timed out. (read timeout=120.0)
-- decider-4b error: customer_service_000044 timed: decider-4b: cannot reach http://127.0.0.1:11435: HTTPConnectionPool(host='127.0.0.1', port=11435): Read timed out. (read timeout=120.0)
-- decider-4b error: customer_service_000050 timed: decider-4b: cannot reach http://127.0.0.1:11435: HTTPConnectionPool(host='127.0.0.1', port=11435): Read timed out. (read timeout=120.0)
-- decider-4b error: customer_service_000080 timed: decider-4b: cannot reach http://127.0.0.1:11435: HTTPConnectionPool(host='127.0.0.1', port=11435): Read timed out. (read timeout=120.0)
-- decider-4b error: customer_service_000081 timed: decider-4b: cannot reach http://127.0.0.1:11435: HTTPConnectionPool(host='127.0.0.1', port=11435): Read timed out. (read timeout=120.0)
 - ollaya error: customer_service_000019 timed: ollaya: HTTP 422: {"error":"state: part of state was dropped to fit the context of laya:en","code":"STATE_TRUNCATED","detail":[{"loc":["body","state"],"msg":"part of state was dropped to fit the context of laya:en","ty
 - ollaya error: customer_service_000020 timed: ollaya: HTTP 422: {"error":"state: part of state was dropped to fit the context of laya:en","code":"STATE_TRUNCATED","detail":[{"loc":["body","state"],"msg":"part of state was dropped to fit the context of laya:en","ty
 - ollaya error: customer_service_000027 timed: ollaya: HTTP 422: {"error":"state: part of state was dropped to fit the context of laya:en","code":"STATE_TRUNCATED","detail":[{"loc":["body","state"],"msg":"part of state was dropped to fit the context of laya:en","ty
@@ -51,7 +46,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | anyjev-raw | 2000 | 82 | 42 | <0.001 |
 | anyjev-l0 | clef | 2000 | 225 | 420 | <0.001 |
 | anyjev-l0 | clef-flash | 2000 | 192 | 351 | <0.001 |
-| anyjev-l0 | decider-4b | 1500 | 187 | 252 | 0.002 |
+| anyjev-l0 | decider-4b | 2000 | 230 | 328 | <0.001 |
 | anyjev-l0 | jeff | 2000 | 411 | 207 | <0.001 |
 | anyjev-l0 | jeff-0.8b | 2000 | 463 | 217 | <0.001 |
 | anyjev-l0 | kev-0.8b | 2000 | 606 | 270 | <0.001 |
@@ -64,7 +59,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | winnow-12b | 2000 | 177 | 351 | <0.001 |
 | anyjev-raw | clef | 2000 | 216 | 451 | <0.001 |
 | anyjev-raw | clef-flash | 2000 | 187 | 386 | <0.001 |
-| anyjev-raw | decider-4b | 1500 | 166 | 257 | <0.001 |
+| anyjev-raw | decider-4b | 2000 | 203 | 341 | <0.001 |
 | anyjev-raw | jeff | 2000 | 377 | 213 | <0.001 |
 | anyjev-raw | jeff-0.8b | 2000 | 431 | 225 | <0.001 |
 | anyjev-raw | kev-0.8b | 2000 | 573 | 277 | <0.001 |
@@ -76,7 +71,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-raw | winnow | 2000 | 155 | 395 | <0.001 |
 | anyjev-raw | winnow-12b | 2000 | 151 | 365 | <0.001 |
 | clef | clef-flash | 2000 | 244 | 208 | 0.100 |
-| clef | decider-4b | 1500 | 286 | 222 | 0.005 |
+| clef | decider-4b | 2000 | 372 | 275 | <0.001 |
 | clef | jeff | 2000 | 626 | 227 | <0.001 |
 | clef | jeff-0.8b | 2000 | 651 | 210 | <0.001 |
 | clef | kev-0.8b | 2000 | 726 | 195 | <0.001 |
@@ -87,7 +82,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef | von | 2000 | 792 | 203 | <0.001 |
 | clef | winnow | 2000 | 234 | 239 | 0.854 |
 | clef | winnow-12b | 2000 | 263 | 242 | 0.373 |
-| clef-flash | decider-4b | 1500 | 209 | 171 | 0.058 |
+| clef-flash | decider-4b | 2000 | 277 | 216 | 0.007 |
 | clef-flash | jeff | 2000 | 553 | 190 | <0.001 |
 | clef-flash | jeff-0.8b | 2000 | 569 | 164 | <0.001 |
 | clef-flash | kev-0.8b | 2000 | 656 | 161 | <0.001 |
@@ -98,16 +93,16 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef-flash | von | 2000 | 761 | 208 | <0.001 |
 | clef-flash | winnow | 2000 | 189 | 230 | 0.051 |
 | clef-flash | winnow-12b | 2000 | 236 | 251 | 0.526 |
-| decider-4b | jeff | 1500 | 331 | 139 | <0.001 |
-| decider-4b | jeff-0.8b | 1500 | 387 | 133 | <0.001 |
-| decider-4b | kev-0.8b | 1500 | 464 | 144 | <0.001 |
-| decider-4b | kev-4b | 1500 | 191 | 180 | 0.604 |
-| decider-4b | kev-9b | 1500 | 196 | 191 | 0.839 |
-| decider-4b | ollaya | 1480 | 554 | 100 | <0.001 |
-| decider-4b | ollaya-td | 1500 | 181 | 305 | <0.001 |
-| decider-4b | von | 1500 | 539 | 183 | <0.001 |
-| decider-4b | winnow | 1500 | 171 | 237 | 0.001 |
-| decider-4b | winnow-12b | 1500 | 182 | 223 | 0.047 |
+| decider-4b | jeff | 2000 | 486 | 184 | <0.001 |
+| decider-4b | jeff-0.8b | 2000 | 506 | 162 | <0.001 |
+| decider-4b | kev-0.8b | 2000 | 610 | 176 | <0.001 |
+| decider-4b | kev-4b | 2000 | 244 | 233 | 0.647 |
+| decider-4b | kev-9b | 2000 | 248 | 275 | 0.256 |
+| decider-4b | ollaya | 1965 | 743 | 128 | <0.001 |
+| decider-4b | ollaya-td | 2000 | 229 | 383 | <0.001 |
+| decider-4b | von | 2000 | 714 | 222 | <0.001 |
+| decider-4b | winnow | 2000 | 222 | 324 | <0.001 |
+| decider-4b | winnow-12b | 2000 | 245 | 321 | 0.002 |
 | jeff | jeff-0.8b | 2000 | 332 | 290 | 0.100 |
 | jeff | kev-0.8b | 2000 | 417 | 285 | <0.001 |
 | jeff | kev-4b | 2000 | 197 | 488 | <0.001 |
@@ -168,7 +163,7 @@ and decides by its argmax.
 | anyjev-raw | 2000 | 1213/2000 (61%) | 3.783 | 0.479 |
 | clef | 2000 | 1448/2000 (72%) | 0.196 | 0.107 |
 | clef-flash | 2000 | 1412/2000 (71%) | 0.220 | 0.113 |
-| decider-4b | 1500 | 1002/1500 (67%) | 0.322 | 0.143 |
+| decider-4b | 2000 | 1351/2000 (68%) | 0.327 | 0.151 |
 | jeff | 2000 | 1049/2000 (52%) | 0.415 | 0.227 |
 | jeff-0.8b | 2000 | 1007/2000 (50%) | 0.587 | 0.281 |
 | kev-0.8b | 2000 | 917/2000 (46%) | 0.350 | 0.195 |
@@ -187,6 +182,6 @@ and decides by its argmax.
 | source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | decider-4b | jeff | jeff-0.8b | kev-0.8b | kev-4b | kev-9b | ollaya | ollaya-td | von | winnow | winnow-12b |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | agent_trace_observability | 500 | 285/500 (57%) | 270/500 (54%) | 326/500 (65%) | 316/500 (63%) | 282/500 (56%) | 255/500 (51%) | 195/500 (39%) | 173/500 (35%) | 287/500 (57%) | 255/500 (51%) | 156/500 (31%) | 363/500 (73%) | 206/500 (41%) | 315/500 (63%) | 306/500 (61%) |
-| customer_service | 500 | 358/500 (72%) | 344/500 (69%) | 370/500 (74%) | 374/500 (75%) | 290/390 (74%), 110 failed | 310/500 (62%) | 271/500 (54%) | 272/500 (54%) | 360/500 (72%) | 372/500 (74%) | 199/465 (43%), 35 failed | 373/500 (75%) | 249/500 (50%) | 384/500 (77%) | 379/500 (76%) |
-| invoice_processing | 500 | 294/500 (59%) | 281/500 (56%) | 386/500 (77%) | 363/500 (73%) | 159/225 (71%), 275 failed | 206/500 (41%) | 276/500 (55%) | 220/500 (44%) | 343/500 (69%) | 398/500 (80%) | 188/500 (38%) | 394/500 (79%) | 206/500 (41%) | 397/500 (79%) | 390/500 (78%) |
-| security_incidents | 500 | 316/500 (63%) | 318/500 (64%) | 366/500 (73%) | 359/500 (72%) | 271/385 (70%), 115 failed | 278/500 (56%) | 265/500 (53%) | 252/500 (50%) | 350/500 (70%) | 353/500 (71%) | 167/500 (33%) | 375/500 (75%) | 198/500 (40%) | 357/500 (71%) | 352/500 (70%) |
+| customer_service | 500 | 358/500 (72%) | 344/500 (69%) | 370/500 (74%) | 374/500 (75%) | 370/500 (74%) | 310/500 (62%) | 271/500 (54%) | 272/500 (54%) | 360/500 (72%) | 372/500 (74%) | 199/465 (43%), 35 failed | 373/500 (75%) | 249/500 (50%) | 384/500 (77%) | 379/500 (76%) |
+| invoice_processing | 500 | 294/500 (59%) | 281/500 (56%) | 386/500 (77%) | 363/500 (73%) | 342/500 (68%) | 206/500 (41%) | 276/500 (55%) | 220/500 (44%) | 343/500 (69%) | 398/500 (80%) | 188/500 (38%) | 394/500 (79%) | 206/500 (41%) | 397/500 (79%) | 390/500 (78%) |
+| security_incidents | 500 | 316/500 (63%) | 318/500 (64%) | 366/500 (73%) | 359/500 (72%) | 357/500 (71%) | 278/500 (56%) | 265/500 (53%) | 252/500 (50%) | 350/500 (70%) | 353/500 (71%) | 167/500 (33%) | 375/500 (75%) | 198/500 (40%) | 357/500 (71%) | 352/500 (70%) |
