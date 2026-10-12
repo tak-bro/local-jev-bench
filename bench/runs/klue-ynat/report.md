@@ -21,6 +21,7 @@ questions count only in sets graded by argmax, which read their level probabilit
 | clef-flash | Clef-Flash-Q8_0@4a7a08c | 544.1 | 808.5 | 808.5 | 901.1 | 300 | 231/300 (77%, 72-81) | 0.348 (300) | 0.050 | n/a | 0/300 (0%) | 0 | normal |
 | decider-2b | decider | 906.2 | 894.1 | 894.1 | 904.8 | 300 | 220/300 (73%, 68-78) | 0.378 (300) | 0.088 | n/a | 20/300 (7%) | 0 | normal |
 | decider-4b | decider:4b | 3382.5 | 3838.6 | 3838.6 | 10230.1 | 300 | 212/300 (71%, 65-76) | 0.397 (300) | 0.047 | n/a | 26/300 (9%) | 0 | normal |
+| decision-eos | decision | 492.8 | 491.4 | 491.4 | 561.0 | 300 | 189/300 (63%, 57-68) | 0.507 (300) | 0.134 | n/a | 38/300 (13%) | 0 | normal |
 | jeff | jeff-latest | 89.8 | 103.9 | 103.9 | 134.9 | 300 | 222/300 (74%, 69-79) | 0.378 (300) | 0.087 | n/a | 16/300 (5%) | 0 | critical |
 | jeff-0.8b | jeff-latest | 60.4 | 40.6 | 40.6 | 68.0 | 300 | 206/300 (69%, 63-74) | 0.420 (300) | 0.087 | n/a | 39/300 (13%) | 0 | warn |
 | kev-0.8b | kev-latest | 50.1 | 42.3 | 42.3 | 76.8 | 300 | 188/300 (63%, 57-68) | 0.486 (300) | 0.064 | n/a | 35/300 (12%) | 0 | warn |
@@ -43,6 +44,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | clef-flash | 300 | 23 | 28 | 0.576 |
 | anyjev-l0 | decider-2b | 300 | 24 | 18 | 0.441 |
 | anyjev-l0 | decider-4b | 300 | 36 | 22 | 0.087 |
+| anyjev-l0 | decision-eos | 300 | 56 | 19 | <0.001 |
 | anyjev-l0 | jeff | 300 | 26 | 22 | 0.665 |
 | anyjev-l0 | jeff-0.8b | 300 | 44 | 24 | 0.021 |
 | anyjev-l0 | kev-0.8b | 300 | 57 | 19 | <0.001 |
@@ -56,6 +58,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-raw | clef-flash | 300 | 27 | 30 | 0.791 |
 | anyjev-raw | decider-2b | 300 | 31 | 23 | 0.341 |
 | anyjev-raw | decider-4b | 300 | 43 | 27 | 0.072 |
+| anyjev-raw | decision-eos | 300 | 59 | 20 | <0.001 |
 | anyjev-raw | jeff | 300 | 31 | 25 | 0.504 |
 | anyjev-raw | jeff-0.8b | 300 | 40 | 18 | 0.005 |
 | anyjev-raw | kev-0.8b | 300 | 54 | 14 | <0.001 |
@@ -68,6 +71,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef | clef-flash | 300 | 18 | 16 | 0.864 |
 | clef | decider-2b | 300 | 24 | 11 | 0.041 |
 | clef | decider-4b | 300 | 31 | 10 | 0.001 |
+| clef | decision-eos | 300 | 55 | 11 | <0.001 |
 | clef | jeff | 300 | 32 | 21 | 0.169 |
 | clef | jeff-0.8b | 300 | 52 | 25 | 0.003 |
 | clef | kev-0.8b | 300 | 59 | 14 | <0.001 |
@@ -79,6 +83,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef | winnow-12b | 300 | 14 | 18 | 0.597 |
 | clef-flash | decider-2b | 300 | 26 | 15 | 0.117 |
 | clef-flash | decider-4b | 300 | 30 | 11 | 0.004 |
+| clef-flash | decision-eos | 300 | 59 | 17 | <0.001 |
 | clef-flash | jeff | 300 | 27 | 18 | 0.233 |
 | clef-flash | jeff-0.8b | 300 | 53 | 28 | 0.007 |
 | clef-flash | kev-0.8b | 300 | 59 | 16 | <0.001 |
@@ -89,6 +94,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef-flash | winnow | 300 | 33 | 23 | 0.229 |
 | clef-flash | winnow-12b | 300 | 16 | 22 | 0.418 |
 | decider-2b | decider-4b | 300 | 22 | 14 | 0.243 |
+| decider-2b | decision-eos | 300 | 49 | 18 | <0.001 |
 | decider-2b | jeff | 300 | 24 | 26 | 0.888 |
 | decider-2b | jeff-0.8b | 300 | 47 | 33 | 0.146 |
 | decider-2b | kev-0.8b | 300 | 52 | 20 | <0.001 |
@@ -98,6 +104,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-2b | von | 300 | 190 | 15 | <0.001 |
 | decider-2b | winnow | 300 | 21 | 22 | 1.000 |
 | decider-2b | winnow-12b | 300 | 10 | 27 | 0.008 |
+| decider-4b | decision-eos | 300 | 45 | 22 | 0.007 |
 | decider-4b | jeff | 300 | 20 | 30 | 0.203 |
 | decider-4b | jeff-0.8b | 300 | 47 | 41 | 0.594 |
 | decider-4b | kev-0.8b | 300 | 50 | 26 | 0.008 |
@@ -107,6 +114,15 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-4b | von | 300 | 187 | 20 | <0.001 |
 | decider-4b | winnow | 300 | 22 | 31 | 0.272 |
 | decider-4b | winnow-12b | 300 | 7 | 32 | <0.001 |
+| decision-eos | jeff | 300 | 19 | 52 | <0.001 |
+| decision-eos | jeff-0.8b | 300 | 25 | 42 | 0.050 |
+| decision-eos | kev-0.8b | 300 | 32 | 31 | 1.000 |
+| decision-eos | kev-4b | 300 | 14 | 47 | <0.001 |
+| decision-eos | kev-9b | 300 | 20 | 49 | <0.001 |
+| decision-eos | ollaya | 300 | 82 | 22 | <0.001 |
+| decision-eos | von | 300 | 163 | 19 | <0.001 |
+| decision-eos | winnow | 300 | 19 | 51 | <0.001 |
+| decision-eos | winnow-12b | 300 | 10 | 58 | <0.001 |
 | jeff | jeff-0.8b | 300 | 39 | 23 | 0.056 |
 | jeff | kev-0.8b | 300 | 57 | 23 | <0.001 |
 | jeff | kev-4b | 300 | 29 | 29 | 1.000 |
@@ -146,6 +162,6 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 ## By source
 
-| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | decider-2b | decider-4b | jeff | jeff-0.8b | kev-0.8b | kev-4b | kev-9b | ollaya | von | winnow | winnow-12b |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| klue-ynat | 300 | 226/300 (75%) | 228/300 (76%) | 233/300 (78%) | 231/300 (77%) | 220/300 (73%) | 212/300 (71%) | 222/300 (74%) | 206/300 (69%) | 188/300 (63%) | 222/300 (74%) | 218/300 (73%) | 129/300 (43%) | 45/300 (15%) | 221/300 (74%) | 237/300 (79%) |
+| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | decider-2b | decider-4b | decision-eos | jeff | jeff-0.8b | kev-0.8b | kev-4b | kev-9b | ollaya | von | winnow | winnow-12b |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| klue-ynat | 300 | 226/300 (75%) | 228/300 (76%) | 233/300 (78%) | 231/300 (77%) | 220/300 (73%) | 212/300 (71%) | 189/300 (63%) | 222/300 (74%) | 206/300 (69%) | 188/300 (63%) | 222/300 (74%) | 218/300 (73%) | 129/300 (43%) | 45/300 (15%) | 221/300 (74%) | 237/300 (79%) |
