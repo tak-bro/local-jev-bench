@@ -43,7 +43,7 @@ stop() {
     kill -TERM -- "-$1" 2>/dev/null || return 0
     for ((i = 0; i < 200; i++)); do
         kill -0 -- "-$1" 2>/dev/null || break
-        sleep 0.1
+        sleep 0.05
     done
     if kill -0 -- "-$1" 2>/dev/null; then
         echo "server $1 ignored TERM for 20s; killing it" >&2
@@ -96,7 +96,7 @@ start() {
             echo "$name not ready after ${timeout}s; see $logs/$name.log" >&2
             exit 1
         fi
-        sleep 0.1
+        sleep 0.05
     done
 }
 

@@ -54,7 +54,7 @@ def wait_gone(pid: int, seconds: float = 5) -> bool:
     while time.time() < deadline:
         if not alive(pid):
             return True
-        time.sleep(0.1)
+        time.sleep(0.02)
     return False
 
 
@@ -64,7 +64,7 @@ def wait_listening(port: int) -> None:
             socket.create_connection(("127.0.0.1", port), timeout=0.2).close()
             return
         except OSError:
-            time.sleep(0.1)
+            time.sleep(0.02)
 
 
 def test_measures_every_set_then_stops_the_server(tmp_path):
@@ -260,7 +260,7 @@ if pid == 0:
     os.execvp(argv[0], argv)
 deadline = time.time() + 20
 while not os.path.exists(log) and time.time() < deadline:
-    time.sleep(0.1)
+    time.sleep(0.02)
 os.write(fd, b"\\x03")
 while True:
     try:

@@ -53,7 +53,7 @@ class FakeServer:
 
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
         self.port = self.httpd.server_address[1]
-        threading.Thread(target=self.httpd.serve_forever, kwargs={"poll_interval": 0.05},
+        threading.Thread(target=self.httpd.serve_forever, kwargs={"poll_interval": 0.01},
                          daemon=True).start()
 
     def close(self):
