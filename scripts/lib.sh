@@ -10,7 +10,7 @@ require_free_port() {
 import socket, sys
 port = int(sys.argv[1])
 with socket.socket() as probe:
-    probe.settimeout(2)  # a bound-but-silent port times out connect_ex instead of refusing on some stacks
+    probe.settimeout(1)  # a bound-but-silent port times out connect_ex instead of refusing on some stacks
     if probe.connect_ex(("127.0.0.1", port)) == 0:
         sys.exit(1)
 s = socket.socket()
