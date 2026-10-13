@@ -221,6 +221,9 @@ def load_questions(path: Path, count_tokens: Callable[[str], int]) -> list[dict]
     items = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
     for it in items:
         it["state"] = render_state(it["state"])
+    no_questions = [it.get("id", "?") for it in items if not it.get("questions")]
+    if no_questions:
+        raise SystemExit(f"items with no questions: {no_questions}")
     too_long = [(it["id"], n) for it in items
                 if (n := max(count_tokens(t) for t in embedded_texts(it))) > MAX_STATE_TOKENS]
     if too_long:
