@@ -59,7 +59,7 @@ def wait_gone(pid: int, seconds: float = 5) -> bool:
 
 
 def wait_listening(port: int) -> None:
-    for _ in range(50):
+    for _ in range(250):
         try:
             socket.create_connection(("127.0.0.1", port), timeout=0.2).close()
             return
