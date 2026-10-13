@@ -41,7 +41,7 @@ pids=()
 stop() {
     local i
     kill -TERM -- "-$1" 2>/dev/null || return 0
-    for ((i = 0; i < 200; i++)); do
+    for ((i = 0; i < 400; i++)); do
         kill -0 -- "-$1" 2>/dev/null || break
         sleep 0.05
     done
