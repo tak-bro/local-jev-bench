@@ -96,7 +96,7 @@ start() {
             echo "$name not ready after ${timeout}s; see $logs/$name.log" >&2
             exit 1
         fi
-        sleep 1
+        sleep 0.2
     done
 }
 
