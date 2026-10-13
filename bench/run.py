@@ -219,6 +219,8 @@ def load_questions(path: Path, count_tokens: Callable[[str], int]) -> list[dict]
     """Reject over-long inputs up front: clm-serve truncates them silently (truncate_prompt_tokens), which
     would only show up as a lower score."""
     items = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    if not items:
+        raise SystemExit(f"{path}: no items; nothing to measure")
     for it in items:
         it["state"] = render_state(it["state"])
     too_long = [(it["id"], n) for it in items

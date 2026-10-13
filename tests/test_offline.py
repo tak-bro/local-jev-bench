@@ -397,6 +397,16 @@ def test_bench_stops_when_the_cold_call_fails(engine):
     assert errors == 1 and [r["call"] for r in recs] == ["cold"]  # an engine that fails its warm-up gets no numbers
 
 
+def test_load_questions_rejects_an_empty_file(tmp_path):
+    p = tmp_path / "q.jsonl"
+    p.write_text("")
+    with pytest.raises(SystemExit, match="no items"):
+        run.load_questions(p, len)
+    p.write_text("\n   \n")
+    with pytest.raises(SystemExit, match="no items"):
+        run.load_questions(p, len)
+
+
 def test_load_questions_rejects_long_state(tmp_path):
     p = tmp_path / "q.jsonl"
     p.write_text("\n".join(json.dumps(it) for it in ITEMS))
