@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
@@ -1064,6 +1064,9 @@ dependencies = [
     { name = "anyjev" },
     { name = "contrastive-lm" },
     { name = "huggingface-hub" },
+    { name = "numpy", version = "2.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.13' and sys_platform != 'emscripten' and sys_platform != 'win32'" },
+    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'emscripten' or sys_platform == 'win32'" },
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "requests" },
@@ -1081,6 +1084,7 @@ requires-dist = [
     { name = "anyjev", specifier = "==0.1.0" },
     { name = "contrastive-lm", specifier = ">=0.1.0" },
     { name = "huggingface-hub", specifier = ">=0.20" },
+    { name = "numpy" },
     { name = "pyarrow", specifier = ">=17" },
     { name = "pydantic", specifier = ">=2" },
     { name = "requests", specifier = ">=2.28" },

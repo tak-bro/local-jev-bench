@@ -142,6 +142,18 @@ def test_unexpected_backend_error_is_answered(adapter):
     assert r.status_code == 500 and "top_logprobs" in r.json()["detail"]
 
 
+def test_option_count_mismatch_is_answered(adapter):
+    import types
+
+    # the backend answers three options' worth of mass for a two-option question:
+    # the bench must see an HTTP error, not a silently truncated distribution
+    dec = types.SimpleNamespace(probs=[0.1, 0.8, 0.5], p_true=0.5, confidence=0.5, value=1)
+    stub = types.SimpleNamespace(decide=lambda state, questions, level=None: {"department": dec})
+    url = adapter(stub)
+    r = post(url, {"model": "anyjev-raw", "state": "s", "questions": {"department": QUESTIONS["department"]}})
+    assert r.status_code == 500 and "3" in r.json()["detail"] and "2" in r.json()["detail"]
+
+
 class StubTokenizer:
     def decode(self, ids):
         return {1: "A", 2: "B"}[ids[0]]
