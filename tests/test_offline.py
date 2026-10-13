@@ -606,6 +606,36 @@ def test_smoke_checks_what_the_server_runs(monkeypatch):
         srv.close()
 
 
+def smoke_answers(urgency=0.41, choice="billing", billing=0.9, frustration=1.98):
+    return {"urgency": {"type": "noul", "noul": urgency},
+            "department": {"type": "choice", "choice": choice,
+                           "probabilities": {"billing": billing, "technical": 1 - billing}},
+            "frustration": {"type": "score", "score": frustration}}
+
+
+def test_smoke_grades_reference_answers_clean(monkeypatch):
+    srv = FakeServer({"/v1/systemone": lambda b: (200, {"answers": smoke_answers()})})
+    monkeypatch.setitem(run.ENGINES, "clm", {**run.ENGINES["clm"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        assert run.smoke("clm") == []
+    finally:
+        srv.close()
+
+
+def test_smoke_reports_answers_off_the_reference(monkeypatch):
+    srv = FakeServer({"/v1/systemone": lambda b: (200, {"answers": smoke_answers(
+        urgency=0.9, choice="technical", billing=0.1, frustration=0.5)})})
+    monkeypatch.setitem(run.ENGINES, "clm", {**run.ENGINES["clm"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        fails = run.smoke("clm")
+    finally:
+        srv.close()
+    assert len(fails) == 3
+    assert any("department" in f for f in fails)
+    assert any("urgency" in f for f in fails)
+    assert any("frustration" in f for f in fails)
+
+
 def test_unreadable_identity_is_an_error(monkeypatch):
     srv = FakeServer({"/v1/models": lambda _: (200, {"models": []})})
     monkeypatch.setitem(run.ENGINES, "kev-4b", {**run.ENGINES["kev-4b"], "url": f"http://127.0.0.1:{srv.port}"})
