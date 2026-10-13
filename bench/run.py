@@ -165,8 +165,18 @@ def check_shape(engine: str, questions: dict, answers: dict) -> None:
             if set(a["probabilities"]) != set(q["criteria"]):
                 raise EngineError(f"{engine}: choice {qid!r} has probabilities for {sorted(a['probabilities'])}, "
                                   f"not the options {sorted(q['criteria'])}")
+            for opt, p in a["probabilities"].items():
+                if isinstance(p, bool) or not isinstance(p, (int, float)):
+                    raise EngineError(f"{engine}: choice {qid!r} gives {opt!r} a non-numeric probability {p!r}: {a}")
+                if not 0.0 <= p <= 1.0:
+                    raise EngineError(f"{engine}: choice {qid!r} gives {opt!r} probability {p!r}, not in [0, 1]: {a}")
         elif isinstance(value, bool) or not isinstance(value, (int, float)):
             raise EngineError(f"{engine}: answer {qid!r} has no numeric {kind!r}: {a}")
+        elif kind == "noul" and not 0.0 <= value <= 1.0:
+            raise EngineError(f"{engine}: answer {qid!r} has noul {value!r}, not in [0, 1]: {a}")
+        elif kind == "score" and not 0.0 <= value <= len(q["criteria"]) - 1:
+            raise EngineError(f"{engine}: answer {qid!r} has score {value!r}, not in "
+                              f"[0, {len(q['criteria']) - 1}]: {a}")
 
 
 def smoke(engine: str) -> list[str]:

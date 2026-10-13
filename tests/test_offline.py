@@ -294,6 +294,19 @@ def test_ask_rejects_missing_answer_field(engine):
     {"department": {"type": "choice", "choice": "billing", "probabilities": {"billing": 1.0}}},  # an option missing
     {"department": {"type": "choice", "choice": "billing",                                       # an extra option
                     "probabilities": {"billing": 0.8, "technical": 0.1, "other": 0.1}}},
+    {"urgency": {"type": "noul", "noul": 1.5}},                                       # above 1
+    {"urgency": {"type": "noul", "noul": -0.1}},                                      # below 0
+    {"department": {"type": "choice", "choice": "billing",                            # probabilities out of range
+                    "probabilities": {"billing": 99.0, "technical": -98.0}}},
+    {"department": {"type": "choice", "choice": "billing",                            # probability sent as a string
+                    "probabilities": {"billing": "0.8", "technical": "0.2"}}},
+    {"frustration": {"type": "score", "score": 5.0}},                                 # past the top level
+    {"frustration": {"type": "score", "score": -0.1}},                                # below the bottom level
+    {"frustration": {"type": "score", "score": float("nan")}},                        # not a number at all
+    {"urgency": {"type": "noul", "noul": float("nan")}},
+    {"urgency": {"type": "noul", "noul": float("inf")}},
+    {"department": {"type": "choice", "choice": "billing",                            # probability NaN
+                    "probabilities": {"billing": float("nan"), "technical": 0.5}}},
 ])
 def test_ask_rejects_wrongly_typed_answers(engine, answers):
     qs = {k: run.README_QUESTIONS[k] for k in answers}
