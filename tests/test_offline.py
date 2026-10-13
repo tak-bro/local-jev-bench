@@ -420,6 +420,28 @@ def test_token_guard_counts_state_plus_instructions():
     assert run.embedded_texts(it) == [state_text(" s ", " long question ")]
 
 
+def test_qwen_token_counter_counts_with_a_local_tokenizer(monkeypatch, tmp_path):
+    from tokenizers import Tokenizer
+    from tokenizers.models import WordLevel
+    from tokenizers.pre_tokenizers import Whitespace
+
+    import huggingface_hub
+
+    tok = Tokenizer(WordLevel(vocab={"hello": 0, "world": 1, "[UNK]": 2}, unk_token="[UNK]"))
+    tok.pre_tokenizer = Whitespace()
+    path = tmp_path / "tokenizer.json"
+    tok.save(str(path))
+    seen = []
+    def fake_download(*a, **k):
+        seen.append((a, k))
+        return str(path)
+    monkeypatch.setattr(huggingface_hub, "hf_hub_download", fake_download)
+    count = run.qwen_token_counter()
+    assert seen and seen[0][0][:2] == ("Qwen/Qwen3-8B", "tokenizer.json")
+    assert count("hello world") == 2
+    assert count("") == 0
+
+
 def test_shipped_questions_are_well_formed():
     items = run.load_questions(ROOT / "bench" / "questions.jsonl", lambda text: len(text.split()))
     assert len(items) == 30
