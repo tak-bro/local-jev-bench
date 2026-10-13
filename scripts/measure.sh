@@ -12,13 +12,14 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 reps=()
+usage() { echo "usage: $0 [--reps N] <engine> <set.jsonl>..." >&2; exit 2; }
 if [ "${1:-}" = --reps ]; then
+    [ $# -ge 2 ] || usage
     reps=(--reps "$2")
     shift 2
 fi
 if [ $# -lt 2 ]; then
-    echo "usage: $0 [--reps N] <engine> <set.jsonl>..." >&2
-    exit 2
+    usage
 fi
 engine=$1
 shift

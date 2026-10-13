@@ -107,6 +107,8 @@ def test_unknown_engine_and_missing_sets(tmp_path):
     assert r.returncode == 2 and "unknown engine" in r.stderr
     r, _ = measure(tmp_path, "kev-4b")
     assert r.returncode == 2 and "usage" in r.stderr
+    r, _ = measure(tmp_path, "--reps")
+    assert r.returncode == 2 and "usage" in r.stderr
 
 
 def test_refuses_a_port_that_already_answers(tmp_path):
