@@ -85,6 +85,9 @@ def to_question(qid: str, q: dict) -> tuple[Question, list[str]]:
 def to_answer(kind: str, labels: list[str], dec) -> dict:
     if kind == "noul":
         return {"type": "noul", "noul": dec.p_true, "confidence": dec.confidence}
+    if len(dec.probs) != len(labels):
+        raise ValueError(f"{kind} answer has probabilities for {len(dec.probs)} options, "
+                         f"not the {len(labels)} asked: {labels!r}")
     probs = {label: float(p) for label, p in zip(labels, dec.probs)}
     if kind == "choice":
         return {"type": "choice", "choice": labels[int(np.argmax(dec.probs))], "probabilities": probs,
@@ -112,8 +115,11 @@ def answer(decider: Decider, lock: threading.Lock, body: Any) -> tuple[int, dict
         return 502, {"detail": f"LLM backend failed: {e!r}"}
     except Exception as e:  # e.g. a 200 without logprobs; answer it so the bench does not see a dropped connection
         return 500, {"detail": f"adapter failed: {e!r}"}
-    answers = {qid: to_answer(body["questions"][qid]["type"], labels, decisions[qid])
-               for qid, (_, labels) in converted.items()}
+    try:
+        answers = {qid: to_answer(body["questions"][qid]["type"], labels, decisions[qid])
+                   for qid, (_, labels) in converted.items()}
+    except (ValueError, IndexError, KeyError, TypeError) as e:  # e.g. backend/question option-count mismatch
+        return 500, {"detail": f"adapter failed: {e!r}"}
     return 200, {"model": model, "answers": answers}
 
 
