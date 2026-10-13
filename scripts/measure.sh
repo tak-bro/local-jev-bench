@@ -12,13 +12,14 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 reps=()
+usage() { echo "usage: $0 [--reps N] <engine> <set.jsonl>..." >&2; exit 2; }
 if [ "${1:-}" = --reps ]; then
+    [ $# -ge 2 ] || usage
     reps=(--reps "$2")
     shift 2
 fi
 if [ $# -lt 2 ]; then
-    echo "usage: $0 [--reps N] <engine> <set.jsonl>..." >&2
-    exit 2
+    usage
 fi
 engine=$1
 shift
@@ -41,9 +42,9 @@ pids=()
 stop() {
     local i
     kill -TERM -- "-$1" 2>/dev/null || return 0
-    for ((i = 0; i < 200; i++)); do
+    for ((i = 0; i < 400; i++)); do
         kill -0 -- "-$1" 2>/dev/null || break
-        sleep 0.1
+        sleep 0.05
     done
     if kill -0 -- "-$1" 2>/dev/null; then
         echo "server $1 ignored TERM for 20s; killing it" >&2
@@ -96,7 +97,7 @@ start() {
             echo "$name not ready after ${timeout}s; see $logs/$name.log" >&2
             exit 1
         fi
-        sleep 1
+        sleep 0.05
     done
 }
 

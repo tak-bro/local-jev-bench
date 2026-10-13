@@ -53,10 +53,12 @@ class FakeServer:
 
         self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
         self.port = self.httpd.server_address[1]
-        threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
+        threading.Thread(target=self.httpd.serve_forever, kwargs={"poll_interval": 0.01},
+                         daemon=True).start()
 
     def close(self):
         self.httpd.shutdown()
+        self.httpd.server_close()
 
 
 def embed_server(vec):
@@ -294,6 +296,19 @@ def test_ask_rejects_missing_answer_field(engine):
     {"department": {"type": "choice", "choice": "billing", "probabilities": {"billing": 1.0}}},  # an option missing
     {"department": {"type": "choice", "choice": "billing",                                       # an extra option
                     "probabilities": {"billing": 0.8, "technical": 0.1, "other": 0.1}}},
+    {"urgency": {"type": "noul", "noul": 1.5}},                                       # above 1
+    {"urgency": {"type": "noul", "noul": -0.1}},                                      # below 0
+    {"department": {"type": "choice", "choice": "billing",                            # probabilities out of range
+                    "probabilities": {"billing": 99.0, "technical": -98.0}}},
+    {"department": {"type": "choice", "choice": "billing",                            # probability sent as a string
+                    "probabilities": {"billing": "0.8", "technical": "0.2"}}},
+    {"frustration": {"type": "score", "score": 5.0}},                                 # past the top level
+    {"frustration": {"type": "score", "score": -0.1}},                                # below the bottom level
+    {"frustration": {"type": "score", "score": float("nan")}},                        # not a number at all
+    {"urgency": {"type": "noul", "noul": float("nan")}},
+    {"urgency": {"type": "noul", "noul": float("inf")}},
+    {"department": {"type": "choice", "choice": "billing",                            # probability NaN
+                    "probabilities": {"billing": float("nan"), "technical": 0.5}}},
 ])
 def test_ask_rejects_wrongly_typed_answers(engine, answers):
     qs = {k: run.README_QUESTIONS[k] for k in answers}
@@ -397,6 +412,23 @@ def test_bench_stops_when_the_cold_call_fails(engine):
     assert errors == 1 and [r["call"] for r in recs] == ["cold"]  # an engine that fails its warm-up gets no numbers
 
 
+def test_load_questions_rejects_an_empty_file(tmp_path):
+    p = tmp_path / "q.jsonl"
+    p.write_text("")
+    with pytest.raises(SystemExit, match="no items"):
+        run.load_questions(p, len)
+    p.write_text("\n   \n")
+    with pytest.raises(SystemExit, match="no items"):
+        run.load_questions(p, len)
+
+
+def test_load_questions_rejects_an_item_without_questions(tmp_path):
+    p = tmp_path / "q.jsonl"
+    p.write_text(json.dumps({"id": "x", "state": "hi", "questions": {}}) + "\n")
+    with pytest.raises(SystemExit, match="x"):
+        run.load_questions(p, len)
+
+
 def test_load_questions_rejects_long_state(tmp_path):
     p = tmp_path / "q.jsonl"
     p.write_text("\n".join(json.dumps(it) for it in ITEMS))
@@ -418,6 +450,28 @@ def test_token_guard_counts_state_plus_instructions():
     from clm.schema import state_text
     it = {"state": " s ", "questions": {"a": {"type": "noul", "instructions": " long question "}}}
     assert run.embedded_texts(it) == [state_text(" s ", " long question ")]
+
+
+def test_qwen_token_counter_counts_with_a_local_tokenizer(monkeypatch, tmp_path):
+    from tokenizers import Tokenizer
+    from tokenizers.models import WordLevel
+    from tokenizers.pre_tokenizers import Whitespace
+
+    import huggingface_hub
+
+    tok = Tokenizer(WordLevel(vocab={"hello": 0, "world": 1, "[UNK]": 2}, unk_token="[UNK]"))
+    tok.pre_tokenizer = Whitespace()
+    path = tmp_path / "tokenizer.json"
+    tok.save(str(path))
+    seen = []
+    def fake_download(*a, **k):
+        seen.append((a, k))
+        return str(path)
+    monkeypatch.setattr(huggingface_hub, "hf_hub_download", fake_download)
+    count = run.qwen_token_counter()
+    assert seen and seen[0][0][:2] == ("Qwen/Qwen3-8B", "tokenizer.json")
+    assert count("hello world") == 2
+    assert count("") == 0
 
 
 def test_shipped_questions_are_well_formed():
@@ -604,6 +658,36 @@ def test_smoke_checks_what_the_server_runs(monkeypatch):
             run.smoke("kev-9b")
     finally:
         srv.close()
+
+
+def smoke_answers(urgency=0.41, choice="billing", billing=0.9, frustration=1.98):
+    return {"urgency": {"type": "noul", "noul": urgency},
+            "department": {"type": "choice", "choice": choice,
+                           "probabilities": {"billing": billing, "technical": 1 - billing}},
+            "frustration": {"type": "score", "score": frustration}}
+
+
+def test_smoke_grades_reference_answers_clean(monkeypatch):
+    srv = FakeServer({"/v1/systemone": lambda b: (200, {"answers": smoke_answers()})})
+    monkeypatch.setitem(run.ENGINES, "clm", {**run.ENGINES["clm"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        assert run.smoke("clm") == []
+    finally:
+        srv.close()
+
+
+def test_smoke_reports_answers_off_the_reference(monkeypatch):
+    srv = FakeServer({"/v1/systemone": lambda b: (200, {"answers": smoke_answers(
+        urgency=0.9, choice="technical", billing=0.1, frustration=0.5)})})
+    monkeypatch.setitem(run.ENGINES, "clm", {**run.ENGINES["clm"], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        fails = run.smoke("clm")
+    finally:
+        srv.close()
+    assert len(fails) == 3
+    assert any("department" in f for f in fails)
+    assert any("urgency" in f for f in fails)
+    assert any("frustration" in f for f in fails)
 
 
 def test_unreadable_identity_is_an_error(monkeypatch):
