@@ -15,23 +15,24 @@ questions count only in sets graded by argmax, which read their level probabilit
 
 | engine | model | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | calls | accuracy | Brier (n) | ECE | rep-disagree | order-flip | errors | worst memory pressure |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| anyjev-l0 | anyjev-l0 | 5613.2 | 2554.0 | 2554.0 | 2844.1 | 300 | 226/300 (75%, 70-80) | 0.469 (300) | 0.234 | n/a | 26/300 (9%) | 0 | normal |
-| anyjev-raw | anyjev-raw | 679.4 | 465.4 | 465.4 | 581.8 | 300 | 228/300 (76%, 71-80) | 0.453 (300) | 0.225 | n/a | 46/300 (15%) | 0 | normal |
-| clef | Clef-Q4_K_M@5f70656 | 2821.6 | 2791.8 | 2791.8 | 3840.1 | 300 | 233/300 (78%, 73-82) | 0.336 (300) | 0.066 | n/a | 0/300 (0%) | 0 | warn |
-| clef-flash | Clef-Flash-Q8_0@4a7a08c | 544.1 | 808.5 | 808.5 | 901.1 | 300 | 231/300 (77%, 72-81) | 0.348 (300) | 0.050 | n/a | 0/300 (0%) | 0 | normal |
-| decider-2b | decider | 906.2 | 894.1 | 894.1 | 904.8 | 300 | 220/300 (73%, 68-78) | 0.378 (300) | 0.088 | n/a | 20/300 (7%) | 0 | normal |
-| decider-4b | decider:4b | 3382.5 | 3838.6 | 3838.6 | 10230.1 | 300 | 212/300 (71%, 65-76) | 0.397 (300) | 0.047 | n/a | 26/300 (9%) | 0 | normal |
-| decision-eos | decision | 492.8 | 491.4 | 491.4 | 561.0 | 300 | 189/300 (63%, 57-68) | 0.507 (300) | 0.134 | n/a | 38/300 (13%) | 0 | normal |
-| jeff | jeff-latest | 89.8 | 103.9 | 103.9 | 134.9 | 300 | 222/300 (74%, 69-79) | 0.378 (300) | 0.087 | n/a | 16/300 (5%) | 0 | critical |
-| jeff-0.8b | jeff-latest | 60.4 | 40.6 | 40.6 | 68.0 | 300 | 206/300 (69%, 63-74) | 0.420 (300) | 0.087 | n/a | 39/300 (13%) | 0 | warn |
-| kev-0.8b | kev-latest | 50.1 | 42.3 | 42.3 | 76.8 | 300 | 188/300 (63%, 57-68) | 0.486 (300) | 0.064 | n/a | 35/300 (12%) | 0 | warn |
-| kev-4b | kev-latest | 192.1 | 220.0 | 220.0 | 231.0 | 300 | 222/300 (74%, 69-79) | 0.377 (300) | 0.069 | n/a | 27/300 (9%) | 0 | normal |
-| kev-9b | kev-latest | 339.2 | 380.0 | 380.0 | 464.5 | 300 | 218/300 (73%, 67-77) | 0.379 (300) | 0.079 | n/a | 28/300 (9%) | 0 | normal |
-| ollaya | laya:multilingual | 15.2 | 21.7 | 21.7 | 43.8 | 300 | 129/300 (43%, 38-49) | 0.831 (300) | 0.288 | n/a | 89/300 (30%) | 0 | warn |
-| ollaya-td | laya:typed-decisions | 393.2 | 377.4 | 377.4 | 439.1 | 300 | 56/300 (19%, 15-23) | 0.837 (300) | 0.033 | n/a | 227/300 (76%) | 0 | normal |
-| von | von-latest | 63.7 | 60.4 | 60.4 | 71.6 | 300 | 45/300 (15%, 11-19) | 0.922 (300) | 0.200 | n/a | 0/300 (0%) | 0 | normal |
-| winnow | winnow:e4b | 302.4 | 426.4 | 426.4 | 661.5 | 300 | 221/300 (74%, 68-78) | 0.372 (300) | 0.085 | n/a | 33/300 (11%) | 0 | warn |
-| winnow-12b | winnow:12b | 753.8 | 908.3 | 908.3 | 940.8 | 300 | 237/300 (79%, 74-83) | 0.335 (300) | 0.122 | n/a | 23/300 (8%) | 0 | normal |
+| anyjev-l0 | anyjev-l0 | 2425.1 | 2192.4 | 2192.4 | 2371.5 | 300 | 226/300 (75%, 70-80) | 0.469 (300) | 0.236 | n/a | 26/300 (9%) | 0 | normal |
+| anyjev-raw | anyjev-raw | 744.5 | 416.3 | 416.3 | 532.8 | 300 | 228/300 (76%, 71-80) | 0.453 (300) | 0.225 | n/a | 46/300 (15%) | 0 | normal |
+| clef | Clef-Q4_K_M@5f70656 | 2336.8 | 2631.1 | 2631.1 | 2723.3 | 300 | 233/300 (78%, 73-82) | 0.336 (300) | 0.066 | n/a | 0/300 (0%) | 0 | normal |
+| clef-flash | Clef-Flash-Q8_0@4a7a08c | 535.8 | 711.8 | 711.8 | 758.2 | 300 | 231/300 (77%, 72-81) | 0.348 (300) | 0.050 | n/a | 0/300 (0%) | 0 | normal |
+| decider-2b | decider | 892.0 | 902.6 | 902.6 | 918.6 | 300 | 220/300 (73%, 68-78) | 0.378 (300) | 0.088 | n/a | 20/300 (7%) | 0 | normal |
+| decider-4b | decider:4b | 2379.6 | 2376.8 | 2376.8 | 2385.4 | 300 | 212/300 (71%, 65-76) | 0.397 (300) | 0.047 | n/a | 26/300 (9%) | 0 | normal |
+| decision-eos | decision | 490.2 | 494.6 | 494.6 | 532.8 | 300 | 189/300 (63%, 57-68) | 0.507 (300) | 0.134 | n/a | 38/300 (13%) | 0 | normal |
+| jeff | jeff-latest | 94.3 | 91.7 | 91.7 | 96.9 | 300 | 222/300 (74%, 69-79) | 0.378 (300) | 0.087 | n/a | 16/300 (5%) | 0 | warn |
+| jeff-0.8b | jeff-latest | 49.4 | 40.8 | 40.8 | 44.7 | 300 | 206/300 (69%, 63-74) | 0.420 (300) | 0.087 | n/a | 39/300 (13%) | 0 | warn |
+| jevk5 | jevk5 | 275.9 | 361.0 | 361.0 | 392.8 | 300 | 222/300 (74%, 69-79) | 0.369 (300) | 0.092 | n/a | 26/300 (9%) | 0 | normal |
+| kev-0.8b | kev-latest | 47.1 | 39.9 | 39.9 | 40.8 | 300 | 188/300 (63%, 57-68) | 0.486 (300) | 0.064 | n/a | 35/300 (12%) | 0 | normal |
+| kev-4b | kev-latest | 199.9 | 218.4 | 218.4 | 230.7 | 300 | 222/300 (74%, 69-79) | 0.377 (300) | 0.069 | n/a | 27/300 (9%) | 0 | normal |
+| kev-9b | kev-latest | 337.7 | 396.5 | 396.5 | 423.4 | 300 | 218/300 (73%, 67-77) | 0.379 (300) | 0.079 | n/a | 28/300 (9%) | 0 | normal |
+| ollaya | laya | 19.3 | 13.2 | 13.2 | 13.6 | 300 | 129/300 (43%, 38-49) | 0.831 (300) | 0.288 | n/a | 89/300 (30%) | 0 | normal |
+| ollaya-td | laya:typed-decisions | 399.5 | 385.8 | 385.8 | 407.2 | 300 | 56/300 (19%, 15-23) | 0.837 (300) | 0.033 | n/a | 227/300 (76%) | 0 | normal |
+| von | von-latest | 58.8 | 52.1 | 52.1 | 55.6 | 300 | 45/300 (15%, 11-19) | 0.922 (300) | 0.200 | n/a | 0/300 (0%) | 0 | normal |
+| winnow | winnow:e4b | 309.5 | 385.4 | 385.4 | 417.4 | 300 | 221/300 (74%, 68-78) | 0.372 (300) | 0.085 | n/a | 33/300 (11%) | 0 | normal |
+| winnow-12b | winnow:12b | 760.0 | 992.2 | 992.2 | 1038.4 | 300 | 237/300 (79%, 74-83) | 0.335 (300) | 0.122 | n/a | 23/300 (8%) | 0 | normal |
 
 ## Pairwise differences (McNemar exact)
 
@@ -48,6 +49,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | decision-eos | 300 | 56 | 19 | <0.001 |
 | anyjev-l0 | jeff | 300 | 26 | 22 | 0.665 |
 | anyjev-l0 | jeff-0.8b | 300 | 44 | 24 | 0.021 |
+| anyjev-l0 | jevk5 | 300 | 24 | 20 | 0.652 |
 | anyjev-l0 | kev-0.8b | 300 | 57 | 19 | <0.001 |
 | anyjev-l0 | kev-4b | 300 | 25 | 21 | 0.659 |
 | anyjev-l0 | kev-9b | 300 | 29 | 21 | 0.322 |
@@ -63,6 +65,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-raw | decision-eos | 300 | 59 | 20 | <0.001 |
 | anyjev-raw | jeff | 300 | 31 | 25 | 0.504 |
 | anyjev-raw | jeff-0.8b | 300 | 40 | 18 | 0.005 |
+| anyjev-raw | jevk5 | 300 | 30 | 24 | 0.497 |
 | anyjev-raw | kev-0.8b | 300 | 54 | 14 | <0.001 |
 | anyjev-raw | kev-4b | 300 | 29 | 23 | 0.488 |
 | anyjev-raw | kev-9b | 300 | 32 | 22 | 0.220 |
@@ -77,6 +80,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef | decision-eos | 300 | 55 | 11 | <0.001 |
 | clef | jeff | 300 | 32 | 21 | 0.169 |
 | clef | jeff-0.8b | 300 | 52 | 25 | 0.003 |
+| clef | jevk5 | 300 | 29 | 18 | 0.144 |
 | clef | kev-0.8b | 300 | 59 | 14 | <0.001 |
 | clef | kev-4b | 300 | 26 | 15 | 0.117 |
 | clef | kev-9b | 300 | 24 | 9 | 0.014 |
@@ -90,6 +94,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef-flash | decision-eos | 300 | 59 | 17 | <0.001 |
 | clef-flash | jeff | 300 | 27 | 18 | 0.233 |
 | clef-flash | jeff-0.8b | 300 | 53 | 28 | 0.007 |
+| clef-flash | jevk5 | 300 | 32 | 23 | 0.281 |
 | clef-flash | kev-0.8b | 300 | 59 | 16 | <0.001 |
 | clef-flash | kev-4b | 300 | 25 | 16 | 0.211 |
 | clef-flash | kev-9b | 300 | 26 | 13 | 0.053 |
@@ -102,6 +107,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-2b | decision-eos | 300 | 49 | 18 | <0.001 |
 | decider-2b | jeff | 300 | 24 | 26 | 0.888 |
 | decider-2b | jeff-0.8b | 300 | 47 | 33 | 0.146 |
+| decider-2b | jevk5 | 300 | 19 | 21 | 0.875 |
 | decider-2b | kev-0.8b | 300 | 52 | 20 | <0.001 |
 | decider-2b | kev-4b | 300 | 21 | 23 | 0.880 |
 | decider-2b | kev-9b | 300 | 21 | 19 | 0.875 |
@@ -113,6 +119,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-4b | decision-eos | 300 | 45 | 22 | 0.007 |
 | decider-4b | jeff | 300 | 20 | 30 | 0.203 |
 | decider-4b | jeff-0.8b | 300 | 47 | 41 | 0.594 |
+| decider-4b | jevk5 | 300 | 15 | 25 | 0.154 |
 | decider-4b | kev-0.8b | 300 | 50 | 26 | 0.008 |
 | decider-4b | kev-4b | 300 | 15 | 25 | 0.154 |
 | decider-4b | kev-9b | 300 | 17 | 23 | 0.430 |
@@ -123,6 +130,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-4b | winnow-12b | 300 | 7 | 32 | <0.001 |
 | decision-eos | jeff | 300 | 19 | 52 | <0.001 |
 | decision-eos | jeff-0.8b | 300 | 25 | 42 | 0.050 |
+| decision-eos | jevk5 | 300 | 17 | 50 | <0.001 |
 | decision-eos | kev-0.8b | 300 | 32 | 31 | 1.000 |
 | decision-eos | kev-4b | 300 | 14 | 47 | <0.001 |
 | decision-eos | kev-9b | 300 | 20 | 49 | <0.001 |
@@ -132,6 +140,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decision-eos | winnow | 300 | 19 | 51 | <0.001 |
 | decision-eos | winnow-12b | 300 | 10 | 58 | <0.001 |
 | jeff | jeff-0.8b | 300 | 39 | 23 | 0.056 |
+| jeff | jevk5 | 300 | 22 | 22 | 1.000 |
 | jeff | kev-0.8b | 300 | 57 | 23 | <0.001 |
 | jeff | kev-4b | 300 | 29 | 29 | 1.000 |
 | jeff | kev-9b | 300 | 33 | 29 | 0.704 |
@@ -140,6 +149,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jeff | von | 300 | 192 | 15 | <0.001 |
 | jeff | winnow | 300 | 20 | 19 | 1.000 |
 | jeff | winnow-12b | 300 | 14 | 29 | 0.032 |
+| jeff-0.8b | jevk5 | 300 | 27 | 43 | 0.072 |
 | jeff-0.8b | kev-0.8b | 300 | 43 | 25 | 0.038 |
 | jeff-0.8b | kev-4b | 300 | 32 | 48 | 0.093 |
 | jeff-0.8b | kev-9b | 300 | 35 | 47 | 0.224 |
@@ -148,6 +158,14 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jeff-0.8b | von | 300 | 173 | 12 | <0.001 |
 | jeff-0.8b | winnow | 300 | 24 | 39 | 0.077 |
 | jeff-0.8b | winnow-12b | 300 | 23 | 54 | <0.001 |
+| jevk5 | kev-0.8b | 300 | 53 | 19 | <0.001 |
+| jevk5 | kev-4b | 300 | 22 | 22 | 1.000 |
+| jevk5 | kev-9b | 300 | 26 | 22 | 0.665 |
+| jevk5 | ollaya | 300 | 113 | 20 | <0.001 |
+| jevk5 | ollaya-td | 300 | 181 | 15 | <0.001 |
+| jevk5 | von | 300 | 192 | 15 | <0.001 |
+| jevk5 | winnow | 300 | 15 | 14 | 1.000 |
+| jevk5 | winnow-12b | 300 | 13 | 28 | 0.028 |
 | kev-0.8b | kev-4b | 300 | 13 | 47 | <0.001 |
 | kev-0.8b | kev-9b | 300 | 20 | 50 | <0.001 |
 | kev-0.8b | ollaya | 300 | 93 | 34 | <0.001 |
@@ -179,6 +197,6 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 ## By source
 
-| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | decider-2b | decider-4b | decision-eos | jeff | jeff-0.8b | kev-0.8b | kev-4b | kev-9b | ollaya | ollaya-td | von | winnow | winnow-12b |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| klue-ynat | 300 | 226/300 (75%) | 228/300 (76%) | 233/300 (78%) | 231/300 (77%) | 220/300 (73%) | 212/300 (71%) | 189/300 (63%) | 222/300 (74%) | 206/300 (69%) | 188/300 (63%) | 222/300 (74%) | 218/300 (73%) | 129/300 (43%) | 56/300 (19%) | 45/300 (15%) | 221/300 (74%) | 237/300 (79%) |
+| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | decider-2b | decider-4b | decision-eos | jeff | jeff-0.8b | jevk5 | kev-0.8b | kev-4b | kev-9b | ollaya | ollaya-td | von | winnow | winnow-12b |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| klue-ynat | 300 | 226/300 (75%) | 228/300 (76%) | 233/300 (78%) | 231/300 (77%) | 220/300 (73%) | 212/300 (71%) | 189/300 (63%) | 222/300 (74%) | 206/300 (69%) | 222/300 (74%) | 188/300 (63%) | 222/300 (74%) | 218/300 (73%) | 129/300 (43%) | 56/300 (19%) | 45/300 (15%) | 221/300 (74%) | 237/300 (79%) |

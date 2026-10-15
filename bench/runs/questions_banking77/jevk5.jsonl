@@ -1,0 +1,3 @@
+{"header": {"set": "bench/questions_banking77.jsonl", "set_sha256": "25546309919f34d415e919738987303a5e7b41d1f57ca5b33fbb2056664ca3be", "engine": "jevk5", "model": "jevk5", "reps": 1, "warmup": 3, "started": "2026-10-16T02:50:07+00:00", "host": "Apple M3 Max, 36 GB", "served": null, "hub_revision": null}}
+{"item": "b000", "call": "cold", "rep": null, "answers": null, "error": "jevk5: HTTP 422: {\"error\":\"questions.intent.choice.criteria: 20 options do not fit the option budget of jevk5:latest\",\"code\":\"TOO_MANY_OPTIONS\",\"detail\":[{\"loc\":[\"body\",\"questions\",\"intent\",\"choice\",\"criteria\"],\"msg\":", "ms": null, "pressure": "normal"}
+{"footer": {"finished": "2026-10-16T02:50:08+00:00"}}

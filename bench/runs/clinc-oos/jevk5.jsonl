@@ -1,0 +1,3 @@
+{"header": {"set": "bench/data/clinc-oos.jsonl", "set_sha256": "d243ed6b4fbebf1b068d090266572e50bde913b5d2d1738cf50e4c424d70cb62", "engine": "jevk5", "model": "jevk5", "reps": 1, "warmup": 3, "started": "2026-10-16T03:37:54+00:00", "host": "Apple M3 Max, 36 GB", "served": null, "hub_revision": null}}
+{"item": "clinc/000", "call": "cold", "rep": null, "answers": null, "error": "jevk5: HTTP 422: {\"error\":\"questions.intent.choice.criteria: 20 options do not fit the option budget of jevk5:latest\",\"code\":\"TOO_MANY_OPTIONS\",\"detail\":[{\"loc\":[\"body\",\"questions\",\"intent\",\"choice\",\"criteria\"],\"msg\":", "ms": null, "pressure": "normal"}
+{"footer": {"finished": "2026-10-16T03:37:54+00:00"}}
