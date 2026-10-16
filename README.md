@@ -84,9 +84,11 @@ Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisi
   every 9-30 number exactly (89/87/89/80/67/83/74%), so the September delta updates moved none of this repo's sets
   for it. Kev-9B moved on all seven: English 30 95 → 93, Korean 30 94 → 91, BANKING77-20 267 → 271, transfer-v4
   618 → 620, NSMC 257 → 261, KLUE-YNAT 220 → 218, and typed-decisions 1440 → 1378 of 2000 (72% → 69%), the one
-  large move. The 2026-10-14..16 rerun reproduces the 2026-10-10 counts exactly. The 9-30 logs are in git history
-  (`9f5ba1c`), so a paired test of that change is still possible; it has not been run. Its consequence holds either
-  way: Winnow now beats Kev-9B on typed-decisions (p < 0.001), where they were level (p = 0.529).
+  large move. The 2026-10-14..16 rerun reproduces the 2026-10-10 decisions exactly. Paired against the 9-30 logs
+  (`9f5ba1c`), only typed-decisions changed: 158 decisions right only on 9-30 against 96 right only now
+  (p < 0.001), almost all in `agent_trace_observability` (305 → 255 of 500, p < 0.001) and on choice and noul
+  questions; the other six sets are level (p ≥ 0.22). So Kev-9B's Hub revision regressed on typed-decisions, and
+  Winnow now beats it there (p < 0.001), where they were level (p = 0.529).
 
 Ollaya (Laya) is the fastest engine, at 10-44 ms first-call p50 outside typed-decisions' long states. It is also among the least
 accurate: the lowest of all on typed-decisions, and in the bottom five on every set but clinc-oos, where it scores
@@ -307,9 +309,10 @@ Read these results with the following caveats:
 - **Timeout:** every engine ran with `--timeout 300`; the 120 s default timed out 101 of 400 Decider-4B
   typed-decisions items on a 2026-10-12 attempt.
 - **Kev revisions:** Kev-4B serves Hub snapshot `6cfce5c`, Kev-9B `db029f08` (both dated 2026-10-01). Kev-4B
-  reproduces every 2026-09-30 count; Kev-9B moved on all seven sets then measured, most on typed-decisions
-  (1440 to 1378 of 2000), and this pass reproduces the 2026-10-10 counts exactly. The 2026-09-30 logs are in git
-  history (`9f5ba1c`), so that change can still be tested pairwise. Von's Hub revision `5df8185` is byte-identical
+  reproduces every 2026-09-30 count; Kev-9B moved on all seven sets then measured, but paired against the
+  2026-09-30 logs (`9f5ba1c`) only typed-decisions changed (1440 to 1378 of 2000, p < 0.001; the rest p ≥ 0.22).
+  This pass reproduces the 2026-10-10 decisions exactly. The 2026-09-30 log headers do not name the snapshot Kev-9B
+  served then. Von's Hub revision `5df8185` is byte-identical
   to the pinned `498ceba` on all weight and calibration files.
 
 Which engine to use. Engines count as different when the exact McNemar p is below 0.05. With 153-171 pairs per set, some p values under 0.05 come by chance.
