@@ -11,15 +11,17 @@ import stat
 import subprocess
 import sys
 import threading
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "bench"))
+sys.path.insert(0, str(ROOT / "tests"))
 import run  # noqa: E402
 import score  # noqa: E402
+from standin_server import LocalHTTPServer  # noqa: E402
 
 
 def free_port() -> int:
@@ -51,7 +53,7 @@ class FakeServer:
             def log_message(self, *a):
                 pass
 
-        self.httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
+        self.httpd = LocalHTTPServer(("127.0.0.1", 0), H)
         self.port = self.httpd.server_address[1]
         threading.Thread(target=self.httpd.serve_forever, kwargs={"poll_interval": 0.01},
                          daemon=True).start()

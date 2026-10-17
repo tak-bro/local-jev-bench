@@ -6,12 +6,14 @@ import json
 import math
 import sys
 import threading
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "bench"))
+sys.path.insert(0, str(ROOT / "tests"))
 import llm_compare  # noqa: E402
+from standin_server import LocalHTTPServer  # noqa: E402
 
 
 def chat_server(chunks=("Hello", " world"), usage_tokens=5):
@@ -45,7 +47,7 @@ def chat_server(chunks=("Hello", " world"), usage_tokens=5):
         def log_message(self, *a):
             pass
 
-    httpd = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    httpd = LocalHTTPServer(("127.0.0.1", 0), H)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     return httpd
 
