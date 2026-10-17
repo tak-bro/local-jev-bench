@@ -1,0 +1,18 @@
+name: offline tests
+
+# PROBE — temporary workflow: runs on every push so the diagnostic step can be read.
+on: push
+
+jobs:
+  pytest:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --frozen
+      - name: diagnose runner
+        if: always()
+        run: bash ci/diagnose.sh
+      - run: uv run pytest -q
