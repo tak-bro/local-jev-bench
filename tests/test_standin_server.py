@@ -23,27 +23,22 @@ def get(server, path="/ready", timeout=5):
         conn.close()
 
 
-def test_bind_does_not_resolve_the_host(monkeypatch, tmp_path):
-    # getfqdn() between bind() and listen() leaves the port refusing connections for the lookup's whole
-    # stall; the stand-ins must bind like the adapter does (serve/anyjev_server.py, LocalHTTPServer).
+@pytest.fixture
+def served(monkeypatch, tmp_path):
+    """A started stand-in server; getfqdn is patched to fail, so any bind-time lookup fails the test."""
     monkeypatch.setattr(socket, "getfqdn", lambda host: pytest.fail(f"server_bind resolved {host}"))
     (tmp_path / "ready").write_text("ok")
     server = standin_server.LocalHTTPServer(("127.0.0.1", 0), standin_server.handler(str(tmp_path)))
-    try:
-        threading.Thread(target=server.serve_forever, daemon=True).start()
-        assert get(server).status == 200
-    finally:
-        server.shutdown()
-        server.server_close()
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    yield server
+    server.shutdown()
+    server.server_close()
 
 
-def test_serves_the_directory(tmp_path):
-    (tmp_path / "ready").write_text("ok")
-    server = standin_server.LocalHTTPServer(("127.0.0.1", 0), standin_server.handler(str(tmp_path)))
-    try:
-        threading.Thread(target=server.serve_forever, daemon=True).start()
-        r = get(server)
-        assert r.status == 200 and r.read() == b"ok"
-    finally:
-        server.shutdown()
-        server.server_close()
+def test_bind_does_not_resolve_the_host(served):
+    assert get(served).status == 200
+
+
+def test_serves_the_directory(served):
+    r = get(served)
+    assert r.status == 200 and r.read() == b"ok"
