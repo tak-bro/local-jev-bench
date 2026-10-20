@@ -53,6 +53,24 @@ def post(url, body):
     return requests.post(f"{url}/v1/systemone", json=body, timeout=30)
 
 
+def test_bind_does_not_resolve_the_host(monkeypatch):
+    # macOS 15+/26 runners stall the loopback reverse lookup ~35 s (actions/setup-python#1223). getfqdn() runs
+    # between bind() and listen(), so the port refuses every connection until the lookup returns and every
+    # readiness wait (measure.sh, the adapter tests) sees a dead server. bind must not resolve the host.
+    import socket
+
+    monkeypatch.setattr(socket, "getfqdn", lambda host: pytest.fail(f"server_bind resolved {host}"))
+    server = srv.make_server(Decider(billing_backend()), port=0)
+    try:
+        srv.serve_in_thread(server)
+        r = post(f"http://127.0.0.1:{server.server_address[1]}",
+                 {"model": "anyjev-l0", "state": "s", "questions": {"urgency": QUESTIONS["urgency"]}})
+        assert r.status_code == 200
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
 def test_answers_every_type_in_the_bench_shape(adapter):
     adapter(Decider(billing_backend()))
     answers, _ = run.ask("anyjev-l0", "Customer: charged twice!", QUESTIONS)  # check_shape runs inside ask
