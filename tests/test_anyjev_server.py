@@ -68,6 +68,7 @@ def test_bind_does_not_resolve_the_host(monkeypatch):
         assert r.status_code == 200
     finally:
         server.shutdown()
+        server.server_close()
 
 
 def test_answers_every_type_in_the_bench_shape(adapter):

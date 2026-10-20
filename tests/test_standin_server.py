@@ -15,10 +15,12 @@ import standin_server  # noqa: E402
 
 
 def get(server, path="/ready", timeout=5):
+    """(status, body) — the body is read before the connection closes."""
     conn = http.client.HTTPConnection("127.0.0.1", server.server_address[1], timeout=timeout)
     try:
         conn.request("GET", path)
-        return conn.getresponse()
+        r = conn.getresponse()
+        return r.status, r.read()
     finally:
         conn.close()
 
@@ -36,9 +38,8 @@ def served(monkeypatch, tmp_path):
 
 
 def test_bind_does_not_resolve_the_host(served):
-    assert get(served).status == 200
+    assert get(served)[0] == 200
 
 
 def test_serves_the_directory(served):
-    r = get(served)
-    assert r.status == 200 and r.read() == b"ok"
+    assert get(served) == (200, b"ok")
