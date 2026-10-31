@@ -97,7 +97,7 @@ NSMC and KLUE-YNAT; AnyJev and CLM are worse calibrated still on some. Kev-0.8B 
 accurate as Ollaya or more on every set but clinc-oos (71% vs 79%). Kev-4B reproduces its model card on transfer-v4 (534/656 against 0.817). Details are in
 [Results](#results-2026-10-1416-m3-max-36-gb).
 
-It sets up fifteen engine families:
+It sets up eighteen engine families:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): the `laya` model, run on MLX.
@@ -107,6 +107,9 @@ It sets up fifteen engine families:
 - **Decider-2B / Decider-4B**: Mapika's Qwen3.5 decoders (`decider`, `decider:4b`), run by Ollaya (on CPU here).
 - **Decision-Eos**: Decision 1.0 Eos by the vLLM Semantic Router contributors (`decision`), a fine-tuned Qwen3.5-0.8B with an endpoint head, run by Ollaya.
 - **JevK5**: alibiserikbay's JevK5 v0.3 (`jevk5`), a Qwen3.5-4B fine-tune on llama.cpp. It refuses questions with more than its option budget (see caveats).
+- **pplx-decider**: Perplexity's pplx-decider-flash v1.2 (`pplx-decider:flash`), a Qwen3.5-4B distilled from its 27B decision models. Ollaya 0.7.3 cannot load its `pplx-joint-v1` layout, so it runs on a second daemon, Ollaya 0.18.0 (see Ports), on CPU in fp32 here.
+- **coba-400m / coba-1b**: Ollaya's own Ettin encoders distilled from pplx-decider:flash (`coba:400m`, `coba:1b`), English only, run by Ollaya on MLX. Their context is 512 tokens; a longer state is refused with `STATE_TRUNCATED`.
+- **nimble-v3**: Bespoke-Nimble-9B v3 (`nimble:9b-v3`, CC BY-NC 4.0), a LoRA on Qwen3.5-9B, on the Ollaya 0.18.0 daemon, on CPU in fp32 here. Nimble-v4 is API-only, so it is not measured.
 - **AnyJev** ([nokia-applied-research/AnyJev](https://github.com/nokia-applied-research/AnyJev)): training-free; reads label logprobs from Qwen3-8B on vllm-metal, with no correction (`anyjev-raw`) or with cyclic option shifts plus a batch prior (`anyjev-l0`).
 - **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): a LoRA plus pointer head on Qwen3.5-0.8B, 4B or 9B Base (`kev-0.8b`, `kev-4b`, `kev-9b`), run on MLX.
 - **Jeff** ([firelex/jeff](https://github.com/firelex/jeff)): Jeff-Qwen3.5-2B, a fine-tuned Qwen3.5-2B with a trained answer readout, run on MLX.
@@ -149,7 +152,8 @@ Every server binds to `127.0.0.1` only.
 | 8091 | small embedding model (smoke only) | `scripts/serve-embed.sh mlx-community/Qwen3-Embedding-0.6B-8bit 8091 embed-small` |
 | 8090 | Qwen3-8B encoder for CLM | `scripts/serve-embed.sh Qwen/Qwen3-8B 8090 qwen3-8b` |
 | 8700 | CLM System One API | `scripts/serve-clm.sh` |
-| 11435 | Ollaya daemon (`laya`, `winnow:e4b`, `winnow:12b`, `laya:typed-decisions`, `decider`, `decider:4b`, `decision`, `jevk5`) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
+| 11435 | Ollaya 0.7.3 daemon (`laya`, `winnow:e4b`, `winnow:12b`, `laya:typed-decisions`, `decider`, `decider:4b`, `decision`, `jevk5`, `coba:400m`, `coba:1b`) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
+| 11436 | Ollaya 0.18.0 daemon with its own model store (`pplx-decider:flash`, `nimble:9b-v3`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`; measure with `OLLAYA_URL=http://127.0.0.1:11436` and `~/.local/ollaya-0.18/bin` first on `PATH` |
 | 8092 | Qwen3-8B generate server for AnyJev | `scripts/serve-llm.sh Qwen/Qwen3-8B 8092 qwen3-8b` |
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
 | 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (or `kev-0.8b`, `kev-9b`) |

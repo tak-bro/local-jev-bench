@@ -33,7 +33,7 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
 
 가장 빠른 엔진은 Ollaya(Laya)다. typed-decisions의 긴 state를 빼면 첫 호출 p50이 10-44ms다. 대신 정확도는 낮은 편이다. typed-decisions에서 전체 최하위이고, clinc-oos(79%)를 빼면 모든 셋에서 하위 다섯 안에 든다. 보정(ECE)은 한국어 30문항, BANKING77-20, typed-decisions, NSMC, KLUE-YNAT에서 Kev·Winnow·Jeff·Ollaya 중 가장 나쁘다. AnyJev와 CLM은 일부 셋에서 그보다도 나쁘다. Kev-0.8B는 같은 셋에서 27-52ms이고, clinc-oos(71% vs 79%)를 빼면 모든 셋에서 정확도가 Ollaya와 같거나 더 높다. Kev-4B는 transfer-v4에서 모델 카드 수치를 재현했다(534/656, 카드 0.817). 자세한 내용은 [결과](#결과-2026-10-1416-m3-max-36gb) 절에 있다.
 
-엔진은 열네 가지다.
+엔진은 열일곱 가지다.
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): [vllm-metal](https://github.com/vllm-project/vllm-metal)로 서빙하는 Qwen3-8B 인코더와 75MB짜리 CLM 헤드.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): `laya` 모델을 MLX로 돌린다.
@@ -43,6 +43,9 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
 - **Decider-2B·Decider-4B**: Mapika의 Qwen3.5 디코더(`decider`, `decider:4b`). Ollaya로 돌린다(여기서는 CPU).
 - **Decision-Eos**: vLLM Semantic Router 쪽 Decision 1.0 Eos(`decision`). Qwen3.5-0.8B 파인튜닝에 endpoint head다. Ollaya로 돌린다.
 - **JevK5**: alibiserikbay의 JevK5 v0.3(`jevk5`). Qwen3.5-4B 파인튜닝을 llama.cpp로 돌린다. 옵션 예산을 넘는 질문은 거절한다(주의점 참고).
+- **pplx-decider**: Perplexity의 pplx-decider-flash v1.2(`pplx-decider:flash`). 27B 결정 모델에서 증류한 Qwen3.5-4B다. Ollaya 0.7.3이 `pplx-joint-v1` 레이아웃을 못 읽어서 두 번째 데몬인 Ollaya 0.18.0에서 돌린다(포트 참고). 여기서는 CPU fp32다.
+- **coba-400m·coba-1b**: pplx-decider:flash에서 증류한 Ollaya 자체 Ettin 인코더(`coba:400m`, `coba:1b`). 영어 전용이고 Ollaya가 MLX로 돌린다. 컨텍스트가 512토큰이라 더 긴 state는 `STATE_TRUNCATED`로 거절한다.
+- **nimble-v3**: Bespoke-Nimble-9B v3(`nimble:9b-v3`, CC BY-NC 4.0). Qwen3.5-9B 위의 LoRA다. Ollaya 0.18.0 데몬에서 CPU fp32로 돌린다. Nimble-v4는 API 전용이라 재지 않았다.
 - **AnyJev** ([nokia-applied-research/AnyJev](https://github.com/nokia-applied-research/AnyJev)): 학습이 필요 없다. vllm-metal 위 Qwen3-8B에서 라벨 logprob을 읽는다. `anyjev-raw`는 보정 없이, `anyjev-l0`는 선택지를 순환 이동하고 배치 prior로 보정한다.
 - **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): Qwen3.5-0.8B·4B·9B Base 위의 LoRA와 포인터 헤드(`kev-0.8b`, `kev-4b`, `kev-9b`). MLX로 돌린다.
 - **Jeff** ([firelex/jeff](https://github.com/firelex/jeff)): Jeff-Qwen3.5-2B. Qwen3.5-2B를 파인튜닝하고 답 readout을 학습한 모델이다. MLX로 돌린다.
@@ -89,7 +92,8 @@ uv sync
 | 8091 | 작은 임베딩 모델(smoke 전용) | `scripts/serve-embed.sh mlx-community/Qwen3-Embedding-0.6B-8bit 8091 embed-small` |
 | 8090 | CLM용 Qwen3-8B 인코더 | `scripts/serve-embed.sh Qwen/Qwen3-8B 8090 qwen3-8b` |
 | 8700 | CLM System One API | `scripts/serve-clm.sh` |
-| 11435 | Ollaya 데몬 (`laya`, `winnow:e4b`) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
+| 11435 | Ollaya 0.7.3 데몬 (`laya`, `winnow:e4b`, `coba:400m`, `coba:1b` 등) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
+| 11436 | 자기 모델 저장소를 쓰는 Ollaya 0.18.0 데몬 (`pplx-decider:flash`, `nimble:9b-v3`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`. 측정할 때는 `OLLAYA_URL=http://127.0.0.1:11436`을 주고 `~/.local/ollaya-0.18/bin`을 `PATH` 앞에 둔다 |
 | 8092 | AnyJev용 Qwen3-8B 생성 서버 | `scripts/serve-llm.sh Qwen/Qwen3-8B 8092 qwen3-8b` |
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
 | 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (또는 `kev-0.8b`, `kev-9b`) |

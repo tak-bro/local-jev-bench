@@ -24,7 +24,7 @@ fi
 engine=$1
 shift
 case $engine in
-    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | von) ;;
+    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | von) ;;
     *)
         echo "unknown engine: $engine" >&2
         exit 2
@@ -107,7 +107,7 @@ if [ -n "${MEASURE_START:-}" ]; then
     start "$engine" "${MEASURE_READY_URL:?MEASURE_READY_URL with MEASURE_START}" 200 bash -c "$MEASURE_START"
 else
     case $engine in
-        ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5)
+        ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3)
             model=${OLLAYA_MODEL:-laya}
             [ "$engine" = winnow ] && model=${WINNOW_MODEL:-winnow:e4b}
             [ "$engine" = winnow-12b ] && model=${WINNOW_12B_MODEL:-winnow:12b}
@@ -116,6 +116,10 @@ else
             [ "$engine" = decider-4b ] && model=${DECIDER_4B_MODEL:-decider:4b}
             [ "$engine" = decision-eos ] && model=${DECISION_EOS_MODEL:-decision}
             [ "$engine" = jevk5 ] && model=${JEVK5_MODEL:-jevk5}
+            [ "$engine" = pplx-decider ] && model=${PPLX_DECIDER_MODEL:-pplx-decider:flash}
+            [ "$engine" = coba-400m ] && model=${COBA_400M_MODEL:-coba:400m}
+            [ "$engine" = coba-1b ] && model=${COBA_1B_MODEL:-coba:1b}
+            [ "$engine" = nimble-v3 ] && model=${NIMBLE_V3_MODEL:-nimble:9b-v3}
             if [ "$(http_code "$ollaya_url/api/tags")" != 200 ]; then
                 start ollaya "$ollaya_url/api/tags" 200 env OLLAYA_HOST="${ollaya_url#http://}" ollaya serve
             fi

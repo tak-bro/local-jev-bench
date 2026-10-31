@@ -52,6 +52,17 @@ ENGINES: dict[str, dict[str, Any]] = {
                      "model": os.environ.get("DECISION_EOS_MODEL", "decision")},
     "jevk5": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
               "model": os.environ.get("JEVK5_MODEL", "jevk5")},
+    # `pplx-decider:flash` is Perplexity's pplx-decider-flash v1.2 (Qwen3.5-4B); `coba` is Ollaya's own Ettin
+    # encoders distilled from it; `nimble:9b-v3` is Bespoke-Nimble-9B v3. Nimble-v4 is API-only, so it is
+    # not here.
+    "pplx-decider": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                     "model": os.environ.get("PPLX_DECIDER_MODEL", "pplx-decider:flash")},
+    "coba-400m": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                  "model": os.environ.get("COBA_400M_MODEL", "coba:400m")},
+    "coba-1b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                "model": os.environ.get("COBA_1B_MODEL", "coba:1b")},
+    "nimble-v3": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                  "model": os.environ.get("NIMBLE_V3_MODEL", "nimble:9b-v3")},
     "jeff": {"url": os.environ.get("JEFF_URL", "http://127.0.0.1:8765"), "model": "jeff-latest",
              "served": ("/health", ("model",), "jeff-qwen3.5-2b")},
     # Jeff-Qwen3.5-0.8B shares the port; `served` tells the checkpoints apart (`service.name` is
