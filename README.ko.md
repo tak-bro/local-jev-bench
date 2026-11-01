@@ -66,10 +66,10 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
 
 | 필요 | 엔진 | 이유 |
 |---|---|---|
-| 전반적으로 가장 정확 | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, Clef-flash, Clef | 대부분 셋에서 상위 그룹 |
+| 전반적으로 가장 정확 | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Clef-flash, Clef | 대부분 셋에서 상위 그룹 |
 | 분포 밖 전이(transfer-v4) 최고 | pplx-decider | 84%(638/764), 벤치 최고 |
 | typed-decisions 최고 | Ollaya-td(분포 안, 75%†) 또는 Winnow(범용, 71-73%) | 주의점 참고 |
-| 한국어(NSMC + KLUE-YNAT) 최고 | Decider-4B | 한국어 30문항 93%, NSMC 83%, KLUE-YNAT 71% |
+| 한국어(NSMC + KLUE-YNAT) 최고 | pplx-decider 또는 Winnow-12B | KLUE-YNAT 83% vs 79%(p = 0.111), NSMC 87% vs 88% |
 | 가장 빠름 | Ollaya(`laya`) | typed-decisions 제외 첫 호출 p50 10.2-43.7ms |
 | 보정 최고 | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
 

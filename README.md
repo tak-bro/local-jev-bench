@@ -144,10 +144,10 @@ p is below 0.05 (see [FAQ](#faq)); treat close calls as ties.
 
 | Need | Engine | Why |
 |---|---|---|
-| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, Clef-flash or Clef | top group on most sets |
+| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Clef-flash or Clef | top group on most sets |
 | Best out-of-distribution transfer (transfer-v4) | pplx-decider | 84% (638/764), the bench's best |
 | Best typed-decisions | Ollaya-td (in-distribution, 75%†) or Winnow (general-purpose, 71-73%) | see caveats |
-| Best Korean (NSMC + KLUE-YNAT) | Decider-4B | 93% Korean 30, 83% NSMC, 71% KLUE-YNAT |
+| Best Korean (NSMC + KLUE-YNAT) | pplx-decider or Winnow-12B | KLUE-YNAT 83% vs 79% (p = 0.111), NSMC 87% vs 88% |
 | Fastest | Ollaya (`laya`) | 10.2-43.7 ms first-call p50 outside typed-decisions |
 | Best calibrated | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
 
