@@ -59,6 +59,45 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
 
 모든 엔진은 TypeSafe의 `POST /v1/systemone` 형식으로 응답한다.
 
+## 한눈에 보기
+
+필요별로 한 줄씩, 전부 아래 결과에서 뽑았다. 두 엔진이 다르다고 말할 조건은 McNemar p < 0.05([FAQ](#faq) 참고)다.
+그보다 가까우면 같다고 본다.
+
+| 필요 | 엔진 | 이유 |
+|---|---|---|
+| 전반적으로 가장 정확 | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, Clef-flash, Clef | 대부분 셋에서 상위 그룹 |
+| 분포 밖 전이(transfer-v4) 최고 | pplx-decider | 84%(638/764), 벤치 최고 |
+| typed-decisions 최고 | Ollaya-td(분포 안, 75%†) 또는 Winnow(범용, 71-73%) | 주의점 참고 |
+| 한국어(NSMC + KLUE-YNAT) 최고 | Decider-4B | 한국어 30문항 93%, NSMC 83%, KLUE-YNAT 71% |
+| 가장 빠름 | Ollaya(`laya`) | typed-decisions 제외 첫 호출 p50 10.2-43.7ms |
+| 보정 최고 | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
+
+전체 표·셋별 주의점·McNemar 결과는 [결과](#결과-2026-10-1416-m3-max-36gb)와 [FAQ](#faq)에 있다.
+
+## 아키텍처
+
+모든 엔진은 각자 포트에서 `POST /v1/systemone`에 답한다. `bench/run.py`는 같은 질문 셋을 엔진 하나씩 순서대로 보낸다.
+일부는 공유 백엔드 뒤에 있다(CLM과 AnyJev는 Qwen3-8B 임베딩·logprob을 HTTP로 읽고, Ollaya가 서빙하는 엔진들은
+데몬 둘 중 하나를 공유한다). 전체 포트 목록은 [포트](#포트) 참고.
+
+```mermaid
+flowchart LR
+    client["bench/run.py<br/>POST /v1/systemone"]
+
+    client --> ollaya1["Ollaya 0.7.3 :11435<br/>laya · laya:typed-decisions · winnow:e4b/12b<br/>decider · decider:4b · decision · jevk5 · coba:400m/1b"]
+    client --> ollaya2["Ollaya 0.18.0 :11436<br/>pplx-decider:flash · nimble:9b-v3"]
+    client --> clmapi["CLM API :8700"]
+    client --> anyjevapi["AnyJev API :8710<br/>anyjev-raw · anyjev-l0"]
+    client --> kevapi["Kev API :8009<br/>kev-0.8b/4b/9b"]
+    client --> jeffapi["Jeff API :8765"]
+    client --> llama["llama-server :8020<br/>Clef-flash · Clef"]
+    client --> vonapi["Von API :8030"]
+
+    clmapi --> embed8090["Qwen3-8B 인코더 :8090<br/>(vllm-metal)"]
+    anyjevapi --> gen8092["Qwen3-8B generate :8092<br/>(vllm-metal)"]
+```
+
 ## 설치
 
 ```bash

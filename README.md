@@ -137,6 +137,45 @@ It sets up eighteen engine families:
 
 All speak TypeSafe's `POST /v1/systemone` wire format.
 
+## Quick picks
+
+One line per need, each backed by a result below. Two engines count as different only when the paired McNemar
+p is below 0.05 (see [FAQ](#faq)); treat close calls as ties.
+
+| Need | Engine | Why |
+|---|---|---|
+| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, Clef-flash or Clef | top group on most sets |
+| Best out-of-distribution transfer (transfer-v4) | pplx-decider | 84% (638/764), the bench's best |
+| Best typed-decisions | Ollaya-td (in-distribution, 75%†) or Winnow (general-purpose, 71-73%) | see caveats |
+| Best Korean (NSMC + KLUE-YNAT) | Decider-4B | 93% Korean 30, 83% NSMC, 71% KLUE-YNAT |
+| Fastest | Ollaya (`laya`) | 10.2-43.7 ms first-call p50 outside typed-decisions |
+| Best calibrated | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
+
+Full tables, per-set caveats and McNemar results are in [Results](#results-2026-10-1416-m3-max-36-gb) and [FAQ](#faq).
+
+## Architecture
+
+Every engine answers `POST /v1/systemone` on its own port; `bench/run.py` sends the same question set to one engine
+at a time. A few engines sit behind a shared backend (CLM and AnyJev read Qwen3-8B embeddings or logprobs over
+HTTP; the Ollaya-served engines share one of two daemons). Full port list: [Ports](#ports).
+
+```mermaid
+flowchart LR
+    client["bench/run.py<br/>POST /v1/systemone"]
+
+    client --> ollaya1["Ollaya 0.7.3 :11435<br/>laya · laya:typed-decisions · winnow:e4b/12b<br/>decider · decider:4b · decision · jevk5 · coba:400m/1b"]
+    client --> ollaya2["Ollaya 0.18.0 :11436<br/>pplx-decider:flash · nimble:9b-v3"]
+    client --> clmapi["CLM API :8700"]
+    client --> anyjevapi["AnyJev API :8710<br/>anyjev-raw · anyjev-l0"]
+    client --> kevapi["Kev API :8009<br/>kev-0.8b/4b/9b"]
+    client --> jeffapi["Jeff API :8765"]
+    client --> llama["llama-server :8020<br/>Clef-flash · Clef"]
+    client --> vonapi["Von API :8030"]
+
+    clmapi --> embed8090["Qwen3-8B encoder :8090<br/>(vllm-metal)"]
+    anyjevapi --> gen8092["Qwen3-8B generate :8092<br/>(vllm-metal)"]
+```
+
 ## Install
 
 ```bash
