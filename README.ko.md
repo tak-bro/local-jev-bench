@@ -34,6 +34,7 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
   - **nimble-v3(Bespoke-Nimble-9B v3, CC BY-NC 4.0)**: 30문항 셋은 벤치 최고(92%, 94%)지만 큰 영어 셋에서는 상위 그룹 아래다. transfer-v4 77%(pplx-decider·Winnow-12B·Clef보다 낮음, p < 0.001), typed-decisions 66%(Clef·Clef-flash·Winnow 둘·pplx-decider보다 낮음, p < 0.001, Kev와는 같음)다. BANKING77-20 89%는 Kev·pplx-decider와 같고 Clef 둘보다 낮다(p < 0.001). NSMC 84%는 Winnow-12B보다 낮다(p = 0.029). KLUE-YNAT 78%는 Clef·Winnow-12B와 같고 Kev-9B보다 낫고(p = 0.040) pplx-decider보다 낮다(p = 0.044). clinc-oos 82%는 Kev-4B·Winnow-12B와 같고 Clef보다 낮다(p < 0.001). CPU fp32로 도는 9B라 여기서는 느리다(첫 호출 p50 4.7-132초). Nimble-v4는 API 전용이다.
   - **coba-400m·coba-1b(Ollaya, Ettin 인코더)**: Metal에서 빠르지만(25-640ms) 상위 그룹보다 한참 아래다. transfer-v4 60-62%, typed-decisions 59-60%다. 영어 전용이라 한국어 셋은 무너진다(KLUE-YNAT 19-35%). 컨텍스트 512토큰이라 typed-decisions state 7개를 거절한다.
 - **Kev 재측정(2026-10-10, Hub 리비전 `6cfce5c`·`db029f08`, 둘 다 2026-10-01).** Kev-4B는 9-30 수치를 7셋 전부 재현한다(89/87/89/80/67/83/74). 9월 delta 업데이트가 이 레포의 셋에서 Kev-4B를 움직이지 않았다. Kev-9B는 7셋 전부 움직였다. 영어 30 95 → 93, 한국어 30 94 → 91, BANKING77-20 267 → 271, transfer-v4 618 → 620, NSMC 257 → 261, KLUE-YNAT 220 → 218, typed-decisions 1440 → 1378/2000(72% → 69%)이고, 크게 움직인 건 typed-decisions 하나다. 2026-10-14~16 재측정은 10-10 판단을 하나도 다르지 않게 재현했다. 9-30 로그(`9f5ba1c`)와 짝지어 보면 바뀐 건 typed-decisions뿐이다. 9-30에만 맞힌 판단 158개 대 지금만 맞힌 판단 96개로 p < 0.001이고, 거의 다 `agent_trace_observability`(500개 중 305 → 255, p < 0.001)와 choice·noul 질문에서 난다. 나머지 여섯 셋은 같다(p ≥ 0.22). 즉 Kev-9B의 Hub 리비전이 typed-decisions에서 회귀했고, Winnow가 거기서 Kev-9B를 앞선다(p < 0.001). 전에는 같았다(p = 0.529).
+- **cascade 라우팅(이 로그로 모의):** Kev-4B 가 가장 덜 확신하는 문항만 Clef 로 넘긴다. 그러면 transfer-v4 는 호출 10%, BANKING77-20 은 32% 로 Clef 단독의 1%p 안에 든다(평균 383 대 2104 ms, 1664 대 4312 ms). transfer-v4 에서 28% 를 넘기면 Clef 단독보다 2.1%p 높고(p = 0.011), 절반 교차 검증에서도 유지된다. Kev-4B 의 ECE 로는 라우팅이 잘 될지 예측되지 않는다. 자세한 내용은 [cascade 라우팅](#cascade-라우팅-2026-10-1416-로그로-모의).
 
 가장 빠른 엔진은 Ollaya(Laya)다. typed-decisions의 긴 state를 빼면 첫 호출 p50이 10-44ms다. 대신 정확도는 낮은 편이다. typed-decisions에서 전체 최하위이고, clinc-oos(79%)를 빼면 모든 셋에서 하위 다섯 안에 든다. 보정(ECE)은 한국어 30문항, BANKING77-20, typed-decisions, NSMC, KLUE-YNAT에서 Kev·Winnow·Jeff·Ollaya 중 가장 나쁘다. AnyJev와 CLM은 일부 셋에서 그보다도 나쁘다. Kev-0.8B는 같은 셋에서 27-52ms이고, clinc-oos(71% vs 79%)를 빼면 모든 셋에서 정확도가 Ollaya와 같거나 더 높다. Kev-4B는 transfer-v4에서 모델 카드 수치를 재현했다(534/656, 카드 0.817). 자세한 내용은 [결과](#결과-2026-10-1416-m3-max-36gb) 절에 있다.
 
@@ -170,6 +171,7 @@ uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions
 uv run python bench/make_sets.py nsmc               # 한국어 영화 리뷰 300개, 긍정 여부 (HF 카드: CC BY 2.0)
 uv run python bench/make_sets.py klue-ynat          # 한국어 뉴스 제목 300개, 7개 분야 (KLUE, CC BY-SA 4.0)
 uv run python bench/make_sets.py clinc-oos          # CLINC150 상위 20개 인텐트(300 choice) + 분포 밖 100개(noul)
+uv run python bench/cascade.py --out bench/runs/cascade.md --figures reports/figures   # 원시 로그로 cascade 라우팅 모의, 엔진 호출 없음
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 
@@ -383,6 +385,44 @@ CLM에 대한 이전 발견 (2026-09-28):
 - **여기서는 Clef-flash(300개 중 290)와 Clef(287)가 가장 높다.** 카드가 BANKING77을 자사 벤치마크 중 하나로 보고하고(인텐트 77개 전체 macro-F1: Clef 94.2, Clef-flash 90.9) 학습 데이터는 공개하지 않는다. 그래서 이 셋이 학습 분포 안에 있는지는 알 수 없다.
 - **L0는 선택지가 많으면 느리다.** 순환 이동마다 프롬프트를 한 번씩 prefill하는데, 20-way 질문이면 최대 20번이다. 첫 호출 p50이 raw 515.0ms 대비 6919.6ms다.
 - 참고용이며 직접 비교할 수는 없다: 인텐트 77개 전체에서 Laya zero-shot 38%, Jev 76%라는 수치가 있다(dhruvmehra/jevbench, Laya 파인튜닝 글에서 인용, 여기서 검증하지 않음). 그 셋은 77-way이고 이 셋은 20-way다.
+
+## cascade 라우팅 (2026-10-14~16 로그로 모의)
+
+작은 엔진이 모든 문항에 답하고, 확신도가 가장 낮은 문항만 큰 엔진이 맡는다. 확신도는 작은 엔진이 자기 판단에 준
+확률이고, 문항에 질문이 여럿이면 가장 낮은 값을 쓴다. `bench/cascade.py` 는 새로 재지 않고 원시 로그로 임계값을 훑는다.
+지연은 넘긴 문항에서 두 엔진의 첫 호출 지연을 더한 값이다. 두 엔진은 각각 따로 쟀다(M3 Max 36GB, Kev-4B MLX 와
+Winnow-12B Q8_0 은 2026-10-14, Clef Q4_K_M 은 2026-10-15). 표는 `bench/runs/cascade.md`, 해석은
+`reports/2026-11-02-cascade-analysis.md`.
+
+![kev-4b cascade](reports/figures/cascade-kev-4b.svg)
+
+아래는 Kev-4B → Clef 에서 Clef 단독의 1%p 안에 드는 가장 낮은 호출 비율이다. 이 기준점은 in-sample 로 골랐다.
+"절반 검증"은 문항 절반에서 고른 임계값을 나머지 절반에 적용한 결과다.
+
+| 세트 | Kev-4B / Clef 단독 | Clef 호출 | 정확도 (Clef 대비) | 평균 ms (cascade / Clef) | 절반 검증 |
+|---|---|---|---|---|---|
+| transfer-v4 | 80.4% / 82.7% (p = 0.120) | 9.6% | 81.8% (-0.9) | 383 / 2104 | 10.7%, -0.3; 8.9%, -1.0 |
+| klue-ynat | 74.0% / 77.7% (p = 0.117) | 24.3% | 76.7% (-1.0) | 858 / 2644 | 18.7%, -2.7; 24.7%, +0.0 |
+| BANKING77-20 | 88.7% / 95.7% (p < 0.001) | 32.3% | 94.7% (-1.0) | 1664 / 4312 | 18.0%, -4.7; 32.7%, -0.7 |
+| nsmc | 83.3% / 87.0% (p = 0.043) | 59.7% | 86.0% (-1.0) | 1074 / 1586 | 12.7%, -4.0; 76.0%, -0.7 |
+| clinc-oos | 84.0% / 95.0% (p < 0.001) | 71.0% | 94.0% (-1.0) | 2575 / 3385 | 63.5%, -2.5; 74.5%, +0.0 |
+| typed-decisions | 67.0% / 72.4% (p < 0.001) | 73.2% | 71.4% (-1.0) | 6689 / 8259 | 71.0%, -1.5; 81.5%, -0.7 |
+
+- **절감 폭은 세트에 달려 있다.** Clef 가 확실히 나은 세트(p < 0.05) 중 호출 1/3 로 1%p 안에 드는 건
+  BANKING77-20 뿐이다. 평균 지연은 39% 로 준다. nsmc · clinc-oos · typed-decisions 는 60 ~ 73% 를 넘겨야 하고,
+  그러면 지연이 Clef 의 68 ~ 81% 로 남는다. 한 절반에서 고른 임계값이 다른 절반에서 최대 4.7%p 어긋난다. 임계값은
+  별도 데이터로 잡는다.
+- **transfer-v4 에서는 cascade 가 두 엔진보다 모두 낫다.** 28% 를 Clef 로 넘기면 84.8% 로 Clef 단독보다
+  2.1%p 높다(정확 McNemar 26 대 10, p = 0.011). Winnow-12B 로 22% 를 넘기면 +1.6%p(p = 0.050)다. 절반 검증에서도
+  +1.0 / +1.8, +1.0 / +1.6%p 다. 넘긴 28% 에 Clef 만 맞힌 판단 69개 중 59개가 들어 있다.
+- **Kev-4B → Winnow-12B 는 거의 이득이 없다.** Winnow-12B 가 Kev-4B 를 이기는 세트는 typed-decisions 와
+  KLUE-YNAT(p ≤ 0.024)뿐이고, BANKING77-20 에서는 진다(p = 0.019).
+- **보정도로는 라우팅을 예측할 수 없다.** 라우팅 효율은 랜덤 라우팅 대비 이득을 오라클 라우터 이득의 비율로 본 값이다.
+  모든 세트에서 작은 엔진 21 ~ 22개를 Clef 로 넘긴 169개 조합에서, 효율은 작은 엔진의 ECE 가 나쁠수록 떨어지지
+  않는다(Spearman +0.20). 가설 방향의 음의 상관은 BANKING77-20 하나다(-0.48, p = 0.030). 중요한 건 작은 엔진이
+  덜 확신하는 문항이 큰 엔진이 맞히는 문항인지다.
+
+![calibration vs routing](reports/figures/cascade-calibration.svg)
 
 ## FAQ
 
