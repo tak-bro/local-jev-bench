@@ -80,6 +80,23 @@ Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisi
     typed-decisions 65% (level with Kev-4B, p = 0.056; below Kev-9B, Winnow and Clef, p ≤ 0.001). NSMC 82%, below
     Kev-9B (p = 0.036). It refuses the two 20-option sets (BANKING77-20, clinc-oos) with `TOO_MANY_OPTIONS`.
     194-2872 ms first-call p50.
+- **New engines (measured 2026-10-30..11-01; `reports/2026-11-01-analysis.md`).**
+  - **pplx-decider (Perplexity, `pplx-decider:flash`, Qwen3.5-4B):** top-group on every set but clinc-oos. The best transfer-v4
+    score in the bench, 84% (638/764), level with Clef, Clef-flash, Winnow-12B and Kev-9B (p ≥ 0.095) and ahead of
+    Kev-4B (p = 0.024). KLUE-YNAT 83%, also the best, ahead of Clef (p = 0.036), Clef-flash (p = 0.011) and both
+    Kevs (p < 0.001), level with Winnow-12B (p = 0.111). typed-decisions 71%, level with Clef and Winnow-12B, ahead
+    of both Kevs. On clinc-oos (78%) it is below Clef, Winnow-12B and Kev-4B. ECE 0.04-0.08 on every set. It needs
+    Ollaya 0.18 and runs on CPU here, 1.7-8.0 s first-call p50.
+  - **nimble-v3 (Bespoke-Nimble-9B v3, CC BY-NC 4.0):** the best 30-item scores in the bench (92% and 94%), but
+    below the top group on the large English sets: transfer-v4 77% (below pplx-decider, Winnow-12B and Clef,
+    p < 0.001) and typed-decisions 66% (below Clef, Clef-flash, both Winnows and pplx-decider, p < 0.001; level
+    with Kev). BANKING77-20 89%, level with Kev and pplx-decider, below the Clefs (p < 0.001). NSMC 84%, below
+    Winnow-12B (p = 0.029). KLUE-YNAT 78%, level with Clef and Winnow-12B, ahead of Kev-9B (p = 0.040), below
+    pplx-decider (p = 0.044). clinc-oos 82%, level with Kev-4B and Winnow-12B, below Clef (p < 0.001).
+    On CPU in fp32 a 9B is slow here: 4.7-132 s first-call p50. Nimble-v4 is API-only.
+  - **coba-400m / coba-1b (Ollaya, Ettin encoders):** fast on Metal (25-640 ms) and well below the top group:
+    transfer-v4 60-62%, typed-decisions 59-60%. English only, so the Korean sets collapse (KLUE-YNAT 19-35%).
+    The 512-token context refuses 7 typed-decisions states.
 - **Kev remeasure (2026-10-10, Hub revisions `6cfce5c` and `db029f08`, both dated 2026-10-01).** Kev-4B reproduces
   every 9-30 number exactly (89/87/89/80/67/83/74%), so the September delta updates moved none of this repo's sets
   for it. Kev-9B moved on all seven: English 30 95 → 93, Korean 30 94 → 91, BANKING77-20 267 → 271, transfer-v4
@@ -221,7 +238,9 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 | Clef | 90% | 91% | 96% | 83% | 72% | 87% | 78% | 95% |
 | Winnow-E4B | 89% | 86% | 81% | 77% | 73% | 84% | 74% | 57% |
 | Winnow-12B | 91% | 91% | 84% | 83% | 71% | 88% | 79% | 84% |
+| pplx-decider | 87% | 85% | 91% | 84% | 71% | 87% | 83% | 78% |
 | Decider-4B | 90% | 93% | 90% | 80% | 68% | 83% | 71% | 80% |
+| nimble-v3 | 92% | 94% | 89% | 77% | 66% | 84% | 78% | 82% |
 | Decider-2B | 84% | 88% | 91% | 73% | 60% | 83% | 73% | 57% |
 | JevK5 | 90% | 88% | failed | 76% | 65% | 82% | 74% | failed |
 | Ollaya-td | 80% | 45% | 64% | 63% | 75%† | 53% | 19% | 77% |
@@ -230,6 +249,8 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 | Jeff-Qwen3.5-0.8B | 83% | 84% | 57% | 67% | 50% | 72% | 69% | 52% |
 | Ollaya | 75% | 66% | 60% | 63% | 36% | 56% | 43% | 79% |
 | Decision-Eos | 75% | 72% | 80% | 59% | 49% | 79% | 63% | 30% |
+| coba-1b | 82% | 50% | 76% | 62% | 59%* | 52% | 19% | 57% |
+| coba-400m | 80% | 56% | 77% | 60% | 60%* | 50% | 35% | 52% |
 | AnyJev L0 | 81% | 84% | 80% | 75% | 63% | 80% | 75% | 60% |
 | AnyJev raw | 82% | 83% | 75% | 75% | 61% | 81% | 76% | 56% |
 | Von | 73% | 49% | 80%† | 69%† | 43% | 51% | 15% | 37% |
@@ -239,7 +260,12 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 the four typed-decisions workflows as its fine-tuning data. PAWS's test split is 80 of
 transfer-v4's 764 decisions. Von's card lists Banking77 and dair-ai/emotion in its training corpus without naming
 the split; transfer-v4's `emotion` source (116 decisions) is dair-ai/emotion. An engine without a mark either did not train on the set or does not publish its training
-data (Winnow, Laya, CLM, Clef, Clef-flash, Decider, Decision-Eos, JevK5). See the training table below.
+data (Winnow, Laya, CLM, Clef, Clef-flash, Decider, Decision-Eos, JevK5, pplx-decider, coba, Nimble). See the training table below.
+`*`: of 1,965 graded decisions; coba refused 7 typed-decisions states longer than its 512-token context
+(`STATE_TRUNCATED`), so 35 decisions have no answer.
+
+pplx-decider, nimble-v3 and the two coba sizes were measured 2026-10-30..11-01 with the same protocol, on the
+same machine (`reports/2026-11-01-analysis.md`).
 
 First-call p50, ms:
 
@@ -251,7 +277,9 @@ First-call p50, ms:
 | Clef | 3398.2 | 3650.9 | 4277.9 | 1988.8 | 8365.4 | 1479.9 | 2631.1 | 3765.0 |
 | Winnow-E4B | 576.0 | 604.0 | 500.6 | 312.8 | 1333.1 | 262.9 | 385.4 | 442.5 |
 | Winnow-12B | 1138.0 | 1971.1 | 1264.4 | 785.3 | 3350.2 | 637.3 | 992.2 | 1109.1 |
+| pplx-decider | 2773.6 | 3105.6 | 3112.8 | 2424.1 | 8008.3 | 1731.7 | 2430.1 | 3114.6 |
 | Decider-4B | 8633.5 | 8644.8 | 3197.7 | 1738.5 | 55787.8 | 1014.9 | 2376.8 | 2376.9 |
+| nimble-v3 | 40942.7 | 38802.4 | 13730.9 | 6083.7 | 131822.8 | 4711.6 | 7674.4 | 12344.1 |
 | Decider-2B | 3153.7 | 3153.3 | 1189.8 | 638.9 | 19049.7 | 366.6 | 902.6 | 906.3 |
 | JevK5 | 591.5 | 608.3 | failed | 279.9 | 2872.4 | 193.5 | 361.0 | failed |
 | Ollaya-td | 274.9 | 721.7 | 191.4 | 126.5 | 2082.0 | 119.7 | 385.8 | 136.6 |
@@ -260,6 +288,8 @@ First-call p50, ms:
 | Jeff-Qwen3.5-0.8B | 106.6 | 107.2 | 54.0 | 39.7 | 424.9 | 28.2 | 40.8 | 48.7 |
 | Ollaya | 43.7 | 22.1 | 31.0 | 21.4 | 262.6 | 10.2 | 13.2 | 23.6 |
 | Decision-Eos | 1136.3 | 1103.9 | 837.8 | 379.9 | 4126.7 | 264.2 | 494.6 | 723.1 |
+| coba-1b | 103.7 | 285.7 | 77.0 | 52.3 | 639.1 | 52.0 | 107.9 | 110.2 |
+| coba-400m | 125.3 | 205.5 | 75.6 | 60.3 | 274.6 | 27.3 | 67.9 | 25.6 |
 | AnyJev L0 | 787.3 | 893.2 | 6919.6 | 525.7 | 1955.5 | 337.8 | 2192.4 | 4867.0 |
 | AnyJev raw | 570.6 | 658.7 | 515.0 | 289.1 | 1478.7 | 185.9 | 416.3 | 437.2 |
 | Von | 101.1 | 135.5 | 32.2 | 28.7 | 366.3 | 44.6 | 52.1 | 29.0 |
@@ -267,7 +297,9 @@ First-call p50, ms:
 
 Decider-4B, Decider-2B, Decision-Eos and Ollaya-td ran on CPU (F32, ONNX) in Ollaya's runner on this machine (the
 Ollaya server log records `device=cpu` for each load), so their latencies compare runtimes as much as models, like the
-llama.cpp rows. The other Ollaya rows ran on Metal: Laya on MLX, Winnow and JevK5 on llama.cpp (Q8_0).
+llama.cpp rows. pplx-decider and nimble-v3 ran the same way (CPU, fp32, ONNX) in Ollaya 0.18.0, which is why
+nimble-v3, a 9B, takes 4.7-132 s per first call here. The other Ollaya rows ran on Metal: Laya and coba on MLX,
+Winnow and JevK5 on llama.cpp (Q8_0).
 
 What each engine was trained on, as far as its authors publish it:
 
@@ -282,6 +314,9 @@ What each engine was trained on, as far as its authors publish it:
 | Decider-4B, Decider-2B, Decision-Eos | unknown: Mapika's Qwen3.5 decoders and the vLLM Semantic Router contributors' Decision 1.0 Eos; training data not published here | Ollaya registry entries |
 | Ollaya-td | the four typed-decisions workflows (0.766 accuracy claimed upstream) | `convaiinnovations/laya-typed-decisions` model card |
 | JevK5 | unknown | |
+| pplx-decider | unknown: distilled from Perplexity's 27B decision models, data not published | Ollaya registry entry |
+| coba (400m, 1b) | none named: distilled from pplx-decider:flash's answers; the in-domain ternary tags, trained on ten public benchmark train splits, are not measured here | Ollaya registry entry |
+| nimble-v3 | unknown: contrastive pairs curated by Bespoke Labs ("we did not distill from Jev") | `bespokelabsai/nimble` README |
 
 Nobody trained on the 30-item sets, which were written for this repo.
 

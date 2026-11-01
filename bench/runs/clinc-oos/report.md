@@ -30,6 +30,7 @@ questions count only in sets graded by argmax, which read their level probabilit
 | kev-0.8b | kev-latest | 55.6 | 33.7 | 33.7 | 39.8 | 400 | 283/400 (71%, 66-75) | 0.486 (400) | 0.196 | n/a | 80/300 (27%) | 0 | normal |
 | kev-4b | kev-latest | 178.6 | 185.7 | 185.7 | 213.2 | 400 | 336/400 (84%, 80-87) | 0.328 (400) | 0.234 | n/a | 43/300 (14%) | 0 | normal |
 | kev-9b | kev-latest | 314.9 | 365.8 | 365.8 | 406.3 | 400 | 283/400 (71%, 66-75) | 0.339 (400) | 0.112 | n/a | 62/300 (21%) | 0 | normal |
+| nimble-v3 | nimble:9b-v3 | 12154.1 | 12344.1 | 12344.1 | 12566.8 | 400 | 327/400 (82%, 78-85) | 0.323 (400) | 0.132 | n/a | 107/300 (36%) | 0 | normal |
 | ollaya | laya | 31.4 | 23.6 | 23.6 | 25.1 | 400 | 315/400 (79%, 74-82) | 0.361 (400) | 0.113 | n/a | 65/300 (22%) | 0 | normal |
 | ollaya-td | laya:typed-decisions | 137.1 | 136.6 | 136.6 | 164.3 | 400 | 309/400 (77%, 73-81) | 0.376 (400) | 0.100 | n/a | 57/300 (19%) | 0 | normal |
 | pplx-decider | pplx-decider:flash | 3126.5 | 3114.6 | 3114.6 | 3144.6 | 400 | 312/400 (78%, 74-82) | 0.328 (400) | 0.083 | n/a | 87/300 (29%) | 0 | normal |
@@ -59,6 +60,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | kev-0.8b | 400 | 41 | 82 | <0.001 |
 | anyjev-l0 | kev-4b | 400 | 29 | 123 | <0.001 |
 | anyjev-l0 | kev-9b | 400 | 87 | 128 | 0.006 |
+| anyjev-l0 | nimble-v3 | 400 | 6 | 91 | <0.001 |
 | anyjev-l0 | ollaya | 400 | 20 | 93 | <0.001 |
 | anyjev-l0 | ollaya-td | 400 | 17 | 84 | <0.001 |
 | anyjev-l0 | pplx-decider | 400 | 28 | 98 | <0.001 |
@@ -78,6 +80,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-raw | kev-0.8b | 400 | 32 | 93 | <0.001 |
 | anyjev-raw | kev-4b | 400 | 29 | 143 | <0.001 |
 | anyjev-raw | kev-9b | 400 | 87 | 148 | <0.001 |
+| anyjev-raw | nimble-v3 | 400 | 6 | 111 | <0.001 |
 | anyjev-raw | ollaya | 400 | 14 | 107 | <0.001 |
 | anyjev-raw | ollaya-td | 400 | 12 | 99 | <0.001 |
 | anyjev-raw | pplx-decider | 400 | 27 | 117 | <0.001 |
@@ -96,6 +99,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef | kev-0.8b | 400 | 106 | 9 | <0.001 |
 | clef | kev-4b | 400 | 50 | 6 | <0.001 |
 | clef | kev-9b | 400 | 108 | 11 | <0.001 |
+| clef | nimble-v3 | 400 | 56 | 3 | <0.001 |
 | clef | ollaya | 400 | 72 | 7 | <0.001 |
 | clef | ollaya-td | 400 | 76 | 5 | <0.001 |
 | clef | pplx-decider | 400 | 70 | 2 | <0.001 |
@@ -113,6 +117,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef-flash | kev-0.8b | 400 | 64 | 53 | 0.355 |
 | clef-flash | kev-4b | 400 | 40 | 82 | <0.001 |
 | clef-flash | kev-9b | 400 | 98 | 87 | 0.462 |
+| clef-flash | nimble-v3 | 400 | 20 | 53 | <0.001 |
 | clef-flash | ollaya | 400 | 37 | 58 | 0.040 |
 | clef-flash | ollaya-td | 400 | 35 | 50 | 0.128 |
 | clef-flash | pplx-decider | 400 | 43 | 61 | 0.095 |
@@ -129,6 +134,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | coba-1b | kev-0.8b | 400 | 41 | 97 | <0.001 |
 | coba-1b | kev-4b | 400 | 32 | 141 | <0.001 |
 | coba-1b | kev-9b | 400 | 91 | 147 | <0.001 |
+| coba-1b | nimble-v3 | 400 | 11 | 111 | <0.001 |
 | coba-1b | ollaya | 400 | 14 | 102 | <0.001 |
 | coba-1b | ollaya-td | 400 | 12 | 94 | <0.001 |
 | coba-1b | pplx-decider | 400 | 31 | 116 | <0.001 |
@@ -144,6 +150,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | coba-400m | kev-0.8b | 400 | 30 | 105 | <0.001 |
 | coba-400m | kev-4b | 400 | 34 | 162 | <0.001 |
 | coba-400m | kev-9b | 400 | 94 | 169 | <0.001 |
+| coba-400m | nimble-v3 | 400 | 13 | 132 | <0.001 |
 | coba-400m | ollaya | 400 | 5 | 112 | <0.001 |
 | coba-400m | ollaya-td | 400 | 3 | 104 | <0.001 |
 | coba-400m | pplx-decider | 400 | 32 | 136 | <0.001 |
@@ -158,6 +165,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-2b | kev-0.8b | 400 | 44 | 99 | <0.001 |
 | decider-2b | kev-4b | 400 | 32 | 140 | <0.001 |
 | decider-2b | kev-9b | 400 | 89 | 144 | <0.001 |
+| decider-2b | nimble-v3 | 400 | 7 | 106 | <0.001 |
 | decider-2b | ollaya | 400 | 14 | 101 | <0.001 |
 | decider-2b | ollaya-td | 400 | 11 | 92 | <0.001 |
 | decider-2b | pplx-decider | 400 | 28 | 112 | <0.001 |
@@ -171,6 +179,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-4b | kev-0.8b | 400 | 81 | 43 | <0.001 |
 | decider-4b | kev-4b | 400 | 40 | 55 | 0.151 |
 | decider-4b | kev-9b | 400 | 98 | 60 | 0.003 |
+| decider-4b | nimble-v3 | 400 | 21 | 27 | 0.471 |
 | decider-4b | ollaya | 400 | 40 | 34 | 0.561 |
 | decider-4b | ollaya-td | 400 | 39 | 27 | 0.175 |
 | decider-4b | pplx-decider | 400 | 36 | 27 | 0.314 |
@@ -183,6 +192,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decision-eos | kev-0.8b | 400 | 23 | 184 | <0.001 |
 | decision-eos | kev-4b | 400 | 12 | 226 | <0.001 |
 | decision-eos | kev-9b | 400 | 16 | 177 | <0.001 |
+| decision-eos | nimble-v3 | 400 | 1 | 206 | <0.001 |
 | decision-eos | ollaya | 400 | 1 | 194 | <0.001 |
 | decision-eos | ollaya-td | 400 | 2 | 189 | <0.001 |
 | decision-eos | pplx-decider | 400 | 4 | 194 | <0.001 |
@@ -194,6 +204,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jeff | kev-0.8b | 400 | 38 | 168 | <0.001 |
 | jeff | kev-4b | 400 | 16 | 199 | <0.001 |
 | jeff | kev-9b | 400 | 26 | 156 | <0.001 |
+| jeff | nimble-v3 | 400 | 4 | 178 | <0.001 |
 | jeff | ollaya | 400 | 6 | 168 | <0.001 |
 | jeff | ollaya-td | 400 | 8 | 164 | <0.001 |
 | jeff | pplx-decider | 400 | 11 | 170 | <0.001 |
@@ -204,6 +215,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jeff-0.8b | kev-0.8b | 400 | 35 | 109 | <0.001 |
 | jeff-0.8b | kev-4b | 400 | 30 | 157 | <0.001 |
 | jeff-0.8b | kev-9b | 400 | 86 | 160 | <0.001 |
+| jeff-0.8b | nimble-v3 | 400 | 10 | 128 | <0.001 |
 | jeff-0.8b | ollaya | 400 | 7 | 113 | <0.001 |
 | jeff-0.8b | ollaya-td | 400 | 5 | 105 | <0.001 |
 | jeff-0.8b | pplx-decider | 400 | 27 | 130 | <0.001 |
@@ -213,6 +225,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jevk5 | kev-0.8b | 0 | 0 | 0 | 1.000 |
 | jevk5 | kev-4b | 0 | 0 | 0 | 1.000 |
 | jevk5 | kev-9b | 0 | 0 | 0 | 1.000 |
+| jevk5 | nimble-v3 | 0 | 0 | 0 | 1.000 |
 | jevk5 | ollaya | 0 | 0 | 0 | 1.000 |
 | jevk5 | ollaya-td | 0 | 0 | 0 | 1.000 |
 | jevk5 | pplx-decider | 0 | 0 | 0 | 1.000 |
@@ -221,6 +234,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jevk5 | winnow-12b | 0 | 0 | 0 | 1.000 |
 | kev-0.8b | kev-4b | 400 | 25 | 78 | <0.001 |
 | kev-0.8b | kev-9b | 400 | 86 | 86 | 1.000 |
+| kev-0.8b | nimble-v3 | 400 | 32 | 76 | <0.001 |
 | kev-0.8b | ollaya | 400 | 44 | 76 | 0.004 |
 | kev-0.8b | ollaya-td | 400 | 45 | 71 | 0.020 |
 | kev-0.8b | pplx-decider | 400 | 51 | 80 | 0.014 |
@@ -228,18 +242,26 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | kev-0.8b | winnow | 400 | 93 | 37 | <0.001 |
 | kev-0.8b | winnow-12b | 400 | 24 | 79 | <0.001 |
 | kev-4b | kev-9b | 400 | 71 | 18 | <0.001 |
+| kev-4b | nimble-v3 | 400 | 41 | 32 | 0.349 |
 | kev-4b | ollaya | 400 | 70 | 49 | 0.066 |
 | kev-4b | ollaya-td | 400 | 74 | 47 | 0.018 |
 | kev-4b | pplx-decider | 400 | 53 | 29 | 0.011 |
 | kev-4b | von | 400 | 207 | 18 | <0.001 |
 | kev-4b | winnow | 400 | 132 | 23 | <0.001 |
 | kev-4b | winnow-12b | 400 | 27 | 29 | 0.894 |
+| kev-9b | nimble-v3 | 400 | 43 | 87 | <0.001 |
 | kev-9b | ollaya | 400 | 70 | 102 | 0.018 |
 | kev-9b | ollaya-td | 400 | 77 | 103 | 0.062 |
 | kev-9b | pplx-decider | 400 | 44 | 73 | 0.009 |
 | kev-9b | von | 400 | 187 | 51 | <0.001 |
 | kev-9b | winnow | 400 | 129 | 73 | <0.001 |
 | kev-9b | winnow-12b | 400 | 28 | 83 | <0.001 |
+| nimble-v3 | ollaya | 400 | 50 | 38 | 0.241 |
+| nimble-v3 | ollaya-td | 400 | 51 | 33 | 0.063 |
+| nimble-v3 | pplx-decider | 400 | 36 | 21 | 0.063 |
+| nimble-v3 | von | 400 | 187 | 7 | <0.001 |
+| nimble-v3 | winnow | 400 | 105 | 5 | <0.001 |
+| nimble-v3 | winnow-12b | 400 | 18 | 29 | 0.144 |
 | ollaya | ollaya-td | 400 | 16 | 10 | 0.327 |
 | ollaya | pplx-decider | 400 | 50 | 47 | 0.839 |
 | ollaya | von | 400 | 174 | 6 | <0.001 |
@@ -258,7 +280,7 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 ## By source
 
-| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | coba-1b | coba-400m | decider-2b | decider-4b | decision-eos | jeff | jeff-0.8b | jevk5 | kev-0.8b | kev-4b | kev-9b | ollaya | ollaya-td | pplx-decider | von | winnow | winnow-12b |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| clinc-oos | 100 | 91/100 (91%) | 92/100 (92%) | 97/100 (97%) | 97/100 (97%) | 96/100 (96%) | 100/100 (100%) | 93/100 (93%) | 97/100 (97%) | 8/100 (8%) | 17/100 (17%) | 89/100 (89%) | failed | 91/100 (91%) | 77/100 (77%) | 14/100 (14%) | 96/100 (96%) | 99/100 (99%) | 70/100 (70%) | 51/100 (51%) | 79/100 (79%) | 87/100 (87%) |
-| clinc150 | 300 | 151/300 (50%) | 130/300 (43%) | 283/300 (94%) | 197/300 (66%) | 131/300 (44%) | 108/300 (36%) | 135/300 (45%) | 224/300 (75%) | 114/300 (38%) | 136/300 (45%) | 120/300 (40%) | failed | 192/300 (64%) | 259/300 (86%) | 269/300 (90%) | 219/300 (73%) | 210/300 (70%) | 242/300 (81%) | 96/300 (32%) | 148/300 (49%) | 251/300 (84%) |
+| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | coba-1b | coba-400m | decider-2b | decider-4b | decision-eos | jeff | jeff-0.8b | jevk5 | kev-0.8b | kev-4b | kev-9b | nimble-v3 | ollaya | ollaya-td | pplx-decider | von | winnow | winnow-12b |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| clinc-oos | 100 | 91/100 (91%) | 92/100 (92%) | 97/100 (97%) | 97/100 (97%) | 96/100 (96%) | 100/100 (100%) | 93/100 (93%) | 97/100 (97%) | 8/100 (8%) | 17/100 (17%) | 89/100 (89%) | failed | 91/100 (91%) | 77/100 (77%) | 14/100 (14%) | 89/100 (89%) | 96/100 (96%) | 99/100 (99%) | 70/100 (70%) | 51/100 (51%) | 79/100 (79%) | 87/100 (87%) |
+| clinc150 | 300 | 151/300 (50%) | 130/300 (43%) | 283/300 (94%) | 197/300 (66%) | 131/300 (44%) | 108/300 (36%) | 135/300 (45%) | 224/300 (75%) | 114/300 (38%) | 136/300 (45%) | 120/300 (40%) | failed | 192/300 (64%) | 259/300 (86%) | 269/300 (90%) | 238/300 (79%) | 219/300 (73%) | 210/300 (70%) | 242/300 (81%) | 96/300 (32%) | 148/300 (49%) | 251/300 (84%) |
