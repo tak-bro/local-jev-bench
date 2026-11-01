@@ -106,6 +106,10 @@ Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisi
   (p < 0.001), almost all in `agent_trace_observability` (305 → 255 of 500, p < 0.001) and on choice and noul
   questions; the other six sets are level (p ≥ 0.22). So Kev-9B's Hub revision regressed on typed-decisions, and
   Winnow now beats it there (p < 0.001), where they were level (p = 0.529).
+- **As pairwise judges (2026-11-01..02):** on 200 MT-Bench pairs with human votes, Kev-4B, Kev-9B, Winnow-E4B,
+  Winnow-12B and Clef-flash agree with the human winner at Cohen's kappa 0.55-0.65, but only 0.36-0.45 on 200
+  Korean pairs. Swapping the two answers' positions changes 9-23% of their verdicts. They show no length or
+  same-family preference. Details in [Judge bias](#judge-bias-2026-11-0102-m3-max-36-gb).
 
 Ollaya (Laya) is the fastest engine, at 10-44 ms first-call p50 outside typed-decisions' long states. It is also among the least
 accurate: the lowest of all on typed-decisions, and in the bottom five on every set but clinc-oos, where it scores
@@ -241,6 +245,11 @@ uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions
 uv run python bench/make_sets.py nsmc               # 300 Korean movie reviews, positive or not (HF card: CC BY 2.0)
 uv run python bench/make_sets.py klue-ynat          # 300 Korean headlines, 7 topics (KLUE, CC BY-SA 4.0)
 uv run python bench/make_sets.py clinc-oos          # CLINC150 top-20 intents (300 choice) + 100 out-of-scope noul
+uv run python bench/make_sets.py judge-mtbench      # 200 MT-Bench human-judged answer pairs x 2 orders (CC BY 4.0)
+uv run python bench/make_sets.py judge-ko           # 200 Korean-Human-Judgements pairs x 2 orders (evaluation only)
+uv run python bench/make_sets.py judge-length       # 100 human-winner answers against their own padded copy x 2 orders
+uv run python bench/make_judge_self.py --x qwen3:8b --y <other family>   # self-preference pairs, generated on Ollama
+uv run python bench/judge_bias.py bench/runs/judge-*   # position, length and self-preference bias, kappa vs humans
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 
@@ -524,6 +533,41 @@ Order-flip on this set (2026-10-14..16):
   (dhruvmehra/jevbench, as reported in a Laya fine-tuning write-up; not verified here). That set is 77-way, this
   one 20-way.
 
+## Judge bias (2026-11-01..02, M3 Max 36 GB)
+
+Five engines judge which of two answers is better. Each pair is asked in both orders. The sets are
+`judge-mtbench` (200 MT-Bench pairs with a human majority), `judge-ko` (200 Korean-Human-Judgements pairs, ties
+dropped), `judge-length` (100 human-winner answers against a copy padded with a restated first sentence and a
+closing courtesy) and `judge-self` (159 questions answered by qwen3:8b and gemma3:4b on Ollama). Tables:
+`bench/runs/judge-bias.md` (`bench/judge_bias.py`); interpretation: `reports/2026-11-02-judge-bias-analysis.md`.
+Kappa counts a pair whose two orders disagree as a tie; intervals are 95% (pair bootstrap for kappa).
+
+| engine | family, quant | MT-Bench kappa | Korean kappa | position flip (MT-Bench / Korean) | padded copy picked | Qwen answer picked |
+|---|---|---|---|---|---|---|
+| winnow-12b | Gemma 4, Q8_0 | 0.65 (0.56-0.74) | 0.45 (0.36-0.54) | 9% / 18% | 25% | 39% |
+| kev-4b | Qwen3.5, MLX | 0.60 (0.50-0.69) | 0.38 (0.29-0.47) | 10% / 19% | 48% | 37% |
+| clef-flash | Qwen3.5, Q8_0 | 0.59 (0.50-0.68) | 0.42 (0.33-0.51) | 14% / 20% | 44% | 33% |
+| winnow | Gemma 4, Q8_0 | 0.58 (0.48-0.67) | 0.37 (0.27-0.47) | 11% / 18% | 42% | 36% |
+| kev-9b | Qwen3.5, MLX | 0.55 (0.46-0.64) | 0.36 (0.27-0.46) | 16% / 23% | 49% | 41% |
+
+- **Human agreement:** the engines are hard to tell apart pair by pair. Winnow-12B beats only Kev-9B (exact
+  McNemar p = 0.020 MT-Bench, p = 0.029 Korean); the other 18 comparisons have p >= 0.096.
+- **Position:** every engine has position bias, and the direction differs. When Winnow-12B's verdict flips, it
+  picked the first answer both times (MT-Bench 15/18, Korean 33/36). Clef-flash picks the second (A both times in
+  0/27 and 3/41). Clef-flash never changes a choice when only the option labels are reversed (`order-flip` 0%),
+  so label order and answer position are separate axes.
+- **Length:** on the natural pairs, judges pick the longer answer as often as humans do on the same pairs
+  (gap -0.04 to +0.04; all ten intervals include 0). No engine prefers an answer's padded copy (25-49%); with
+  identical content, 34-72% of verdicts follow the position instead.
+- **Self-preference:** Gemma's answers were longer in 114 of 159 pairs, and every judge picked them more (Qwen 33-41%).
+  Qwen-based judges did not pick Qwen answers more often than Gemma-based judges on the same pairs; the one
+  cross-family McNemar under 0.05 (Clef-flash vs Winnow-12B, p = 0.035) goes the other way.
+- **When to trust them:** English pairwise verdicts, asked in both orders with disagreements counted as ties.
+  Winnow-12B agrees best; Kev-4B is in the same group at 497 ms first-call p50 against Winnow-12B's 2117 ms. Not
+  Korean verdicts on their own (kappa <= 0.45), and not near-identical answers, where the position decides.
+- These are System One decision models answering an A/B choice from the two answers as state, not generative LLM
+  judges. No API judge was measured.
+
 ## FAQ
 
 **What is a System One decision model?**
@@ -578,3 +622,13 @@ Kev-4B's server used 2.7 GB RSS after startup. Winnow is an 8.0 GB download, Win
 ## License
 
 MIT. See [LICENSE](LICENSE). The benchmarked engines and datasets keep their own licenses.
+
+The judge sets are built locally and never committed:
+
+- [lmsys/mt_bench_human_judgments](https://huggingface.co/datasets/lmsys/mt_bench_human_judgments) (revision
+  `f7d2896`), CC BY 4.0: expert and author pairwise votes on six models' answers to the 80 MT-Bench questions
+  (Zheng et al. 2023, "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena").
+- [HAERAE-HUB/Korean-Human-Judgements](https://huggingface.co/datasets/HAERAE-HUB/Korean-Human-Judgements) (revision
+  `24dae25`): 694 Korean question / answer A / answer B triplets with a human A, B or Tie decision, drawn from
+  ko-chatbot-arena, Chatbot Arena and Naver KiN. The card states no license and marks the data "for evaluation
+  only", so this repo uses it only to evaluate and does not redistribute it.

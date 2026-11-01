@@ -6,6 +6,13 @@ their own licenses). The same revision gives the same bytes, so a report's set s
     uv run python bench/make_sets.py nsmc              # Korean movie reviews, positive or not, 300 of the test split
     uv run python bench/make_sets.py klue-ynat         # Korean news headlines, 7 topics, 300 of the validation split
     uv run python bench/make_sets.py clinc-oos         # CLINC150 20-way intents (300) plus out-of-scope (100 noul)
+    uv run python bench/make_sets.py judge-mtbench     # MT-Bench human pairwise judgments, 200 pairs x 2 orders
+    uv run python bench/make_sets.py judge-ko          # Korean-Human-Judgements, 200 pairs x 2 orders
+    uv run python bench/make_sets.py judge-length      # one answer against itself padded, 100 pairs x 2 orders
+
+The judge sets ask an engine which of two responses is better. Every pair appears twice, once in each order (meta
+`variant` ab / ba), so bench/judge_bias.py can tell a judgement that follows the content from one that follows the
+position.
 """
 
 from __future__ import annotations
@@ -13,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import re
 import sys
 import urllib.request
 from collections import Counter
@@ -44,6 +52,24 @@ CLINC_QUESTION = "What is the customer's intent?"
 YNAT_TOPICS = {"IT과학": "정보기술, 과학, 인터넷, 모바일", "경제": "경제, 금융, 산업, 부동산",
                "사회": "사건사고, 교육, 노동, 사회 일반", "생활문화": "생활, 문화, 건강, 연예, 여행",
                "세계": "국제, 해외 소식", "스포츠": "스포츠 경기와 선수", "정치": "정치, 국회, 행정, 외교, 북한"}
+# Pairwise human judgments. MT-Bench: CC-BY-4.0, expert and author votes on six models' answers to 80 questions.
+# Korean-Human-Judgements: no license on the card, marked evaluation only; never redistributed, built locally.
+MT_BENCH = ("lmsys/mt_bench_human_judgments", "f7d2896d2cc5d80f8b55c2bbc722613555233c25")
+KO_JUDGEMENTS = ("HAERAE-HUB/Korean-Human-Judgements", "24dae25b0f4c0d3c0d3a10f2997f51cf6eb6cd5f")
+JUDGE_PROMPTS = {
+    "en": {"labels": ("Question", "Response A", "Response B"),
+           "question": {"type": "choice", "instructions": "Which response answers the question better?",
+                        "criteria": {"A": "Response A", "B": "Response B"}}},
+    "ko": {"labels": ("질문", "답변 A", "답변 B"),
+           "question": {"type": "choice", "instructions": "어느 답변이 질문에 더 잘 답했는가?",
+                        "criteria": {"A": "답변 A", "B": "답변 B"}}},
+}
+# Appended by `pad`: a restatement of the answer's first sentence and a closing courtesy. Neither adds a fact, so a
+# judge that prefers the padded copy prefers length (and politeness), not content.
+PAD = {"en": ("In short: {first}", "I hope this answer is helpful. Let me know if you have any other questions or "
+                                   "would like more detail on any part of it."),
+       "ko": ("요약하면: {first}", "도움이 되셨기를 바랍니다. 다른 궁금한 점이 있거나 더 자세한 설명이 필요하시면 "
+                               "언제든지 말씀해 주세요.")}
 
 
 def hf_file(repo: str, path: str, revision: str) -> Path:
@@ -183,6 +209,117 @@ def clinc_oos_full() -> list[dict]:
     return clinc_oos(train, test, oos_test, names)
 
 
+def judge_state(lang: str, question: str, a: str, b: str) -> str:
+    q, ra, rb = JUDGE_PROMPTS[lang]["labels"]
+    return f"{q}:\n{question.strip()}\n\n{ra}:\n{a.strip()}\n\n{rb}:\n{b.strip()}"
+
+
+def judge_items(pair: dict) -> list[dict]:
+    """One pair -> two items, `ab` with response x as A and `ba` with it as B. `expected` is the position the human
+    winner (`pair["winner"]`, "x" or "y") holds in that order; `meta.lengths` the characters of A and B."""
+    items = []
+    for variant, (a, b) in (("ab", (pair["x"], pair["y"])), ("ba", (pair["y"], pair["x"]))):
+        x_is_a = variant == "ab"
+        items.append({
+            "id": f"{pair['id']}/{variant}",
+            "state": judge_state(pair["lang"], pair["question"], a, b),
+            "questions": {"better": JUDGE_PROMPTS[pair["lang"]]["question"]},
+            "expected": {"better": "A" if (pair["winner"] == "x") == x_is_a else "B"},
+            "meta": {"source": pair["source"], "variant": variant, "pair": pair["id"],
+                     "lengths": [len(a.strip()), len(b.strip())],**pair.get("meta", {})},
+        })
+    return items
+
+
+def fits(pair: dict, count_tokens: Callable[[str], int], limit: int) -> bool:
+    """Whether the pair's state plus instructions stays within the engines' input limit (run.py refuses longer)."""
+    state = judge_state(pair["lang"], pair["question"], pair["x"], pair["y"])
+    return count_tokens(f"{state}\n\n{JUDGE_PROMPTS[pair['lang']]['question']['instructions']}") <= limit
+
+
+def mt_bench_pairs(rows: list[dict]) -> list[dict]:
+    """MT-Bench human votes -> first-turn pairs with a majority winner. Several judges often rated the same pair, in
+    either orientation; a pair is kept when one model has more than half its votes (ties count against both).
+    x is the answer of the model whose name sorts first."""
+    votes: dict[tuple[int, str, str], Counter] = defaultdict(Counter)
+    text: dict[tuple[int, str, str], tuple[str, dict[str, str]]] = {}
+    for r in rows:
+        if r["turn"] != 1:
+            continue
+        m1, m2 = sorted((r["model_a"], r["model_b"]))
+        key = (r["question_id"], m1, m2)
+        votes[key][{"model_a": r["model_a"], "model_b": r["model_b"]}.get(r["winner"], "tie")] += 1
+        text[key] = (r["conversation_a"][0]["content"], {r["model_a"]: r["conversation_a"][1]["content"],
+                                                          r["model_b"]: r["conversation_b"][1]["content"]})
+    pairs = []
+    for key in sorted(votes):
+        qid, m1, m2 = key
+        v, n = votes[key], sum(votes[key].values())
+        winner = next((m for m in (m1, m2) if v[m] * 2 > n), None)
+        if winner is None:
+            continue
+        question, answers = text[key]
+        pairs.append({"id": f"mtb/{qid}/{m1}-vs-{m2}", "lang": "en", "source": "mt-bench", "question": question,
+                      "x": answers[m1], "y": answers[m2], "winner": "x" if winner == m1 else "y",
+                      "meta": {"models": [m1, m2], "votes": n, "winner_votes": v[winner]}})
+    return pairs
+
+
+def ko_pairs(rows: list[dict]) -> list[dict]:
+    """Korean-Human-Judgements rows -> pairs, ties dropped; x is the dataset's response_a."""
+    return [{"id": f"ko/{i:03d}", "lang": "ko", "source": r["source"], "question": r["instruction"],
+             "x": r["response_a"], "y": r["response_b"], "winner": "x" if r["decision"] == "A" else "y"}
+            for i, r in enumerate(rows) if r["decision"] in ("A", "B")]
+
+
+def first_sentence(text: str, cap: int = 200) -> str:
+    line = text.strip().split("\n", 1)[0]
+    m = re.search(r"[.!?。](\s|$)", line)
+    return (line[:m.end()] if m else line)[:cap].strip()
+
+
+def pad(text: str, lang: str) -> str:
+    """The same answer, longer: its first sentence restated and a closing courtesy appended (see PAD)."""
+    restate, close = PAD[lang]
+    return f"{text.strip()}\n\n{restate.format(first=first_sentence(text))}\n\n{close}"
+
+
+def length_pairs(pools: list[list[dict]], n_each: int, count_tokens: Callable[[str], int], limit: int) -> list[dict]:
+    """From each pool, the human winner of n_each sampled pairs against its own padded copy; the original (x) is
+    expected to win, since the copy adds no content."""
+    out = []
+    for pool in pools:
+        cands = [{"id": f"len/{p['id']}", "lang": p["lang"], "source": f"{p['source']}-length",
+                  "question": p["question"], "x": (w := p[p["winner"]]), "y": pad(w, p["lang"]), "winner": "x"}
+                 for p in pool]
+        out += sample([c for c in cands if fits(c, count_tokens, limit)], n_each, seed=1)
+    return out
+
+
+def judge_set(pairs: list[dict], n: int, count_tokens: Callable[[str], int], limit: int, seed: int = 0) -> list[dict]:
+    """n pairs that fit, sampled with the seed, each as its two orders."""
+    kept = [p for p in pairs if fits(p, count_tokens, limit)]
+    return [it for p in sample(kept, n, seed) for it in judge_items(p)]
+
+
+def token_counter() -> tuple[Callable[[str], int], int]:
+    """run.py's Qwen3 tokenizer count and input limit, so a built set always passes run.py's length check."""
+    import run
+
+    return run.qwen_token_counter(), run.MAX_STATE_TOKENS
+
+
+def judge_sets(name: str) -> list[dict]:
+    count, limit = token_counter()
+    mtb = mt_bench_pairs(parquet(MT_BENCH, "data/human-00000-of-00001-25f4910818759289.parquet"))
+    ko = ko_pairs(parquet(KO_JUDGEMENTS, "data/train-00000-of-00001.parquet"))
+    if name == "judge-mtbench":
+        return judge_set(mtb, 200, count, limit)
+    if name == "judge-ko":
+        return judge_set(ko, 200, count, limit)
+    return [it for p in length_pairs([mtb, ko], 50, count, limit) for it in judge_items(p)]
+
+
 def parquet(repo_rev: tuple[str, str], path: str) -> list[dict]:
     return pq.read_table(hf_file(repo_rev[0], path, repo_rev[1])).to_pylist()
 
@@ -195,6 +332,9 @@ SETS: dict[str, Callable[[], list[dict]]] = {
     "nsmc": lambda: nsmc(parquet(NSMC, "default/test/0000.parquet")),
     "klue-ynat": lambda: klue_ynat(parquet(KLUE, "ynat/validation-00000-of-00001.parquet")),
     "clinc-oos": clinc_oos_full,
+    "judge-mtbench": lambda: judge_sets("judge-mtbench"),
+    "judge-ko": lambda: judge_sets("judge-ko"),
+    "judge-length": lambda: judge_sets("judge-length"),
 }
 
 
