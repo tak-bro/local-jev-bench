@@ -29,11 +29,15 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
   - **Jeff-Qwen3.5-0.8B**: 30문항에서 107ms에 83-84%. 영어 30문항에서는 Jeff-2B보다 낫고(p < 0.001) 한국어 30문항과는 같다(p = 0.136). Kev-4B/9B와도 같다. 본셋에서는 재현 안 된다. transfer 67%, typed 50%, BANKING 57%(order-flip 28%), NSMC 72%다. 예외는 KLUE-YNAT 69%로 Kev-4B·Kev-9B·Winnow와 같다. 그 정확도에서 가장 빠르다(30문항 셋과 typed-decisions 밖에서 28-54ms).
   - **Decision-Eos(Qwen3.5-0.8B endpoint head)**: 전 셋 중간(transfer 59%, BANKING 80%, 30문항 72-75%). 영어 30문항에서는 Kev-0.8B와 같고, BANKING에서는 낮다(80% vs 88%, p < 0.001). 2026-10-12에 추가 측정했다. typed-decisions 49%(Jeff-0.8B와 같음), NSMC 79%, KLUE-YNAT 63%(둘 다 Kev-0.8B와 같음)이다.
   - **JevK5(alibiserikbay, Qwen3.5-4B, Metal Q8_0, 2026-10-16 첫 측정)**: 30문항 셋에서는 상위 그룹이다(90%, 88%. Kev-4B/9B·Winnow·Clef-flash·Clef·Decider-4B와 같음, p ≥ 0.146). KLUE-YNAT도 74%로 Kev·Winnow-E4B와 같다(Winnow-12B보다는 낮음, p = 0.028). 큰 영어 셋에서는 상위 그룹 아래다. transfer-v4 76%(Winnow-E4B와 같음 p = 0.920, Kev-4B보다 p = 0.004·Kev-9B보다 p = 0.001 낮음), typed-decisions 65%(Kev-4B와 같음 p = 0.056, Kev-9B·Winnow·Clef보다 p ≤ 0.001 낮음). NSMC 82%로 Kev-9B보다 낮다(p = 0.036). 선택지 20개 셋(BANKING77-20, clinc-oos)은 `TOO_MANY_OPTIONS`로 거절한다. 첫 호출 p50은 194-2872ms다.
+- **새 엔진(2026-10-30..11-01 측정, `reports/2026-11-01-analysis.md`).**
+  - **pplx-decider(Perplexity, `pplx-decider:flash`, Qwen3.5-4B)**: clinc-oos를 빼면 전 셋 상위 그룹이다. transfer-v4 84%(638/764)는 벤치 최고 기록이다. Clef·Clef-flash·Winnow-12B·Kev-9B와 같고(p ≥ 0.095) Kev-4B보다 낫다(p = 0.024). KLUE-YNAT 83%도 최고 기록이다. Clef(p = 0.036), Clef-flash(p = 0.011), Kev 둘(p < 0.001)보다 낫고 Winnow-12B와 같다(p = 0.111). typed-decisions 71%는 Clef·Winnow-12B와 같고 Kev 둘보다 낫다. clinc-oos 78%는 Clef·Winnow-12B·Kev-4B보다 낮다. ECE는 모든 셋에서 0.04-0.08이다. Ollaya 0.18이 필요하고 여기서는 CPU로 돌아 첫 호출 p50이 1.7-8.0초다.
+  - **nimble-v3(Bespoke-Nimble-9B v3, CC BY-NC 4.0)**: 30문항 셋은 벤치 최고(92%, 94%)지만 큰 영어 셋에서는 상위 그룹 아래다. transfer-v4 77%(pplx-decider·Winnow-12B·Clef보다 낮음, p < 0.001), typed-decisions 66%(Clef·Clef-flash·Winnow 둘·pplx-decider보다 낮음, p < 0.001, Kev와는 같음)다. BANKING77-20 89%는 Kev·pplx-decider와 같고 Clef 둘보다 낮다(p < 0.001). NSMC 84%는 Winnow-12B보다 낮다(p = 0.029). KLUE-YNAT 78%는 Clef·Winnow-12B와 같고 Kev-9B보다 낫고(p = 0.040) pplx-decider보다 낮다(p = 0.044). clinc-oos 82%는 Kev-4B·Winnow-12B와 같고 Clef보다 낮다(p < 0.001). CPU fp32로 도는 9B라 여기서는 느리다(첫 호출 p50 4.7-132초). Nimble-v4는 API 전용이다.
+  - **coba-400m·coba-1b(Ollaya, Ettin 인코더)**: Metal에서 빠르지만(25-640ms) 상위 그룹보다 한참 아래다. transfer-v4 60-62%, typed-decisions 59-60%다. 영어 전용이라 한국어 셋은 무너진다(KLUE-YNAT 19-35%). 컨텍스트 512토큰이라 typed-decisions state 7개를 거절한다.
 - **Kev 재측정(2026-10-10, Hub 리비전 `6cfce5c`·`db029f08`, 둘 다 2026-10-01).** Kev-4B는 9-30 수치를 7셋 전부 재현한다(89/87/89/80/67/83/74). 9월 delta 업데이트가 이 레포의 셋에서 Kev-4B를 움직이지 않았다. Kev-9B는 7셋 전부 움직였다. 영어 30 95 → 93, 한국어 30 94 → 91, BANKING77-20 267 → 271, transfer-v4 618 → 620, NSMC 257 → 261, KLUE-YNAT 220 → 218, typed-decisions 1440 → 1378/2000(72% → 69%)이고, 크게 움직인 건 typed-decisions 하나다. 2026-10-14~16 재측정은 10-10 판단을 하나도 다르지 않게 재현했다. 9-30 로그(`9f5ba1c`)와 짝지어 보면 바뀐 건 typed-decisions뿐이다. 9-30에만 맞힌 판단 158개 대 지금만 맞힌 판단 96개로 p < 0.001이고, 거의 다 `agent_trace_observability`(500개 중 305 → 255, p < 0.001)와 choice·noul 질문에서 난다. 나머지 여섯 셋은 같다(p ≥ 0.22). 즉 Kev-9B의 Hub 리비전이 typed-decisions에서 회귀했고, Winnow가 거기서 Kev-9B를 앞선다(p < 0.001). 전에는 같았다(p = 0.529).
 
 가장 빠른 엔진은 Ollaya(Laya)다. typed-decisions의 긴 state를 빼면 첫 호출 p50이 10-44ms다. 대신 정확도는 낮은 편이다. typed-decisions에서 전체 최하위이고, clinc-oos(79%)를 빼면 모든 셋에서 하위 다섯 안에 든다. 보정(ECE)은 한국어 30문항, BANKING77-20, typed-decisions, NSMC, KLUE-YNAT에서 Kev·Winnow·Jeff·Ollaya 중 가장 나쁘다. AnyJev와 CLM은 일부 셋에서 그보다도 나쁘다. Kev-0.8B는 같은 셋에서 27-52ms이고, clinc-oos(71% vs 79%)를 빼면 모든 셋에서 정확도가 Ollaya와 같거나 더 높다. Kev-4B는 transfer-v4에서 모델 카드 수치를 재현했다(534/656, 카드 0.817). 자세한 내용은 [결과](#결과-2026-10-1416-m3-max-36gb) 절에 있다.
 
-엔진은 열네 가지다.
+엔진은 열일곱 가지다.
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): [vllm-metal](https://github.com/vllm-project/vllm-metal)로 서빙하는 Qwen3-8B 인코더와 75MB짜리 CLM 헤드.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): `laya` 모델을 MLX로 돌린다.
@@ -43,6 +47,9 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
 - **Decider-2B·Decider-4B**: Mapika의 Qwen3.5 디코더(`decider`, `decider:4b`). Ollaya로 돌린다(여기서는 CPU).
 - **Decision-Eos**: vLLM Semantic Router 쪽 Decision 1.0 Eos(`decision`). Qwen3.5-0.8B 파인튜닝에 endpoint head다. Ollaya로 돌린다.
 - **JevK5**: alibiserikbay의 JevK5 v0.3(`jevk5`). Qwen3.5-4B 파인튜닝을 llama.cpp로 돌린다. 옵션 예산을 넘는 질문은 거절한다(주의점 참고).
+- **pplx-decider**: Perplexity의 pplx-decider-flash v1.2(`pplx-decider:flash`). 27B 결정 모델에서 증류한 Qwen3.5-4B다. Ollaya 0.7.3이 `pplx-joint-v1` 레이아웃을 못 읽어서 두 번째 데몬인 Ollaya 0.18.0에서 돌린다(포트 참고). 여기서는 CPU fp32다.
+- **coba-400m·coba-1b**: pplx-decider:flash에서 증류한 Ollaya 자체 Ettin 인코더(`coba:400m`, `coba:1b`). 영어 전용이고 Ollaya가 MLX로 돌린다. 컨텍스트가 512토큰이라 더 긴 state는 `STATE_TRUNCATED`로 거절한다.
+- **nimble-v3**: Bespoke-Nimble-9B v3(`nimble:9b-v3`, CC BY-NC 4.0). Qwen3.5-9B 위의 LoRA다. Ollaya 0.18.0 데몬에서 CPU fp32로 돌린다. Nimble-v4는 API 전용이라 재지 않았다.
 - **AnyJev** ([nokia-applied-research/AnyJev](https://github.com/nokia-applied-research/AnyJev)): 학습이 필요 없다. vllm-metal 위 Qwen3-8B에서 라벨 logprob을 읽는다. `anyjev-raw`는 보정 없이, `anyjev-l0`는 선택지를 순환 이동하고 배치 prior로 보정한다.
 - **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): Qwen3.5-0.8B·4B·9B Base 위의 LoRA와 포인터 헤드(`kev-0.8b`, `kev-4b`, `kev-9b`). MLX로 돌린다.
 - **Jeff** ([firelex/jeff](https://github.com/firelex/jeff)): Jeff-Qwen3.5-2B. Qwen3.5-2B를 파인튜닝하고 답 readout을 학습한 모델이다. MLX로 돌린다.
@@ -51,6 +58,45 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
 - **Von** ([wfzyx/von](https://github.com/wfzyx/von)): 395M ModernBERT 인코더와 옵션 마커 헤드. 자체 `von serve`로 Metal에서 돌린다(`von`).
 
 모든 엔진은 TypeSafe의 `POST /v1/systemone` 형식으로 응답한다.
+
+## 한눈에 보기
+
+필요별로 한 줄씩, 전부 아래 결과에서 뽑았다. 두 엔진이 다르다고 말할 조건은 McNemar p < 0.05([FAQ](#faq) 참고)다.
+그보다 가까우면 같다고 본다.
+
+| 필요 | 엔진 | 이유 |
+|---|---|---|
+| 전반적으로 가장 정확 | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Clef-flash, Clef | 대부분 셋에서 상위 그룹 |
+| 분포 밖 전이(transfer-v4) 최고 | pplx-decider | 84%(638/764), 벤치 최고 |
+| typed-decisions 최고 | Ollaya-td(분포 안, 75%†) 또는 Winnow(범용, 71-73%) | 주의점 참고 |
+| 한국어(NSMC + KLUE-YNAT) 최고 | pplx-decider 또는 Winnow-12B | KLUE-YNAT 83% vs 79%(p = 0.111), NSMC 87% vs 88% |
+| 가장 빠름 | Ollaya(`laya`) | typed-decisions 제외 첫 호출 p50 10.2-43.7ms |
+| 보정 최고 | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
+
+전체 표·셋별 주의점·McNemar 결과는 [결과](#결과-2026-10-1416-m3-max-36gb)와 [FAQ](#faq)에 있다.
+
+## 아키텍처
+
+모든 엔진은 각자 포트에서 `POST /v1/systemone`에 답한다. `bench/run.py`는 같은 질문 셋을 엔진 하나씩 순서대로 보낸다.
+일부는 공유 백엔드 뒤에 있다(CLM과 AnyJev는 Qwen3-8B 임베딩·logprob을 HTTP로 읽고, Ollaya가 서빙하는 엔진들은
+데몬 둘 중 하나를 공유한다). 전체 포트 목록은 [포트](#포트) 참고.
+
+```mermaid
+flowchart LR
+    client["bench/run.py<br/>POST /v1/systemone"]
+
+    client --> ollaya1["Ollaya 0.7.3 :11435<br/>laya · laya:typed-decisions · winnow:e4b/12b<br/>decider · decider:4b · decision · jevk5 · coba:400m/1b"]
+    client --> ollaya2["Ollaya 0.18.0 :11436<br/>pplx-decider:flash · nimble:9b-v3"]
+    client --> clmapi["CLM API :8700"]
+    client --> anyjevapi["AnyJev API :8710<br/>anyjev-raw · anyjev-l0"]
+    client --> kevapi["Kev API :8009<br/>kev-0.8b/4b/9b"]
+    client --> jeffapi["Jeff API :8765"]
+    client --> llama["llama-server :8020<br/>Clef-flash · Clef"]
+    client --> vonapi["Von API :8030"]
+
+    clmapi --> embed8090["Qwen3-8B 인코더 :8090<br/>(vllm-metal)"]
+    anyjevapi --> gen8092["Qwen3-8B generate :8092<br/>(vllm-metal)"]
+```
 
 ## 설치
 
@@ -89,7 +135,8 @@ uv sync
 | 8091 | 작은 임베딩 모델(smoke 전용) | `scripts/serve-embed.sh mlx-community/Qwen3-Embedding-0.6B-8bit 8091 embed-small` |
 | 8090 | CLM용 Qwen3-8B 인코더 | `scripts/serve-embed.sh Qwen/Qwen3-8B 8090 qwen3-8b` |
 | 8700 | CLM System One API | `scripts/serve-clm.sh` |
-| 11435 | Ollaya 데몬 (`laya`, `winnow:e4b`) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
+| 11435 | Ollaya 0.7.3 데몬 (`laya`, `winnow:e4b`, `coba:400m`, `coba:1b` 등) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
+| 11436 | 자기 모델 저장소를 쓰는 Ollaya 0.18.0 데몬 (`pplx-decider:flash`, `nimble:9b-v3`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`. 측정할 때는 `OLLAYA_URL=http://127.0.0.1:11436`을 주고 `~/.local/ollaya-0.18/bin`을 `PATH` 앞에 둔다 |
 | 8092 | AnyJev용 Qwen3-8B 생성 서버 | `scripts/serve-llm.sh Qwen/Qwen3-8B 8092 qwen3-8b` |
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
 | 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (또는 `kev-0.8b`, `kev-9b`) |
@@ -160,7 +207,9 @@ AnyJev와 Kev는 각각 Metal 메모리 대부분을 쓴다. 그래서 엔진은
 | Clef | 90% | 91% | 96% | 83% | 72% | 87% | 78% | 95% |
 | Winnow-E4B | 89% | 86% | 81% | 77% | 73% | 84% | 74% | 57% |
 | Winnow-12B | 91% | 91% | 84% | 83% | 71% | 88% | 79% | 84% |
+| pplx-decider | 87% | 85% | 91% | 84% | 71% | 87% | 83% | 78% |
 | Decider-4B | 90% | 93% | 90% | 80% | 68% | 83% | 71% | 80% |
+| nimble-v3 | 92% | 94% | 89% | 77% | 66% | 84% | 78% | 82% |
 | Decider-2B | 84% | 88% | 91% | 73% | 60% | 83% | 73% | 57% |
 | JevK5 | 90% | 88% | failed | 76% | 65% | 82% | 74% | failed |
 | Ollaya-td | 80% | 45% | 64% | 63% | 75%† | 53% | 19% | 77% |
@@ -169,13 +218,18 @@ AnyJev와 Kev는 각각 Metal 메모리 대부분을 쓴다. 그래서 엔진은
 | Jeff-Qwen3.5-0.8B | 83% | 84% | 57% | 67% | 50% | 72% | 69% | 52% |
 | Ollaya | 75% | 66% | 60% | 63% | 36% | 56% | 43% | 79% |
 | Decision-Eos | 75% | 72% | 80% | 59% | 49% | 79% | 63% | 30% |
+| coba-1b | 82% | 50% | 76% | 62% | 59%* | 52% | 19% | 57% |
+| coba-400m | 80% | 56% | 77% | 60% | 60%* | 50% | 35% | 52% |
 | AnyJev L0 | 81% | 84% | 80% | 75% | 63% | 80% | 75% | 60% |
 | AnyJev raw | 82% | 83% | 75% | 75% | 61% | 81% | 76% | 56% |
 | Von | 73% | 49% | 80%† | 69%† | 43% | 51% | 15% | 37% |
 | CLM-8B | 39% | 41% | 20% | - | - | - | - | - |
 
 `†`: Kev(세 크기 모두)는 BANKING77 train split으로, Jeff는 PAWS train split으로 학습했다. Ollaya-td의 카드는
-typed-decisions 4개 워크플로를 파인튜닝 데이터로 적고 있다. PAWS의 test split은 transfer-v4 764개 판단 중 80개다. Von의 카드는 학습 코퍼스에 Banking77과 dair-ai/emotion이 들었다고 적지만 split은 밝히지 않는다. transfer-v4의 `emotion` 출처(116개 판단)가 dair-ai/emotion이다. 표시가 없는 엔진은 그 셋으로 학습하지 않았거나, 학습 데이터를 공개하지 않은 것이다(Winnow, Laya, CLM, Clef, Clef-flash, Decider, Decision-Eos, JevK5). 아래 학습 데이터 표를 참고한다.
+typed-decisions 4개 워크플로를 파인튜닝 데이터로 적고 있다. PAWS의 test split은 transfer-v4 764개 판단 중 80개다. Von의 카드는 학습 코퍼스에 Banking77과 dair-ai/emotion이 들었다고 적지만 split은 밝히지 않는다. transfer-v4의 `emotion` 출처(116개 판단)가 dair-ai/emotion이다. 표시가 없는 엔진은 그 셋으로 학습하지 않았거나, 학습 데이터를 공개하지 않은 것이다(Winnow, Laya, CLM, Clef, Clef-flash, Decider, Decision-Eos, JevK5, pplx-decider, coba, Nimble). 아래 학습 데이터 표를 참고한다.
+`*`: 채점된 판단 1,965개 기준이다. coba는 컨텍스트(512토큰)보다 긴 typed-decisions state 7개를 `STATE_TRUNCATED`로 거절해서 판단 35개에 답이 없다.
+
+pplx-decider, nimble-v3, coba 두 크기는 2026-10-30..11-01에 같은 머신, 같은 프로토콜로 쟀다(`reports/2026-11-01-analysis.md`).
 
 첫 호출 p50, ms:
 
@@ -187,7 +241,9 @@ typed-decisions 4개 워크플로를 파인튜닝 데이터로 적고 있다. PA
 | Clef | 3398.2 | 3650.9 | 4277.9 | 1988.8 | 8365.4 | 1479.9 | 2631.1 | 3765.0 |
 | Winnow-E4B | 576.0 | 604.0 | 500.6 | 312.8 | 1333.1 | 262.9 | 385.4 | 442.5 |
 | Winnow-12B | 1138.0 | 1971.1 | 1264.4 | 785.3 | 3350.2 | 637.3 | 992.2 | 1109.1 |
+| pplx-decider | 2773.6 | 3105.6 | 3112.8 | 2424.1 | 8008.3 | 1731.7 | 2430.1 | 3114.6 |
 | Decider-4B | 8633.5 | 8644.8 | 3197.7 | 1738.5 | 55787.8 | 1014.9 | 2376.8 | 2376.9 |
+| nimble-v3 | 40942.7 | 38802.4 | 13730.9 | 6083.7 | 131822.8 | 4711.6 | 7674.4 | 12344.1 |
 | Decider-2B | 3153.7 | 3153.3 | 1189.8 | 638.9 | 19049.7 | 366.6 | 902.6 | 906.3 |
 | JevK5 | 591.5 | 608.3 | failed | 279.9 | 2872.4 | 193.5 | 361.0 | failed |
 | Ollaya-td | 274.9 | 721.7 | 191.4 | 126.5 | 2082.0 | 119.7 | 385.8 | 136.6 |
@@ -196,12 +252,14 @@ typed-decisions 4개 워크플로를 파인튜닝 데이터로 적고 있다. PA
 | Jeff-Qwen3.5-0.8B | 106.6 | 107.2 | 54.0 | 39.7 | 424.9 | 28.2 | 40.8 | 48.7 |
 | Ollaya | 43.7 | 22.1 | 31.0 | 21.4 | 262.6 | 10.2 | 13.2 | 23.6 |
 | Decision-Eos | 1136.3 | 1103.9 | 837.8 | 379.9 | 4126.7 | 264.2 | 494.6 | 723.1 |
+| coba-1b | 103.7 | 285.7 | 77.0 | 52.3 | 639.1 | 52.0 | 107.9 | 110.2 |
+| coba-400m | 125.3 | 205.5 | 75.6 | 60.3 | 274.6 | 27.3 | 67.9 | 25.6 |
 | AnyJev L0 | 787.3 | 893.2 | 6919.6 | 525.7 | 1955.5 | 337.8 | 2192.4 | 4867.0 |
 | AnyJev raw | 570.6 | 658.7 | 515.0 | 289.1 | 1478.7 | 185.9 | 416.3 | 437.2 |
 | Von | 101.1 | 135.5 | 32.2 | 28.7 | 366.3 | 44.6 | 52.1 | 29.0 |
 | CLM-8B | 260.6 | 299.4 | 137.3 | - | - | - | - | - |
 
-Decider-4B·Decider-2B·Decision-Eos·Ollaya-td는 이 머신의 Ollaya 러너에서 CPU(F32, ONNX)로 돌았다(Ollaya 서버 로그가 로드마다 `device=cpu`를 남긴다). 그래서 지연은 Metal 행과 바로 비교할 수 없다. llama.cpp 행과 같은 주의다. 나머지 Ollaya 행은 Metal이다. Laya는 MLX, Winnow와 JevK5는 llama.cpp(Q8_0)다.
+Decider-4B·Decider-2B·Decision-Eos·Ollaya-td는 이 머신의 Ollaya 러너에서 CPU(F32, ONNX)로 돌았다(Ollaya 서버 로그가 로드마다 `device=cpu`를 남긴다). 그래서 지연은 Metal 행과 바로 비교할 수 없다. llama.cpp 행과 같은 주의다. pplx-decider와 nimble-v3도 Ollaya 0.18.0에서 같은 방식(CPU, fp32, ONNX)으로 돌았다. 9B인 nimble-v3가 여기서 첫 호출에 4.7-132초 걸리는 이유다. 나머지 Ollaya 행은 Metal이다. Laya와 coba는 MLX, Winnow와 JevK5는 llama.cpp(Q8_0)다.
 
 각 엔진이 무엇으로 학습했는지(만든 쪽이 공개한 범위):
 
@@ -216,6 +274,9 @@ Decider-4B·Decider-2B·Decision-Eos·Ollaya-td는 이 머신의 Ollaya 러너�
 | Decider-4B, Decider-2B, Decision-Eos | 알 수 없음. Mapika의 Qwen3.5 디코더와 vLLM Semantic Router 쪽 Decision 1.0 Eos다. 학습 데이터는 여기 미공개 | Ollaya 레지스트리 |
 | Ollaya-td | typed-decisions 4개 워크플로 (upstream 주장 0.766) | `convaiinnovations/laya-typed-decisions` 모델 카드 |
 | JevK5 | 알 수 없음 | |
+| pplx-decider | 알 수 없다. Perplexity의 27B 결정 모델에서 증류했고, 데이터는 공개하지 않았다 | Ollaya 레지스트리 |
+| coba (400m, 1b) | 이 레포의 셋은 명시되지 않았다. pplx-decider:flash의 답으로 증류했다. 공개 벤치마크 10개의 train split으로 학습한 in-domain ternary 태그는 여기서 재지 않았다 | Ollaya 레지스트리 |
+| nimble-v3 | 알 수 없다. Bespoke Labs가 큐레이션한 대조 쌍("Jev에서 증류하지 않았다") | `bespokelabsai/nimble` README |
 
 30문항 셋은 이 레포를 위해 새로 쓴 것이라 어떤 엔진도 학습하지 않았다.
 

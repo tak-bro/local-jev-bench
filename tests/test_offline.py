@@ -560,6 +560,8 @@ def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
                                          ("ollaya-td", "laya:typed-decisions"),
                                          ("decider-2b", "decider"), ("decider-4b", "decider:4b"),
                                          ("decision-eos", "decision"), ("jevk5", "jevk5"),
+                                         ("pplx-decider", "pplx-decider:flash"), ("coba-400m", "coba:400m"),
+                                         ("coba-1b", "coba:1b"), ("nimble-v3", "nimble:9b-v3"),
                                          ("jeff", "jeff-latest"), ("jeff-0.8b", "jeff-latest"),
                                          ("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656"),
                                          ("von", "von-latest")])
