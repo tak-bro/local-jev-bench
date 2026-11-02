@@ -110,6 +110,10 @@ Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisi
   Winnow-12B and Clef-flash agree with the human winner at Cohen's kappa 0.55-0.65, but only 0.36-0.45 on 200
   Korean pairs. Swapping the two answers' positions changes 9-23% of their verdicts. They show no length or
   same-family preference. Details in [Judge bias](#judge-bias-2026-11-0102-m3-max-36-gb).
+- **Cascade routing (simulated from these logs):** sending only Kev-4B's least confident items to Clef reaches
+  within 1 %p of Clef alone at 10% of calls on transfer-v4 and 32% on BANKING77-20 (383 vs 2104 ms and 1664 vs
+  4312 ms mean). On transfer-v4, routing 28% beats Clef alone by 2.1 %p (p = 0.011), and it holds on held-out
+  halves. Kev-4B's ECE does not predict how well routing works. Details in [Cascade routing](#cascade-routing-simulated-from-the-2026-10-1416-logs).
 
 Ollaya (Laya) is the fastest engine, at 10-44 ms first-call p50 outside typed-decisions' long states. It is also among the least
 accurate: the lowest of all on typed-decisions, and in the bottom five on every set but clinc-oos, where it scores
@@ -250,6 +254,7 @@ uv run python bench/make_sets.py judge-ko           # 200 Korean-Human-Judgement
 uv run python bench/make_sets.py judge-length       # 100 human-winner answers against their own padded copy x 2 orders
 uv run python bench/make_judge_self.py --x qwen3:8b --y <other family>   # self-preference pairs, generated on Ollama
 uv run python bench/judge_bias.py bench/runs/judge-*   # position, length and self-preference bias, kappa vs humans
+uv run python bench/cascade.py --out bench/runs/cascade.md --figures reports/figures   # cascade routing from the raw logs, no engine called
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 
@@ -567,6 +572,45 @@ Kappa counts a pair whose two orders disagree as a tie; intervals are 95% (pair 
   Korean verdicts on their own (kappa <= 0.45), and not near-identical answers, where the position decides.
 - These are System One decision models answering an A/B choice from the two answers as state, not generative LLM
   judges. No API judge was measured.
+
+## Cascade routing (simulated from the 2026-10-14..16 logs)
+
+A small engine answers every item. Only the items where its confidence is lowest go to a big engine.
+Confidence is the probability the small engine gave its own decision, the lowest over an item's questions.
+`bench/cascade.py` sweeps the threshold over the raw logs, with no new measurement. Latency is the sum of the two
+engines' first-call latencies on routed items; both engines were measured alone (M3 Max 36 GB: Kev-4B MLX and
+Winnow-12B Q8_0 on 2026-10-14, Clef Q4_K_M on 2026-10-15). Tables: `bench/runs/cascade.md`; interpretation:
+`reports/2026-11-02-cascade-analysis.md`.
+
+![kev-4b cascade](reports/figures/cascade-kev-4b.svg)
+
+Kev-4B to Clef, at the lowest share of calls within 1 %p of Clef alone. These points are picked in-sample;
+"held-out" applies the threshold picked on one half of the items to the other half.
+
+| set | Kev-4B / Clef alone | calls to Clef | accuracy (vs Clef) | mean ms (cascade / Clef) | held-out halves |
+|---|---|---|---|---|---|
+| transfer-v4 | 80.4% / 82.7% (p = 0.120) | 9.6% | 81.8% (-0.9) | 383 / 2104 | 10.7%, -0.3; 8.9%, -1.0 |
+| klue-ynat | 74.0% / 77.7% (p = 0.117) | 24.3% | 76.7% (-1.0) | 858 / 2644 | 18.7%, -2.7; 24.7%, +0.0 |
+| BANKING77-20 | 88.7% / 95.7% (p < 0.001) | 32.3% | 94.7% (-1.0) | 1664 / 4312 | 18.0%, -4.7; 32.7%, -0.7 |
+| nsmc | 83.3% / 87.0% (p = 0.043) | 59.7% | 86.0% (-1.0) | 1074 / 1586 | 12.7%, -4.0; 76.0%, -0.7 |
+| clinc-oos | 84.0% / 95.0% (p < 0.001) | 71.0% | 94.0% (-1.0) | 2575 / 3385 | 63.5%, -2.5; 74.5%, +0.0 |
+| typed-decisions | 67.0% / 72.4% (p < 0.001) | 73.2% | 71.4% (-1.0) | 6689 / 8259 | 71.0%, -1.5; 81.5%, -0.7 |
+
+- **Savings depend on the set.** Where Clef is clearly better (p < 0.05), only BANKING77-20 gets within 1 %p with a
+  third of the calls. That cuts mean latency to 39%. nsmc, clinc-oos and typed-decisions need 60-73% of the calls,
+  which keeps 68-81% of Clef's latency. A threshold picked on one half can miss by up to 4.7 %p on the other, so
+  tune it on separate data.
+- **On transfer-v4 the cascade beats both engines.** Routing 28% to Clef gives 84.8%, 2.1 %p above Clef alone
+  (exact McNemar 26 vs 10, p = 0.011). Routing 22% to Winnow-12B gives +1.6 %p (p = 0.050). On held-out halves the
+  gains are +1.0 / +1.8 and +1.0 / +1.6 %p. The routed 28% hold 59 of the 69 decisions only Clef gets right.
+- **Kev-4B to Winnow-12B rarely pays.** Winnow-12B beats Kev-4B only on typed-decisions and KLUE-YNAT
+  (p ≤ 0.024), and loses on BANKING77-20 (p = 0.019).
+- **Calibration does not predict routing.** Here the routing efficiency is the gain over random routing as a share of
+  an oracle router's gain. Across 21-22 small engines on every set, all routed to Clef (169 pairs), it does not fall with
+  the small engine's ECE (Spearman +0.20). Only BANKING77-20 shows the hypothesised negative relation (-0.48,
+  p = 0.030). What matters is whether the small engine's unsure items are the ones the big engine gets right.
+
+![calibration vs routing](reports/figures/cascade-calibration.svg)
 
 ## FAQ
 
