@@ -556,7 +556,7 @@ Kappa counts a pair whose two orders disagree as a tie; intervals are 95% (pair 
 | kev-9b | Qwen3.5, MLX | 0.55 (0.46-0.64) | 0.36 (0.27-0.46) | 16% / 23% | 49% | 41% |
 
 - **Human agreement:** the engines are hard to tell apart pair by pair. Winnow-12B beats only Kev-9B (exact
-  McNemar p = 0.020 MT-Bench, p = 0.029 Korean); the other 18 comparisons have p >= 0.096.
+  McNemar p = 0.020 MT-Bench, p = 0.029 Korean); the other 18 comparisons have p ≥ 0.096.
 - **Position:** every engine has position bias, and the direction differs. When Winnow-12B's verdict flips, it
   picked the first answer both times (MT-Bench 15/18, Korean 33/36). Clef-flash picks the second (A both times in
   0/27 and 3/41). Clef-flash never changes a choice when only the option labels are reversed (`order-flip` 0%),
@@ -569,7 +569,7 @@ Kappa counts a pair whose two orders disagree as a tie; intervals are 95% (pair 
   cross-family McNemar under 0.05 (Clef-flash vs Winnow-12B, p = 0.035) goes the other way.
 - **When to trust them:** English pairwise verdicts, asked in both orders with disagreements counted as ties.
   Winnow-12B agrees best; Kev-4B is in the same group at 497 ms first-call p50 against Winnow-12B's 2117 ms. Not
-  Korean verdicts on their own (kappa <= 0.45), and not near-identical answers, where the position decides.
+  Korean verdicts on their own (kappa ≤ 0.45), and not near-identical answers, where the position decides.
 - These are System One decision models answering an A/B choice from the two answers as state, not generative LLM
   judges. No API judge was measured.
 
