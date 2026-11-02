@@ -34,6 +34,7 @@ Laya typed-decisions 파인튜닝(`ollaya-td`)은 typed-decisions에서만 전�
   - **nimble-v3(Bespoke-Nimble-9B v3, CC BY-NC 4.0)**: 30문항 셋은 벤치 최고(92%, 94%)지만 큰 영어 셋에서는 상위 그룹 아래다. transfer-v4 77%(pplx-decider·Winnow-12B·Clef보다 낮음, p < 0.001), typed-decisions 66%(Clef·Clef-flash·Winnow 둘·pplx-decider보다 낮음, p < 0.001, Kev와는 같음)다. BANKING77-20 89%는 Kev·pplx-decider와 같고 Clef 둘보다 낮다(p < 0.001). NSMC 84%는 Winnow-12B보다 낮다(p = 0.029). KLUE-YNAT 78%는 Clef·Winnow-12B와 같고 Kev-9B보다 낫고(p = 0.040) pplx-decider보다 낮다(p = 0.044). clinc-oos 82%는 Kev-4B·Winnow-12B와 같고 Clef보다 낮다(p < 0.001). CPU fp32로 도는 9B라 여기서는 느리다(첫 호출 p50 4.7-132초). Nimble-v4는 API 전용이다.
   - **coba-400m·coba-1b(Ollaya, Ettin 인코더)**: Metal에서 빠르지만(25-640ms) 상위 그룹보다 한참 아래다. transfer-v4 60-62%, typed-decisions 59-60%다. 영어 전용이라 한국어 셋은 무너진다(KLUE-YNAT 19-35%). 컨텍스트 512토큰이라 typed-decisions state 7개를 거절한다.
 - **Kev 재측정(2026-10-10, Hub 리비전 `6cfce5c`·`db029f08`, 둘 다 2026-10-01).** Kev-4B는 9-30 수치를 7셋 전부 재현한다(89/87/89/80/67/83/74). 9월 delta 업데이트가 이 레포의 셋에서 Kev-4B를 움직이지 않았다. Kev-9B는 7셋 전부 움직였다. 영어 30 95 → 93, 한국어 30 94 → 91, BANKING77-20 267 → 271, transfer-v4 618 → 620, NSMC 257 → 261, KLUE-YNAT 220 → 218, typed-decisions 1440 → 1378/2000(72% → 69%)이고, 크게 움직인 건 typed-decisions 하나다. 2026-10-14~16 재측정은 10-10 판단을 하나도 다르지 않게 재현했다. 9-30 로그(`9f5ba1c`)와 짝지어 보면 바뀐 건 typed-decisions뿐이다. 9-30에만 맞힌 판단 158개 대 지금만 맞힌 판단 96개로 p < 0.001이고, 거의 다 `agent_trace_observability`(500개 중 305 → 255, p < 0.001)와 choice·noul 질문에서 난다. 나머지 여섯 셋은 같다(p ≥ 0.22). 즉 Kev-9B의 Hub 리비전이 typed-decisions에서 회귀했고, Winnow가 거기서 Kev-9B를 앞선다(p < 0.001). 전에는 같았다(p = 0.529).
+- **쌍 비교 판정 모델로서(2026-11-01~02):** 사람 투표가 있는 MT-Bench 200쌍에서 Kev-4B·Kev-9B·Winnow-E4B·Winnow-12B·Clef-flash의 사람 판정과의 일치는 Cohen's kappa 0.55~0.65다. 한국어 200쌍에서는 0.36~0.45에 그친다. 두 답의 자리를 바꾸면 판정의 9~23%가 바뀐다. 길이 선호와 같은 계열 선호는 보이지 않는다. 자세한 내용은 [판정 편향](#판정-편향-2026-11-0102-m3-max-36gb).
 - **cascade 라우팅(이 로그로 모의):** Kev-4B 가 가장 덜 확신하는 문항만 Clef 로 넘긴다. 그러면 transfer-v4 는 호출 10%, BANKING77-20 은 32% 로 Clef 단독의 1%p 안에 든다(평균 383 대 2104 ms, 1664 대 4312 ms). transfer-v4 에서 28% 를 넘기면 Clef 단독보다 2.1%p 높고(p = 0.011), 절반 교차 검증에서도 유지된다. Kev-4B 의 ECE 로는 라우팅이 잘 될지 예측되지 않는다. 자세한 내용은 [cascade 라우팅](#cascade-라우팅-2026-10-1416-로그로-모의).
 
 가장 빠른 엔진은 Ollaya(Laya)다. typed-decisions의 긴 state를 빼면 첫 호출 p50이 10-44ms다. 대신 정확도는 낮은 편이다. typed-decisions에서 전체 최하위이고, clinc-oos(79%)를 빼면 모든 셋에서 하위 다섯 안에 든다. 보정(ECE)은 한국어 30문항, BANKING77-20, typed-decisions, NSMC, KLUE-YNAT에서 Kev·Winnow·Jeff·Ollaya 중 가장 나쁘다. AnyJev와 CLM은 일부 셋에서 그보다도 나쁘다. Kev-0.8B는 같은 셋에서 27-52ms이고, clinc-oos(71% vs 79%)를 빼면 모든 셋에서 정확도가 Ollaya와 같거나 더 높다. Kev-4B는 transfer-v4에서 모델 카드 수치를 재현했다(534/656, 카드 0.817). 자세한 내용은 [결과](#결과-2026-10-1416-m3-max-36gb) 절에 있다.
@@ -171,6 +172,11 @@ uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions
 uv run python bench/make_sets.py nsmc               # 한국어 영화 리뷰 300개, 긍정 여부 (HF 카드: CC BY 2.0)
 uv run python bench/make_sets.py klue-ynat          # 한국어 뉴스 제목 300개, 7개 분야 (KLUE, CC BY-SA 4.0)
 uv run python bench/make_sets.py clinc-oos          # CLINC150 상위 20개 인텐트(300 choice) + 분포 밖 100개(noul)
+uv run python bench/make_sets.py judge-mtbench      # MT-Bench 사람 판정 답변 쌍 200개 x 두 순서 (CC BY 4.0)
+uv run python bench/make_sets.py judge-ko           # Korean-Human-Judgements 쌍 200개 x 두 순서 (평가 전용)
+uv run python bench/make_sets.py judge-length       # 사람이 고른 답 100개를 길이만 늘린 사본과 비교 x 두 순서
+uv run python bench/make_judge_self.py --x qwen3:8b --y <다른 계열>   # 자기 선호용 쌍, Ollama에서 생성
+uv run python bench/judge_bias.py bench/runs/judge-*   # 위치·길이·자기 선호 편향, 사람 판정과의 kappa
 uv run python bench/cascade.py --out bench/runs/cascade.md --figures reports/figures   # 원시 로그로 cascade 라우팅 모의, 엔진 호출 없음
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
@@ -386,6 +392,42 @@ CLM에 대한 이전 발견 (2026-09-28):
 - **L0는 선택지가 많으면 느리다.** 순환 이동마다 프롬프트를 한 번씩 prefill하는데, 20-way 질문이면 최대 20번이다. 첫 호출 p50이 raw 515.0ms 대비 6919.6ms다.
 - 참고용이며 직접 비교할 수는 없다: 인텐트 77개 전체에서 Laya zero-shot 38%, Jev 76%라는 수치가 있다(dhruvmehra/jevbench, Laya 파인튜닝 글에서 인용, 여기서 검증하지 않음). 그 셋은 77-way이고 이 셋은 20-way다.
 
+## 판정 편향 (2026-11-01~02, M3 Max 36GB)
+
+엔진 5종이 두 답 중 어느 쪽이 나은지 판정한다. 모든 쌍을 두 순서로 한 번씩 묻는다. 세트는 네 가지다.
+
+- `judge-mtbench`: 사람 투표 과반이 있는 MT-Bench 200쌍.
+- `judge-ko`: Korean-Human-Judgements 200쌍. Tie 는 뺐다.
+- `judge-length`: 사람이 고른 답 100개와, 첫 문장 재진술·맺음 인사를 덧붙인 그 사본.
+- `judge-self`: qwen3:8b 와 gemma3:4b 가 Ollama 에서 답한 159문항.
+
+표는 `bench/runs/judge-bias.md`(`bench/judge_bias.py`), 해석은 `reports/2026-11-02-judge-bias-analysis.md`.
+kappa 는 두 순서가 갈린 쌍을 tie 로 센다. 구간은 95%(kappa 는 쌍 부트스트랩)다.
+
+| 엔진 | 계열, 양자화 | MT-Bench kappa | 한국어 kappa | 위치 flip (MT-Bench / 한국어) | 늘린 사본 선택 | Qwen 답 선택 |
+|---|---|---|---|---|---|---|
+| winnow-12b | Gemma 4, Q8_0 | 0.65 (0.56-0.74) | 0.45 (0.36-0.54) | 9% / 18% | 25% | 39% |
+| kev-4b | Qwen3.5, MLX | 0.60 (0.50-0.69) | 0.38 (0.29-0.47) | 10% / 19% | 48% | 37% |
+| clef-flash | Qwen3.5, Q8_0 | 0.59 (0.50-0.68) | 0.42 (0.33-0.51) | 14% / 20% | 44% | 33% |
+| winnow | Gemma 4, Q8_0 | 0.58 (0.48-0.67) | 0.37 (0.27-0.47) | 11% / 18% | 42% | 36% |
+| kev-9b | Qwen3.5, MLX | 0.55 (0.46-0.64) | 0.36 (0.27-0.46) | 16% / 23% | 49% | 41% |
+
+- **사람 판정 일치:** 쌍 단위로는 엔진끼리 잘 갈리지 않는다. Winnow-12B 가 Kev-9B 만 앞선다(정확 McNemar,
+  MT-Bench p = 0.020, 한국어 p = 0.029). 나머지 18개 비교는 p ≥ 0.096 이다.
+- **위치:** 모든 엔진에 위치 편향이 있고 방향이 다르다. Winnow-12B 는 판정이 바뀐 쌍에서 두 번 다 첫 답을
+  골랐다(MT-Bench 15/18, 한국어 33/36). Clef-flash 는 둘째 답을 고른다(두 번 다 A 가 0/27, 3/41). Clef-flash 는
+  선택지 라벨 순서만 뒤집을 때는 선택을 한 번도 바꾸지 않는다(`order-flip` 0%). 라벨 순서와 답의 자리는 다른 축이다.
+- **길이:** 자연 쌍에서 판정이 긴 답을 고르는 비율은 같은 쌍의 사람 비율과 같다(차이 -0.04 ~ +0.04, 10칸 모두
+  구간이 0 을 포함). 늘린 사본을 더 고르는 엔진은 없다(25 ~ 49%). 내용이 같으면 판정의 34 ~ 72% 가 대신 자리를 따른다.
+- **자기 선호:** Gemma 답이 159쌍 중 114쌍에서 더 길었고, 모든 판정이 Gemma 답을 더 골랐다(Qwen 답 33 ~ 41%).
+  같은 쌍에서 Qwen 기반 판정이 Gemma 기반 판정보다 Qwen 답을 더 고르지 않았다. 계열 간 McNemar 중 p < 0.05 인
+  하나(Clef-flash 대 Winnow-12B, p = 0.035)는 반대 방향이다.
+- **언제 믿나:** 영어 쌍 판정을 두 순서로 묻고, 갈린 쌍을 tie 로 셀 때. Winnow-12B 가 가장 잘 맞는다.
+  Kev-4B 는 같은 그룹이면서 첫 호출 p50 이 497 ms 다(Winnow-12B 2117 ms). 한국어 판정을 단독으로 쓰지는 않는다
+  (kappa ≤ 0.45). 내용이 거의 같은 두 답에서도 믿지 않는다. 그때는 자리가 판정을 정한다.
+- 이 엔진들은 두 답을 상태로 받아 A/B 선택지에 답하는 System One 결정 모델이다. 생성형 LLM 판정이 아니다.
+  API 판정 모델은 재지 않았다.
+
 ## cascade 라우팅 (2026-10-14~16 로그로 모의)
 
 작은 엔진이 모든 문항에 답하고, 확신도가 가장 낮은 문항만 큰 엔진이 맡는다. 확신도는 작은 엔진이 자기 판단에 준
@@ -462,3 +504,12 @@ Kev-4B 서버는 기동 직후 RSS 2.7GB였다. Winnow는 내려받는 크기가
 ## 라이선스
 
 MIT. [LICENSE](LICENSE) 참고. 벤치마크한 엔진과 데이터셋은 각자의 라이선스를 따른다.
+
+판정 세트는 로컬에서 만들고 커밋하지 않는다.
+
+- [lmsys/mt_bench_human_judgments](https://huggingface.co/datasets/lmsys/mt_bench_human_judgments)(리비전
+  `f7d2896`), CC BY 4.0: MT-Bench 80문항에 대한 여섯 모델 답변의 전문가·저자 쌍 비교 투표
+  (Zheng et al. 2023, "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena").
+- [HAERAE-HUB/Korean-Human-Judgements](https://huggingface.co/datasets/HAERAE-HUB/Korean-Human-Judgements)(리비전
+  `24dae25`): 한국어 질문·답변 A·답변 B 694쌍과 사람의 A·B·Tie 판정. 출처는 ko-chatbot-arena, Chatbot Arena,
+  네이버 지식iN이다. 카드에 라이선스가 없고 "평가 전용"이라고 적혀 있어, 이 레포는 평가에만 쓰고 재배포하지 않는다.
