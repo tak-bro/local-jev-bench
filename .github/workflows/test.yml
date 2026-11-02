@@ -1,0 +1,20 @@
+name: offline tests
+
+# The fake-server suite only: scripts/* and bench/run.py --smoke need models
+# and Apple Silicon hardware, so they stay local (README.md).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    # bench helpers shell out to sysctl/memory_pressure; the suite is macOS-first.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --frozen
+      - run: uv run pytest -q

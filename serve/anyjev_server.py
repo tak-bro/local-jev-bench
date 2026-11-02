@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import concurrent.futures as cf
 import json
+import socketserver
 import threading
 import urllib.error
 import urllib.request
@@ -123,6 +124,22 @@ def answer(decider: Decider, lock: threading.Lock, body: Any) -> tuple[int, dict
     return 200, {"model": model, "answers": answers}
 
 
+class LocalHTTPServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer whose bind sets server_name from the address instead of resolving it.
+
+    HTTPServer.server_bind() calls socket.getfqdn(host) between bind() and listen(), so on a host whose loopback
+    reverse lookup stalls — macOS 15+/26 CI runners block 127.0.0.1 for ~35 s (actions/setup-python#1223) — the
+    port is bound but refuses every connection until the lookup returns, and the adapter looks dead to each
+    readiness wait. Nothing here reads server_name (the handlers answer fixed routes only).
+    """
+
+    def server_bind(self) -> None:
+        socketserver.TCPServer.server_bind(self)
+        host, port = self.server_address[:2]
+        self.server_name = host
+        self.server_port = port
+
+
 def make_server(decider: Decider, port: int, host: str = "127.0.0.1") -> ThreadingHTTPServer:
     lock = threading.Lock()
 
@@ -147,7 +164,7 @@ def make_server(decider: Decider, port: int, host: str = "127.0.0.1") -> Threadi
         def log_message(self, *a):
             pass
 
-    return ThreadingHTTPServer((host, port), Handler)
+    return LocalHTTPServer((host, port), Handler)
 
 
 def serve_in_thread(server: ThreadingHTTPServer) -> None:

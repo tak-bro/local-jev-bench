@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+STANDIN = Path(__file__).resolve().parent / "standin_server.py"
 
 
 def free_port() -> int:
@@ -28,7 +29,7 @@ def alive(pid: int) -> bool:
 
 
 def measure(tmp_path: Path, *args: str, bench_exit: int = 0, start: str | None = None, ready_timeout: int = 20):
-    """Run measure.sh with a stand-in server (python -m http.server, pid written to server.pid) and a stand-in
+    """Run measure.sh with a stand-in server (tests/standin_server.py, pid written to server.pid) and a stand-in
     bench that logs its arguments to bench.log and exits with `bench_exit`."""
     port = free_port()
     (tmp_path / "ready").write_text("ok")
@@ -37,8 +38,7 @@ def measure(tmp_path: Path, *args: str, bench_exit: int = 0, start: str | None =
     bench.write_text(f'#!/bin/sh\necho "$@" >> {tmp_path}/bench.log\nexit {bench_exit}\n')
     bench.chmod(0o755)
     env = {**os.environ,
-           "MEASURE_START": start or (f"echo $$ > {pidfile}; exec python3 -m http.server {port} --bind 127.0.0.1 "
-                                      f"--directory {tmp_path}"),
+           "MEASURE_START": start or f"echo $$ > {pidfile}; exec python3 {STANDIN} {port} {tmp_path}",
            "MEASURE_READY_URL": f"http://127.0.0.1:{port}/ready",
            "MEASURE_READY_TIMEOUT": str(ready_timeout),
            "MEASURE_BENCH": str(bench),
@@ -115,8 +115,8 @@ def test_refuses_a_port_that_already_answers(tmp_path):
     # a stale server on the ready URL would otherwise be measured under this engine's name
     port = free_port()
     (tmp_path / "ready").write_text("ok")
-    stale = subprocess.Popen(["python3", "-m", "http.server", str(port), "--bind", "127.0.0.1", "--directory",
-                              str(tmp_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    stale = subprocess.Popen(["python3", str(STANDIN), str(port), str(tmp_path)],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         wait_listening(port)
         env = {**os.environ, "MEASURE_START": "exec sleep 30", "MEASURE_READY_URL": f"http://127.0.0.1:{port}/ready",
@@ -132,7 +132,7 @@ def test_stopping_a_server_stops_its_children(tmp_path):
     child = tmp_path / "child.pid"
     port = free_port()
     start = (f"sleep 300 & echo $! > {child}; echo $$ > {tmp_path}/server.pid; "
-             f"exec python3 -m http.server {port} --bind 127.0.0.1 --directory {tmp_path}")
+             f"exec python3 {STANDIN} {port} {tmp_path}")
     (tmp_path / "ready").write_text("ok")
     env = {**os.environ, "MEASURE_START": start, "MEASURE_READY_URL": f"http://127.0.0.1:{port}/ready",
            "MEASURE_BENCH": "true", "MEASURE_LOGS": str(tmp_path / "logs")}
@@ -149,7 +149,7 @@ def fake_scripts(tmp_path: Path, **servers: int) -> Path:
     for name, port in servers.items():
         s = d / f"serve-{name}.sh"
         s.write_text(f"#!/bin/sh\necho $$ >> {tmp_path}/{name}.pids\n"
-                     f"exec python3 -m http.server {port} --bind 127.0.0.1 --directory {tmp_path}\n")
+                     f"exec python3 {STANDIN} {port} {tmp_path}\n")
         s.chmod(0o755)
     return d
 
@@ -209,8 +209,8 @@ def test_ollaya_daemon_is_reused_and_the_model_unloaded(tmp_path):
     port = free_port()
     (tmp_path / "api").mkdir()
     (tmp_path / "api" / "tags").write_text("{}")
-    daemon = subprocess.Popen(["python3", "-m", "http.server", str(port), "--bind", "127.0.0.1", "--directory",
-                               str(tmp_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    daemon = subprocess.Popen(["python3", str(STANDIN), str(port), str(tmp_path)],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     bin_ = tmp_path / "bin"
     bin_.mkdir()
     (bin_ / "ollaya").write_text(f'#!/bin/sh\necho "$OLLAYA_HOST $@" >> {tmp_path}/ollaya.log\n')
@@ -232,8 +232,8 @@ def test_a_failed_unload_is_reported(tmp_path):
     port = free_port()
     (tmp_path / "api").mkdir()
     (tmp_path / "api" / "tags").write_text("{}")
-    daemon = subprocess.Popen(["python3", "-m", "http.server", str(port), "--bind", "127.0.0.1", "--directory",
-                               str(tmp_path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    daemon = subprocess.Popen(["python3", str(STANDIN), str(port), str(tmp_path)],
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     bin_ = tmp_path / "bin"
     bin_.mkdir()
     (bin_ / "ollaya").write_text("#!/bin/sh\necho 'no such model' >&2\nexit 1\n")
@@ -283,8 +283,7 @@ def test_ctrl_c_stops_the_whole_run(tmp_path):
     bench.write_text(f'#!/bin/sh\necho "$@" >> {tmp_path}/bench.log\nsleep 4\n')
     bench.chmod(0o755)
     pidfile = tmp_path / "server.pid"
-    env = {**os.environ, "MEASURE_START": (f"echo $$ > {pidfile}; exec python3 -m http.server {port} --bind 127.0.0.1 "
-                                           f"--directory {tmp_path}"),
+    env = {**os.environ, "MEASURE_START": f"echo $$ > {pidfile}; exec python3 {STANDIN} {port} {tmp_path}",
            "MEASURE_READY_URL": f"http://127.0.0.1:{port}/ready", "MEASURE_BENCH": str(bench),
            "MEASURE_LOGS": str(tmp_path / "logs")}
     r = subprocess.run(["python3", "-c", PTY_RUN, str(tmp_path / "bench.log"),
