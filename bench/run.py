@@ -63,6 +63,14 @@ ENGINES: dict[str, dict[str, Any]] = {
                 "model": os.environ.get("COBA_1B_MODEL", "coba:1b")},
     "nimble-v3": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
                   "model": os.environ.get("NIMBLE_V3_MODEL", "nimble:9b-v3")},
+    # Ollaya 0.18.0's own decoder decision models `sura:2b` and `sura:0.8b`, and Liquid AI's d1-omni-600M
+    # (`d1-omni`, text path only, ONNX). Like pplx-decider, 0.7.3 cannot load them.
+    "sura-2b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                "model": os.environ.get("SURA_2B_MODEL", "sura:2b")},
+    "sura-0.8b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                  "model": os.environ.get("SURA_0_8B_MODEL", "sura:0.8b")},
+    "d1-omni": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+                "model": os.environ.get("D1_OMNI_MODEL", "d1-omni")},
     "jeff": {"url": os.environ.get("JEFF_URL", "http://127.0.0.1:8765"), "model": "jeff-latest",
              "served": ("/health", ("model",), "jeff-qwen3.5-2b")},
     # Jeff-Qwen3.5-0.8B shares the port; `served` tells the checkpoints apart (`service.name` is
@@ -81,6 +89,13 @@ for name, alias in (("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4
                      "served": ("/v1/models", ("data", 0, "id"), alias)}
 # Von's /health reports only its von-sdk version, so `served` checks that; the weights' revision is pinned in
 # scripts/serve-von.sh, not checked here.
+# Drex v1.5 runs on Nace's llama.cpp fork (scripts/serve-drex.sh); like Clef, the alias names the GGUF and revision.
+ENGINES["drex-1.5"] = {"url": os.environ.get("DREX_URL", "http://127.0.0.1:8040"), "model": "drex-v1.5-Q8_0@37c2b59",
+                       "served": ("/v1/models", ("data", 0, "id"), "drex-v1.5-Q8_0@37c2b59")}
+# OpenDecider-small-td runs in Ollama behind `opendecider serve` (scripts/serve-opendecider.sh); /health names the
+# Ollama tag it serves.
+ENGINES["opendecider-td"] = {"url": os.environ.get("OPENDECIDER_URL", "http://127.0.0.1:8050"), "model": "opendecider",
+                             "served": ("/health", ("model",), "hf.co/manjunathshiva/opendecider-small-td-GGUF:Q8_0")}
 ENGINES["von"] = {"url": os.environ.get("VON_URL", "http://127.0.0.1:8030"), "model": "von-latest",
                   "served": ("/health", ("version",), "1.3.7")}
 # A bare benchmark runs the two engines that can share the machine. The others each need most of the Metal

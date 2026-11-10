@@ -1,4 +1,4 @@
-# local-jev-bench: local Jev-style decision models on Apple Silicon (Kev, Winnow, Clef, Von, Jeff, AnyJev, Laya, CLM, Decider)
+# local-jev-bench: local Jev-style decision models on Apple Silicon (Kev, Winnow, Clef, Drex, OpenDecider, Von, Jeff, AnyJev, Laya, CLM, Decider)
 
 English | [한국어](README.ko.md)
 
@@ -8,9 +8,10 @@ public BANKING77 20-way intent set, Kev's out-of-distribution transfer-v4 set, t
 and two Korean sets: NSMC movie reviews and KLUE-YNAT news headlines.
 
 **Key results (M3 Max 36 GB; every engine remeasured on every set 2026-10-14..16 on an idle machine, which reproduced the earlier accuracy counts).**
-Kev-9B, Kev-4B, Winnow-E4B, Winnow-12B, Decider-4B, Clef
+Kev-9B, Kev-4B, Winnow-E4B, Winnow-12B, Decider-4B, pplx-decider, Drex v1.5, Clef
 and Clef-flash are the most accurate engines overall, and paired McNemar tests separate them on only some sets.
-Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisions and only there:
+Two typed-decisions fine-tunes beat all of them on typed-decisions, in-distribution: OpenDecider-small-td (78%) and
+Laya's `ollaya-td` (75%):
 
 - **transfer-v4:** Kev beats Winnow (Kev-9B 81% vs 77%, p = 0.003), but only on the set's two held-out
   policy-structure sources, built from the kind of programmatic policy data Kev trains on (Kev-4B 160/176, Winnow
@@ -41,14 +42,15 @@ Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisi
   costs 3.4-3.7x its time (1480-8365 ms first-call p50, Q4_K_M; Cloudflare reports a 209.3 ms median on its own
   GPUs). Against Kev-9B it is level everywhere but BANKING77-20
   (96% vs 90%, p < 0.001), typed-decisions (72% vs 69%, p = 0.004), KLUE-YNAT (78% vs 73%, p = 0.014) and clinc-oos
-  (p < 0.001). It is the closest engine to typed-decisions' gold distributions after Ollaya-td (KL 0.196 vs 0.134).
+  (p < 0.001). It is the closest engine to typed-decisions' gold distributions after the two in-distribution fine-tunes,
+  OpenDecider-td and Ollaya-td (KL 0.196 vs 0.092 and 0.134).
 - **Von (395M ModernBERT, measured 2026-10-05):** English only, as its card says: 15% on KLUE-YNAT, 49% on the Korean
   30 and 51% on NSMC (a two-way set). On the English sets it is below the top group (69% transfer-v4, 43%
   typed-decisions), at 29-366 ms first-call p50.
 - **New engines (measured 2026-10-10; `ollaya-td` also on typed-decisions 2026-10-09).**
-  - **ollaya-td (`laya:typed-decisions`, 421M):** the best typed-decisions score in the bench, 1505/2000 (75%),
-    ahead of every engine including Winnow (p = 0.021), Kev-9B (p < 0.001) and Clef (p = 0.012), and the best
-    calibration there (KL 0.134, Brier 0.071). Upstream claims 0.766; this run gives 0.753 (Wilson 73-77). But it is
+  - **ollaya-td (`laya:typed-decisions`, 421M):** 1505/2000 (75%) on typed-decisions, the bench's best until
+    OpenDecider-td (78%, 2026-11-10), ahead of every other engine including Winnow (p = 0.021), Kev-9B (p < 0.001)
+    and Clef (p = 0.012), and calibrated second only to OpenDecider-td there (KL 0.134, Brier 0.071). Upstream claims 0.766; this run gives 0.753 (Wilson 73-77). But it is
     a specialist: 63% transfer-v4, 64% BANKING77-20, and 45% on the Korean 30 with 33% order-flips. Its card names
     the four typed-decisions workflows as its fine-tuning data, so mark that 75% in-distribution (†).
     A 2026-10-12 backfill adds NSMC 53% and KLUE-YNAT 19% with 76% order-flips, confirming the collapse.
@@ -97,6 +99,33 @@ Laya's typed-decisions fine-tune (`ollaya-td`) beats all of them on typed-decisi
   - **coba-400m / coba-1b (Ollaya, Ettin encoders):** fast on Metal (25-640 ms) and well below the top group:
     transfer-v4 60-62%, typed-decisions 59-60%. English only, so the Korean sets collapse (KLUE-YNAT 19-35%).
     The 512-token context refuses 7 typed-decisions states.
+- **New engines (measured 2026-11-10, same protocol).**
+  - **Drex v1.5 (Nace.AI, 9B, Q8_0 on Metal through Nace's llama.cpp fork):** top-group generalist. 90% on the English 30
+    and 88% on the Korean 30, level with Kev, Winnow, the Clefs and pplx-decider there. BANKING77-20 90%, level with Kev and pplx-decider, below the Clefs (p < 0.001). transfer-v4 79%, level
+    with Kev-4B and Kev-9B (p ≥ 0.129) and Clef-flash (p = 0.087), below Clef (p = 0.021), Winnow-12B (p = 0.015)
+    and pplx-decider (p = 0.003). On clinc-oos it is second only to Clef (88% vs 95%, p < 0.001), ahead of
+    Kev-9B, Clef-flash, pplx-decider and nimble-v3 (p ≤ 0.004). typed-decisions is its weak set: 65%, below Kev-9B,
+    the Clefs, both Winnows, pplx-decider and OpenDecider-td (p < 0.001), with 18% order-flips. 258-735 ms
+    first-call p50 outside typed-decisions (4.5 s there).
+  - **OpenDecider-small-td (manjunathshiva, Qwen3-4B LoRA, Q8_0 GGUF in Ollama):** the best typed-decisions score
+    in the bench, 1555/2000 (78%), ahead of Ollaya-td (p = 0.011) and every other engine (p < 0.001), and the
+    closest to the gold distributions (KL 0.092, Brier 0.048, against Ollaya-td's 0.134 and 0.071). Its card lists
+    typed-decisions' train split as training data, so mark that 78% in-distribution (†); the GGUF card claims 0.794,
+    this run gives 0.778 (Wilson 76-80). Unlike Ollaya-td it holds up off its home set: 86% on clinc-oos (also in
+    its training data, †), level with Drex, Kev-4B and Winnow-12B. NSMC 83% is level with Kev and Drex but below
+    Clef (p = 0.023) and Winnow-12B (p = 0.009); KLUE-YNAT 75% is level with Kev, Clef and Drex but below
+    pplx-decider (p = 0.003). It is below the top on transfer-v4 (76%, below both Kevs, the Clefs, Winnow-12B and
+    pplx-decider, p ≤ 0.001) and BANKING77-20 (74%, below every top-group engine, p < 0.001), and flips 49% of
+    its clinc-oos choices when the options are reversed. 130-432 ms first-call p50 outside typed-decisions.
+  - **d1-omni (Liquid AI, 600M, text path, Ollaya 0.18 on CPU):** an English-only intent picker. BANKING77-20 90%,
+    level with Kev and Drex, and clinc-oos 79%, ahead of Kev-9B (p = 0.015), at 71-360 ms first-call p50. Elsewhere
+    it is below the top group (transfer-v4 67%, typed-decisions 54%) and the Korean sets collapse (Korean 30 45%,
+    NSMC 48%, KLUE-YNAT 25%).
+  - **Sura-2B and Sura-0.8B (Ollaya's own Qwen3.5 decoders, Ollaya 0.18 on CPU):** reproduce their registry's
+    typed-decisions claims (56% and 57% against 0.570 and 0.560), and stay mid-tier: transfer-v4 56-57%,
+    BANKING77-20 65-71%, clinc-oos 51-60%. Their Korean is better than their English large sets (NSMC 75-77%,
+    KLUE-YNAT 62-66%). Paired, Sura-2B is ahead on BANKING77-20 (p = 0.016) and Sura-0.8B on clinc-oos (p < 0.001); the other six
+    sets are level (p ≥ 0.115).
 - **Kev remeasure (2026-10-10, Hub revisions `6cfce5c` and `db029f08`, both dated 2026-10-01).** Kev-4B reproduces
   every 9-30 number exactly (89/87/89/80/67/83/74%), so the September delta updates moved none of this repo's sets
   for it. Kev-9B moved on all seven: English 30 95 → 93, Korean 30 94 → 91, BANKING77-20 267 → 271, transfer-v4
@@ -122,7 +151,7 @@ NSMC and KLUE-YNAT; AnyJev and CLM are worse calibrated still on some. Kev-0.8B 
 accurate as Ollaya or more on every set but clinc-oos (71% vs 79%). Kev-4B reproduces its model card on transfer-v4 (534/656 against 0.817). Details are in
 [Results](#results-2026-10-1416-m3-max-36-gb).
 
-It sets up eighteen engine families:
+It sets up twenty-two engine families:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): the `laya` model, run on MLX.
@@ -135,6 +164,10 @@ It sets up eighteen engine families:
 - **pplx-decider**: Perplexity's pplx-decider-flash v1.2 (`pplx-decider:flash`), a Qwen3.5-4B distilled from its 27B decision models. Ollaya 0.7.3 cannot load its `pplx-joint-v1` layout, so it runs on a second daemon, Ollaya 0.18.0 (see Ports), on CPU in fp32 here.
 - **coba-400m / coba-1b**: Ollaya's own Ettin encoders distilled from pplx-decider:flash (`coba:400m`, `coba:1b`), English only, run by Ollaya on MLX. Their context is 512 tokens; a longer state is refused with `STATE_TRUNCATED`.
 - **nimble-v3**: Bespoke-Nimble-9B v3 (`nimble:9b-v3`, CC BY-NC 4.0), a LoRA on Qwen3.5-9B, on the Ollaya 0.18.0 daemon, on CPU in fp32 here. Nimble-v4 is API-only, so it is not measured.
+- **Sura-2B / Sura-0.8B**: Ollaya's own decoder decision models (`sura:2b`, `sura:0.8b`), Qwen3.5 distilled from pplx-decider:flash, on the Ollaya 0.18.0 daemon, on CPU here.
+- **d1-omni** ([LiquidAI/d1-omni-600M](https://huggingface.co/LiquidAI/d1-omni-600M)): Liquid AI's 600M decision model, its text path as Ollaya 0.18.0's `d1-omni` (ONNX), on CPU here.
+- **Drex v1.5** ([nace-ai/drex-v1.5](https://huggingface.co/nace-ai/drex-v1.5)): Nace.AI's 9B decision model on MiMo-V2.6-Distill-Qwen-9B, as `nace-ai/drex-v1.5-Q8_0`, served by the `llama-server` of Nace's llama.cpp fork (`drex-1.5`); upstream llama.cpp does not load its pointer head.
+- **OpenDecider-small-td** ([manjunathshiva/opendecider](https://github.com/manjunathshiva/opendecider)): a LoRA on Qwen3-4B-Instruct-2507 fine-tuned on typed-decisions' train split, as `opendecider-small-td-GGUF` Q8_0 in Ollama, behind `opendecider serve` (`opendecider-td`), which builds the prompt and reads the option probabilities from Ollama's logprobs.
 - **AnyJev** ([nokia-applied-research/AnyJev](https://github.com/nokia-applied-research/AnyJev)): training-free; reads label logprobs from Qwen3-8B on vllm-metal, with no correction (`anyjev-raw`) or with cyclic option shifts plus a batch prior (`anyjev-l0`).
 - **Kev** ([jaredpalmer/kev](https://github.com/jaredpalmer/kev)): a LoRA plus pointer head on Qwen3.5-0.8B, 4B or 9B Base (`kev-0.8b`, `kev-4b`, `kev-9b`), run on MLX.
 - **Jeff** ([firelex/jeff](https://github.com/firelex/jeff)): Jeff-Qwen3.5-2B, a fine-tuned Qwen3.5-2B with a trained answer readout, run on MLX.
@@ -152,10 +185,11 @@ p is below 0.05 (see [FAQ](#faq)); treat close calls as ties.
 
 | Need | Engine | Why |
 |---|---|---|
-| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Clef-flash or Clef | top group on most sets |
+| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Drex v1.5, Clef-flash or Clef | top group on most sets |
 | Best out-of-distribution transfer (transfer-v4) | pplx-decider | 84% (638/764), the bench's best |
-| Best typed-decisions | Ollaya-td (in-distribution, 75%†) or Winnow (general-purpose, 71-73%) | see caveats |
+| Best typed-decisions | OpenDecider-td (in-distribution, 78%†, ahead of Ollaya-td's 75%†, p = 0.011) or Winnow (general-purpose, 71-73%) | see caveats |
 | Best Korean (NSMC + KLUE-YNAT) | pplx-decider or Winnow-12B | KLUE-YNAT 83% vs 79% (p = 0.111), NSMC 87% vs 88% |
+| Best clinc-oos (intents + out-of-scope) | Clef, then Drex v1.5 | 95% vs 88% (p < 0.001); Drex ahead of Kev-9B and Clef-flash (p < 0.001) |
 | Fastest | Ollaya (`laya`) | 10.2-43.7 ms first-call p50 outside typed-decisions |
 | Best calibrated | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
 
@@ -165,23 +199,26 @@ Full tables, per-set caveats and McNemar results are in [Results](#results-2026-
 
 Every engine answers `POST /v1/systemone` on its own port; `bench/run.py` sends the same question set to one engine
 at a time. A few engines sit behind a shared backend (CLM and AnyJev read Qwen3-8B embeddings or logprobs over
-HTTP; the Ollaya-served engines share one of two daemons). Full port list: [Ports](#ports).
+HTTP; the Ollaya-served engines share one of two daemons; OpenDecider reads logprobs from Ollama). Full port list: [Ports](#ports).
 
 ```mermaid
 flowchart LR
     client["bench/run.py<br/>POST /v1/systemone"]
 
     client --> ollaya1["Ollaya 0.7.3 :11435<br/>laya · laya:typed-decisions · winnow:e4b/12b<br/>decider · decider:4b · decision · jevk5 · coba:400m/1b"]
-    client --> ollaya2["Ollaya 0.18.0 :11436<br/>pplx-decider:flash · nimble:9b-v3"]
+    client --> ollaya2["Ollaya 0.18.0 :11436<br/>pplx-decider:flash · nimble:9b-v3<br/>sura:2b/0.8b · d1-omni"]
     client --> clmapi["CLM API :8700"]
     client --> anyjevapi["AnyJev API :8710<br/>anyjev-raw · anyjev-l0"]
     client --> kevapi["Kev API :8009<br/>kev-0.8b/4b/9b"]
     client --> jeffapi["Jeff API :8765"]
     client --> llama["llama-server :8020<br/>Clef-flash · Clef"]
     client --> vonapi["Von API :8030"]
+    client --> drexapi["Nace llama-server :8040<br/>Drex v1.5"]
+    client --> odapi["opendecider serve :8050"]
 
     clmapi --> embed8090["Qwen3-8B encoder :8090<br/>(vllm-metal)"]
     anyjevapi --> gen8092["Qwen3-8B generate :8092<br/>(vllm-metal)"]
+    odapi --> ollama["Ollama :11434<br/>opendecider-small-td-GGUF Q8_0"]
 ```
 
 ## Install
@@ -203,6 +240,12 @@ uv sync
 
 [Clef-flash](https://huggingface.co/ggml-org/Clef-Flash-GGUF) needs llama.cpp build 11403: `/v1/systemone` and the clef architecture landed after Homebrew's 0.5.0. Unpack the [b11403 release](https://github.com/ggml-org/llama.cpp/releases/tag/b11403) `llama-b11403-bin-macos-arm64.tar.gz` into `~/.local/opt/llama.cpp/b11403/` (or point `LLAMA_SERVER` at its `llama-server`). `scripts/serve-llama.sh clef-flash` (or `clef`) checks the build, downloads the GGUF at a pinned revision (9.7 GB, or 19.2 GB for Clef) and serves it with the whole prompt in one batch (`-ub 8192`), which clef requires.
 
+The Ollaya 0.18.0 daemon (see Ports) adds `pplx-decider:flash`, `nimble:9b-v3`, `sura:2b`, `sura:0.8b` and `d1-omni`: `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya pull sura:2b`, and so on. Ollaya 0.7.3 cannot load them.
+
+[Drex v1.5](https://huggingface.co/nace-ai/drex-v1.5-Q8_0) needs the `drex-v1.5` branch of Nace's llama.cpp fork, built with Metal: `git clone --depth 1 -b drex-v1.5 https://github.com/nace-ai/llama.cpp ~/workspace/ext/nace-llama.cpp`, then `cmake -S ~/workspace/ext/nace-llama.cpp -B ~/workspace/ext/nace-llama.cpp/build -DGGML_METAL=ON -DLLAMA_CURL=OFF -DCMAKE_BUILD_TYPE=Release && cmake --build ~/workspace/ext/nace-llama.cpp/build -j 12 --target llama-server` (or point `DREX_SERVER` at another build). `scripts/serve-drex.sh` checks the fork commit (`e8f7961`), downloads the GGUF at a pinned revision (9.5 GB) and serves it with the model card's flags (`--embedding --pooling none`, `-c 16384`) on Metal.
+
+[OpenDecider](https://github.com/manjunathshiva/opendecider) runs as a uv tool on top of Ollama: `uv tool install "opendecider[serve]==0.9.0"` and `ollama pull hf.co/manjunathshiva/opendecider-small-td-GGUF:Q8_0` (4.3 GB). `scripts/serve-opendecider.sh` checks the version and that Ollama answers on `:11434`, then runs `opendecider serve` with a 300 s request timeout.
+
 [Von](https://github.com/wfzyx/von) runs from PyPI through `uvx` (`von-sdk==1.3.7`), with weights pinned to one revision of `wfzyx/von` (3.2 GB). `scripts/serve-von.sh` serves it on Metal with `--noul-decision raw`: by default Von moves every noul probability outside 0.2-0.8, which keeps the decision but not the calibration scored here.
 
 `contrastive-lm` declares `vllm` as a dependency, but it only calls the embeddings endpoint over HTTP. `pyproject.toml` overrides that dependency away so a second vLLM is not installed.
@@ -217,13 +260,16 @@ Every server binds to `127.0.0.1` only.
 | 8090 | Qwen3-8B encoder for CLM | `scripts/serve-embed.sh Qwen/Qwen3-8B 8090 qwen3-8b` |
 | 8700 | CLM System One API | `scripts/serve-clm.sh` |
 | 11435 | Ollaya 0.7.3 daemon (`laya`, `winnow:e4b`, `winnow:12b`, `laya:typed-decisions`, `decider`, `decider:4b`, `decision`, `jevk5`, `coba:400m`, `coba:1b`) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
-| 11436 | Ollaya 0.18.0 daemon with its own model store (`pplx-decider:flash`, `nimble:9b-v3`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`; measure with `OLLAYA_URL=http://127.0.0.1:11436` and `~/.local/ollaya-0.18/bin` first on `PATH` |
+| 11436 | Ollaya 0.18.0 daemon with its own model store (`pplx-decider:flash`, `nimble:9b-v3`, `sura:2b`, `sura:0.8b`, `d1-omni`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`; measure with `OLLAYA_URL=http://127.0.0.1:11436` and `~/.local/ollaya-0.18/bin` first on `PATH` |
 | 8092 | Qwen3-8B generate server for AnyJev | `scripts/serve-llm.sh Qwen/Qwen3-8B 8092 qwen3-8b` |
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
 | 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (or `kev-0.8b`, `kev-9b`) |
 | 8765 | Jeff System One API (`jeff-latest`) | `scripts/serve-jeff.sh` |
 | 8020 | llama-server System One API (`Clef-Flash-Q8_0@4a7a08c` or `Clef-Q4_K_M@5f70656`) | `scripts/serve-llama.sh clef-flash` (or `clef`) |
 | 8030 | Von System One API (`von-latest`) | `scripts/serve-von.sh` |
+| 8040 | Nace llama-server System One API (`drex-v1.5-Q8_0@37c2b59`) | `scripts/serve-drex.sh` |
+| 8050 | OpenDecider System One API (serves `hf.co/manjunathshiva/opendecider-small-td-GGUF:Q8_0`) | `scripts/serve-opendecider.sh` |
+| 11434 | Ollama daemon, the model runner behind OpenDecider | `ollama serve` (or the Ollama app) |
 
 The serve scripts refuse to start when their port is already taken.
 
@@ -292,11 +338,16 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 | Winnow-E4B | 89% | 86% | 81% | 77% | 73% | 84% | 74% | 57% |
 | Winnow-12B | 91% | 91% | 84% | 83% | 71% | 88% | 79% | 84% |
 | pplx-decider | 87% | 85% | 91% | 84% | 71% | 87% | 83% | 78% |
+| Drex v1.5 | 90% | 88% | 90% | 79% | 65% | 86% | 75% | 88% |
 | Decider-4B | 90% | 93% | 90% | 80% | 68% | 83% | 71% | 80% |
 | nimble-v3 | 92% | 94% | 89% | 77% | 66% | 84% | 78% | 82% |
 | Decider-2B | 84% | 88% | 91% | 73% | 60% | 83% | 73% | 57% |
 | JevK5 | 90% | 88% | failed | 76% | 65% | 82% | 74% | failed |
+| OpenDecider-td | 83% | 80% | 74% | 76%† | 78%† | 83% | 75% | 86%† |
 | Ollaya-td | 80% | 45% | 64% | 63% | 75%† | 53% | 19% | 77% |
+| d1-omni | 85% | 45% | 90% | 67% | 54% | 48% | 25% | 79% |
+| Sura-2B | 84% | 82% | 71% | 56% | 56% | 77% | 66% | 51% |
+| Sura-0.8B | 82% | 74% | 65% | 57% | 57% | 75% | 62% | 60% |
 | Kev-0.8B | 75% | 75% | 88%† | 65% | 46% | 80% | 63% | 71% |
 | Jeff-Qwen3.5-2B | 64% | 75% | 65% | 69%† | 52% | 79% | 74% | 38% |
 | Jeff-Qwen3.5-0.8B | 83% | 84% | 57% | 67% | 50% | 72% | 69% | 52% |
@@ -310,15 +361,17 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 | CLM-8B | 39% | 41% | 20% | - | - | - | - | - |
 
 `†`: Kev (all three sizes) trained on BANKING77's train split, and Jeff on PAWS's. Ollaya-td's card names
-the four typed-decisions workflows as its fine-tuning data. PAWS's test split is 80 of
+the four typed-decisions workflows as its fine-tuning data. OpenDecider-td's card lists typed-decisions' train split,
+`clinc/clinc_oos` and PAWS (transfer-v4's `paws` source) among its training sets. PAWS's test split is 80 of
 transfer-v4's 764 decisions. Von's card lists Banking77 and dair-ai/emotion in its training corpus without naming
 the split; transfer-v4's `emotion` source (116 decisions) is dair-ai/emotion. An engine without a mark either did not train on the set or does not publish its training
-data (Winnow, Laya, CLM, Clef, Clef-flash, Decider, Decision-Eos, JevK5, pplx-decider, coba, Nimble). See the training table below.
+data (Winnow, Laya, CLM, Clef, Clef-flash, Decider, Decision-Eos, JevK5, pplx-decider, coba, Nimble, Drex, d1-omni). See the training table below.
 `*`: of 1,965 graded decisions; coba refused 7 typed-decisions states longer than its 512-token context
 (`STATE_TRUNCATED`), so 35 decisions have no answer.
 
 pplx-decider, nimble-v3 and the two coba sizes were measured 2026-10-30..11-01 with the same protocol, on the
-same machine (`reports/2026-11-01-analysis.md`).
+same machine (`reports/2026-11-01-analysis.md`); Drex v1.5, OpenDecider-td, d1-omni and the two Sura sizes on
+2026-11-10.
 
 First-call p50, ms:
 
@@ -331,11 +384,16 @@ First-call p50, ms:
 | Winnow-E4B | 576.0 | 604.0 | 500.6 | 312.8 | 1333.1 | 262.9 | 385.4 | 442.5 |
 | Winnow-12B | 1138.0 | 1971.1 | 1264.4 | 785.3 | 3350.2 | 637.3 | 992.2 | 1109.1 |
 | pplx-decider | 2773.6 | 3105.6 | 3112.8 | 2424.1 | 8008.3 | 1731.7 | 2430.1 | 3114.6 |
+| Drex v1.5 | 734.9 | 735.6 | 505.0 | 322.8 | 4543.8 | 258.5 | 412.1 | 404.3 |
 | Decider-4B | 8633.5 | 8644.8 | 3197.7 | 1738.5 | 55787.8 | 1014.9 | 2376.8 | 2376.9 |
 | nimble-v3 | 40942.7 | 38802.4 | 13730.9 | 6083.7 | 131822.8 | 4711.6 | 7674.4 | 12344.1 |
 | Decider-2B | 3153.7 | 3153.3 | 1189.8 | 638.9 | 19049.7 | 366.6 | 902.6 | 906.3 |
 | JevK5 | 591.5 | 608.3 | failed | 279.9 | 2872.4 | 193.5 | 361.0 | failed |
+| OpenDecider-td | 413.9 | 432.1 | 254.9 | 161.3 | 1024.0 | 130.4 | 274.7 | 228.3 |
 | Ollaya-td | 274.9 | 721.7 | 191.4 | 126.5 | 2082.0 | 119.7 | 385.8 | 136.6 |
+| d1-omni | 257.7 | 359.5 | 196.8 | 108.4 | 1825.8 | 70.7 | 192.7 | 146.9 |
+| Sura-2B | 1095.2 | 1183.7 | 1214.4 | 921.0 | 3349.1 | 637.7 | 921.8 | 1220.8 |
+| Sura-0.8B | 437.7 | 491.0 | 491.5 | 375.5 | 1266.0 | 264.8 | 394.7 | 512.0 |
 | Kev-0.8B | 44.7 | 46.4 | 51.5 | 36.1 | 135.9 | 26.7 | 39.9 | 33.7 |
 | Jeff-Qwen3.5-2B | 237.0 | 236.9 | 125.4 | 88.7 | 895.0 | 62.6 | 91.7 | 108.6 |
 | Jeff-Qwen3.5-0.8B | 106.6 | 107.2 | 54.0 | 39.7 | 424.9 | 28.2 | 40.8 | 48.7 |
@@ -351,8 +409,9 @@ First-call p50, ms:
 Decider-4B, Decider-2B, Decision-Eos and Ollaya-td ran on CPU (F32, ONNX) in Ollaya's runner on this machine (the
 Ollaya server log records `device=cpu` for each load), so their latencies compare runtimes as much as models, like the
 llama.cpp rows. pplx-decider and nimble-v3 ran the same way (CPU, fp32, ONNX) in Ollaya 0.18.0, which is why
-nimble-v3, a 9B, takes 4.7-132 s per first call here. The other Ollaya rows ran on Metal: Laya and coba on MLX,
-Winnow and JevK5 on llama.cpp (Q8_0).
+nimble-v3, a 9B, takes 4.7-132 s per first call here. Sura-2B, Sura-0.8B and d1-omni ran on CPU in Ollaya 0.18.0
+too. The other Ollaya rows ran on Metal: Laya and coba on MLX, Winnow and JevK5 on llama.cpp (Q8_0). Drex ran on
+Metal in Nace's llama.cpp fork, OpenDecider-td on Metal in Ollama.
 
 What each engine was trained on, as far as its authors publish it:
 
@@ -370,6 +429,10 @@ What each engine was trained on, as far as its authors publish it:
 | pplx-decider | unknown: distilled from Perplexity's 27B decision models, data not published | Ollaya registry entry |
 | coba (400m, 1b) | none named: distilled from pplx-decider:flash's answers; the in-domain ternary tags, trained on ten public benchmark train splits, are not measured here | Ollaya registry entry |
 | nimble-v3 | unknown: contrastive pairs curated by Bespoke Labs ("we did not distill from Jev") | `bespokelabsai/nimble` README |
+| Drex v1.5 | unknown: post-trained from MiMo-V2.6-Distill-Qwen-9B, data not published | `nace-ai/drex-v1.5` model card |
+| OpenDecider-td | typed-decisions train split, `clinc/clinc_oos`, `go_emotions`, PAWS, among others; the typed-decisions test split "was never used for training" | `manjunathshiva/opendecider-small-td` model card (`datasets`) |
+| d1-omni | unknown: post-trained from LFM2.5-Encoder-350M, data not published | `LiquidAI/d1-omni-600M` model card |
+| Sura (2B, 0.8B) | none of the benchmarks' datasets ("zero-shot"): distilled from pplx-decider:flash on about 340,000 permissively licensed questions, coba's zero-shot data | Ollaya registry entry |
 
 Nobody trained on the 30-item sets, which were written for this repo.
 
@@ -380,8 +443,9 @@ Read these results with the following caveats:
   (`--gpu-memory-utilization 0.7`), with later passes on an idle machine. The rerun moved most engines' first-call
   p50s by under 15% (per-engine median 0.85-1.08x the earlier value; Kev-4B and Kev-9B slightly higher, at 1.04x and
   1.08x), so that server cost little. Ollaya-td is the exception, at 0.68x.
-- **Memory pressure:** Jeff 2B and 0.8B reached `warn` on typed-decisions, NSMC, KLUE-YNAT and clinc-oos; every other
-  run stayed at `normal`, Clef included.
+- **Memory pressure:** Jeff 2B and 0.8B reached `warn` on typed-decisions, NSMC, KLUE-YNAT and clinc-oos, and
+  OpenDecider-td (Ollama and `opendecider serve` together) on transfer-v4, typed-decisions, KLUE-YNAT and clinc-oos;
+  every other run stayed at `normal`, Clef and Drex included.
 - **Ollaya errors:** Ollaya refused 7 typed-decisions items (35 decisions) with `STATE_TRUNCATED`, because the state
   did not fit `laya:en`'s context. They are counted as failed, not wrong.
 - **JevK5:** refuses BANKING77-20 and clinc-oos at the cold call with `TOO_MANY_OPTIONS`: their 20 options do not fit
@@ -398,6 +462,9 @@ Read these results with the following caveats:
   option independently (`independent_options` in its calibration file), by design.
 - **CLM:** measured on the 30-item and BANKING77 sets only. It picks a choice by comparing embeddings of the option
   texts, so its 0 order-flips may be structural rather than a sign of order robustness (not verified).
+- **Drex v1.5 and OpenDecider-td:** Drex runs on Nace's llama.cpp fork (commit `e8f7961`), not upstream llama.cpp,
+  so its latencies compare that fork as much as the model. OpenDecider-td answers each question in its own forward
+  pass (`--small-batch 1`, its exact default) and reads the option probabilities from Ollama's token logprobs.
 - **Timeout:** every engine ran with `--timeout 300`; the 120 s default timed out 101 of 400 Decider-4B
   typed-decisions items on a 2026-10-12 attempt.
 - **Kev revisions:** Kev-4B serves Hub snapshot `6cfce5c`, Kev-9B `db029f08` (both dated 2026-10-01). Kev-4B
@@ -436,9 +503,13 @@ Which engine to use. Engines count as different when the exact McNemar p is belo
     p < 0.001.
   - **No difference between Kev and Winnow:** on the 30-item sets, NSMC and KLUE-YNAT. On clinc-oos Kev-4B (84%)
     beats Winnow-E4B (57%).
-- **typed-decisions:** Ollaya-td (0.753, in-distribution) aside, Winnow (0.7265) lands where the dataset card puts
-  Jev 1.13.0 (0.727, ceiling 0.735). Those are the card's numbers from its own harness, not re-run here. Ollaya-td is
-  closest to the gold distributions (KL 0.134, Brier 0.071), then Clef (KL 0.196, Brier 0.107), Kev-9B (0.214, 0.116
+- **Drex v1.5:** level with Kev-4B and Kev-9B on every set but typed-decisions (below Kev-9B, p < 0.001) and
+  clinc-oos (ahead of Kev-9B, 86 vs 18 discordant, p < 0.001; level with Kev-4B, p = 0.058). On clinc-oos only Clef
+  beats it (38 vs 9, p < 0.001).
+- **typed-decisions:** OpenDecider-td (0.778) and Ollaya-td (0.753) are both in-distribution; OpenDecider-td is
+  ahead (211 vs 161 discordant, p = 0.011) and closer to the gold distributions (KL 0.092 vs 0.134). Those aside, Winnow (0.7265) lands where the dataset card puts
+  Jev 1.13.0 (0.727, ceiling 0.735). Those are the card's numbers from its own harness, not re-run here. After
+  OpenDecider-td (KL 0.092, Brier 0.048), Ollaya-td is closest to the gold distributions (KL 0.134, Brier 0.071), then Clef (KL 0.196, Brier 0.107), Kev-9B (0.214, 0.116
   after the remeasure; 0.209, 0.107 on 9-30) and Clef-flash (0.220, 0.113), against Winnow's 0.286
   and 0.128. The report's uniform row reproduces the
   card's KL 0.444 and Brier 0.238. Winnow-12B is accurate (71%, level with E4B) but poorly calibrated
@@ -509,6 +580,11 @@ Order-flip on this set (2026-10-14..16):
 | Winnow-12B | 27/300 (9%) |
 | Decider-4B | 16/300 (5%) |
 | Decider-2B | 12/300 (4%) |
+| Drex v1.5 | 17/300 (6%) |
+| OpenDecider-td | 47/300 (16%) |
+| d1-omni | 12/300 (4%) |
+| Sura-2B | 54/300 (18%) |
+| Sura-0.8B | 74/300 (25%) |
 | Jeff-Qwen3.5-2B | 73/300 (24%) |
 | Jeff-Qwen3.5-0.8B | 85/300 (28%) |
 | Ollaya `laya` | 93/300 (31%) |
