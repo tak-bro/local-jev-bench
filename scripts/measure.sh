@@ -24,7 +24,7 @@ fi
 engine=$1
 shift
 case $engine in
-    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | von) ;;
+    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | drex-1.5 | opendecider-td | von) ;;
     *)
         echo "unknown engine: $engine" >&2
         exit 2
@@ -107,7 +107,7 @@ if [ -n "${MEASURE_START:-}" ]; then
     start "$engine" "${MEASURE_READY_URL:?MEASURE_READY_URL with MEASURE_START}" 200 bash -c "$MEASURE_START"
 else
     case $engine in
-        ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3)
+        ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni)
             model=${OLLAYA_MODEL:-laya}
             [ "$engine" = winnow ] && model=${WINNOW_MODEL:-winnow:e4b}
             [ "$engine" = winnow-12b ] && model=${WINNOW_12B_MODEL:-winnow:12b}
@@ -120,6 +120,9 @@ else
             [ "$engine" = coba-400m ] && model=${COBA_400M_MODEL:-coba:400m}
             [ "$engine" = coba-1b ] && model=${COBA_1B_MODEL:-coba:1b}
             [ "$engine" = nimble-v3 ] && model=${NIMBLE_V3_MODEL:-nimble:9b-v3}
+            [ "$engine" = sura-2b ] && model=${SURA_2B_MODEL:-sura:2b}
+            [ "$engine" = sura-0.8b ] && model=${SURA_0_8B_MODEL:-sura:0.8b}
+            [ "$engine" = d1-omni ] && model=${D1_OMNI_MODEL:-d1-omni}
             if [ "$(http_code "$ollaya_url/api/tags")" != 200 ]; then
                 start ollaya "$ollaya_url/api/tags" 200 env OLLAYA_HOST="${ollaya_url#http://}" ollaya serve
             fi
@@ -138,6 +141,13 @@ else
         clef-flash | clef)
             # /health answers 503 until the GGUF is loaded
             start "$engine" "${LLAMA_URL:-http://127.0.0.1:8020}/health" 200 "$scripts/serve-llama.sh" "$engine"
+            ;;
+        drex-1.5)
+            # /health answers 503 until the GGUF is loaded
+            start drex "${DREX_URL:-http://127.0.0.1:8040}/health" 200 "$scripts/serve-drex.sh"
+            ;;
+        opendecider-td)
+            start opendecider "${OPENDECIDER_URL:-http://127.0.0.1:8050}/ready" 200 "$scripts/serve-opendecider.sh"
             ;;
         von)
             start von "${VON_URL:-http://127.0.0.1:8030}/health" 200 "$scripts/serve-von.sh"
