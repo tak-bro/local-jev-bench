@@ -1,4 +1,4 @@
-# local-jev-bench: local Jev-style decision models on Apple Silicon (Kev, Winnow, Clef, Drex, OpenDecider, Von, Jeff, AnyJev, Laya, CLM, Decider)
+# local-jev-bench: local Jev-style decision models on Apple Silicon (Kev, Winnow, Clef, OpenJev, Drex, lev, OpenDecider, Von, Julia, Jeff, AnyJev, Laya, CLM, Decider)
 
 English | [한국어](README.ko.md)
 
@@ -8,7 +8,7 @@ public BANKING77 20-way intent set, Kev's out-of-distribution transfer-v4 set, t
 and two Korean sets: NSMC movie reviews and KLUE-YNAT news headlines.
 
 **Key results (M3 Max 36 GB; every engine remeasured on every set 2026-10-14..16 on an idle machine, which reproduced the earlier accuracy counts).**
-Kev-9B, Kev-4B, Winnow-E4B, Winnow-12B, Decider-4B, pplx-decider, Drex v1.5, Clef
+Kev-9B, Kev-4B, Winnow-E4B, Winnow-12B, Decider-4B, pplx-decider, Drex v1.5, OpenJev, Clef
 and Clef-flash are the most accurate engines overall, and paired McNemar tests separate them on only some sets.
 Two typed-decisions fine-tunes beat all of them on typed-decisions, in-distribution: OpenDecider-small-td (78%) and
 Laya's `ollaya-td` (75%):
@@ -126,6 +126,30 @@ Laya's `ollaya-td` (75%):
     BANKING77-20 65-71%, clinc-oos 51-60%. Their Korean is better than their English large sets (NSMC 75-77%,
     KLUE-YNAT 62-66%). Paired, Sura-2B is ahead on BANKING77-20 (p = 0.016) and Sura-0.8B on clinc-oos (p < 0.001); the other six
     sets are level (p ≥ 0.115).
+- **New engines (measured 2026-11-11, same protocol; ggml-org GGUFs on llama.cpp b11403, Metal).**
+  - **OpenJev (27B, Q4_K_M, CC BY-NC 4.0, text only):** top-group generalist. NSMC 89% is the bench's best
+    (267/300), though level with Clef, Winnow-12B, pplx-decider, Kev-9B and Drex (p ≥ 0.099); it is ahead of
+    OpenDecider-td (p = 0.004) and Decider-2B (p = 0.016). transfer-v4 83% (633/764), level with pplx-decider, Clef,
+    Winnow-12B and Kev-9B (p ≥ 0.223), ahead of Drex (p = 0.008) and lev (p = 0.004). 88% on both 30-item sets,
+    level with the top group. KLUE-YNAT 77%, level with Clef and Winnow-12B, below pplx-decider (p = 0.013). typed-decisions 70%, level with Kev-9B and Clef-flash, below Clef
+    (p = 0.035) and OpenDecider-td (p < 0.001), ahead of Drex (p < 0.001). Its weak sets are BANKING77-20 82%, below
+    Kev-9B, the Clefs, pplx-decider and Drex (p < 0.001), and clinc-oos 82%, below Clef, lev and Drex (p ≤ 0.007),
+    with 38% order-flips there. 820-9,800 ms first-call p50, faster than Clef on six of the eight sets.
+  - **lev (Interfaze, Qwen3.5-4B LoRA, Q8_0):** an intent specialist. clinc-oos 92% is second only to Clef and level
+    with it (p = 0.081), ahead of every other engine that answered (p ≤ 0.036), and BANKING77-20 91% is level with Kev, Drex and
+    pplx-decider, below the Clefs (p < 0.001). Its card lists `banking77` and `clinc_oos` as training data, so both
+    cells are in-distribution (†). NSMC 86% is level with the top group; KLUE-YNAT 76% is level with Clef and
+    Winnow-12B, below pplx-decider (p = 0.005). It falls behind on the
+    English and Korean 30 (76% each, below Clef, Kev-9B and OpenJev, p ≤ 0.027), transfer-v4 (78%, below OpenJev,
+    pplx-decider, Winnow-12B and Clef, p ≤ 0.005) and typed-decisions (63%, below Kev-9B, the Clefs, OpenJev and
+    OpenDecider-td, p < 0.001). It never flipped a choice when the options were reversed, on any set (0
+    order-flips; not verified whether that is structural). 180-2,340 ms first-call p50.
+  - **Julia-1 (Supersonic Labs, 144M ModernBERT encoder on mmBERT-small, Q8_0):** fast (14-113 ms first-call p50)
+    and mostly below the rest. BANKING77-20 84% is its one strong set, ahead of Ollaya, Ollaya-td, OpenDecider-td
+    and coba-400m (p ≤ 0.001), level with OpenJev (p = 0.337). Elsewhere: English 30 52%, Korean 30 42%,
+    transfer-v4 52%, typed-decisions 56%, clinc-oos 62%, NSMC 50% (chance on a yes/no set) and KLUE-YNAT 24%, with
+    order-flips of 14-76%. Its card claims 73.15% on 400 typed-decisions cases with its own harness; this run gives
+    56% (1118/2000).
 - **Kev remeasure (2026-10-10, Hub revisions `6cfce5c` and `db029f08`, both dated 2026-10-01).** Kev-4B reproduces
   every 9-30 number exactly (89/87/89/80/67/83/74%), so the September delta updates moved none of this repo's sets
   for it. Kev-9B moved on all seven: English 30 95 → 93, Korean 30 94 → 91, BANKING77-20 267 → 271, transfer-v4
@@ -151,7 +175,7 @@ NSMC and KLUE-YNAT; AnyJev and CLM are worse calibrated still on some. Kev-0.8B 
 accurate as Ollaya or more on every set but clinc-oos (71% vs 79%). Kev-4B reproduces its model card on transfer-v4 (534/656 against 0.817). Details are in
 [Results](#results-2026-10-1416-m3-max-36-gb).
 
-It sets up twenty-two engine families:
+It sets up twenty-five engine families:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): the `laya` model, run on MLX.
@@ -174,6 +198,9 @@ It sets up twenty-two engine families:
 - **Jeff-0.8B**: Jeff-Qwen3.5-0.8B, the smaller sibling. Download with `hf download mstrasser/Jeff-Qwen3.5-0.8B --local-dir checkpoints/jeff-0.8b` in the Jeff checkout; `JEFF_CHECKPOINT=checkpoints/jeff-0.8b scripts/serve-jeff.sh` serves it (the bench checks `/health` for `jeff-qwen3.5-0.8b`). `scripts/measure.sh` picks the checkpoint by engine name (`jeff` vs `jeff-0.8b`).
 - **Clef-flash** ([Cloudflare/clef-flash](https://huggingface.co/Cloudflare/clef-flash)): Cloudflare's 9B decision model on Qwen3.5-9B, as `ggml-org/Clef-Flash-GGUF` Q8_0, served by llama.cpp's `llama-server` (`clef-flash`). It decides all the questions of a request jointly, in one prompt; the other engines answer each question on its own.
 - **Clef** ([Cloudflare/clef](https://huggingface.co/Cloudflare/clef)): the 27B sibling on Qwen3.8-27B, as `ggml-org/Clef-GGUF` Q4_K_M on the same `llama-server` (`clef`). Q8_0 (28.7 GB) leaves too little of the 36 GB.
+- **OpenJev** ([openjev/openjev](https://huggingface.co/openjev/openjev)): a 27B decision model (CC BY-NC 4.0), as `ggml-org/OpenJev-GGUF` Q4_K_M on the same `llama-server` (`openjev`), text only (the `mmproj` vision projector is not loaded). Q8_0 (28.6 GB) leaves too little of the 36 GB.
+- **lev** ([interfaze-ai/lev](https://huggingface.co/interfaze-ai/lev)): Interfaze's LoRA on Qwen3.5-4B, as `ggml-org/lev-GGUF` Q8_0 on the same `llama-server` (`lev`).
+- **Julia-1** ([SupersonicLabs/Julia-1](https://huggingface.co/SupersonicLabs/Julia-1)): Supersonic Labs' 144M ModernBERT decision encoder on mmBERT-small, as `ggml-org/Julia-1-GGUF` Q8_0 on the same `llama-server` (`julia-1`).
 - **Von** ([wfzyx/von](https://github.com/wfzyx/von)): a 395M ModernBERT encoder with an option-marker head, served by its own `von serve` on Metal (`von`).
 
 All speak TypeSafe's `POST /v1/systemone` wire format.
@@ -185,11 +212,11 @@ p is below 0.05 (see [FAQ](#faq)); treat close calls as ties.
 
 | Need | Engine | Why |
 |---|---|---|
-| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Drex v1.5, Clef-flash or Clef | top group on most sets |
+| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Drex v1.5, OpenJev, Clef-flash or Clef | top group on most sets |
 | Best out-of-distribution transfer (transfer-v4) | pplx-decider | 84% (638/764), the bench's best |
 | Best typed-decisions | OpenDecider-td (in-distribution, 78%†, ahead of Ollaya-td's 75%†, p = 0.011) or Winnow (general-purpose, 71-73%) | see caveats |
-| Best Korean (NSMC + KLUE-YNAT) | pplx-decider or Winnow-12B | KLUE-YNAT 83% vs 79% (p = 0.111), NSMC 87% vs 88% |
-| Best clinc-oos (intents + out-of-scope) | Clef, then Drex v1.5 | 95% vs 88% (p < 0.001); Drex ahead of Kev-9B and Clef-flash (p < 0.001) |
+| Best Korean (NSMC + KLUE-YNAT) | pplx-decider or Winnow-12B | KLUE-YNAT 83% vs 79% (p = 0.111), NSMC 87% vs 88%; OpenJev's NSMC 89% is level with both |
+| Best clinc-oos (intents + out-of-scope) | Clef, then lev (in-distribution) or Drex v1.5 | 95% vs 92%† (p = 0.081) vs 88% (p < 0.001); Drex ahead of Kev-9B and Clef-flash (p < 0.001) |
 | Fastest | Ollaya (`laya`) | 10.2-43.7 ms first-call p50 outside typed-decisions |
 | Best calibrated | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
 
@@ -211,7 +238,7 @@ flowchart LR
     client --> anyjevapi["AnyJev API :8710<br/>anyjev-raw · anyjev-l0"]
     client --> kevapi["Kev API :8009<br/>kev-0.8b/4b/9b"]
     client --> jeffapi["Jeff API :8765"]
-    client --> llama["llama-server :8020<br/>Clef-flash · Clef"]
+    client --> llama["llama-server :8020<br/>Clef-flash · Clef · OpenJev · lev · Julia-1"]
     client --> vonapi["Von API :8030"]
     client --> drexapi["Nace llama-server :8040<br/>Drex v1.5"]
     client --> odapi["opendecider serve :8050"]
@@ -238,7 +265,7 @@ uv sync
 
 [Jeff](https://github.com/firelex/jeff) keeps its own uv environment too, and its `pyproject.toml` requires uv 0.12.19 or newer, hence `uvx`: `git clone https://github.com/firelex/jeff ~/workspace/tak-bro/jeff && git -C ~/workspace/tak-bro/jeff checkout f06788292874c21a5b5c41549ac220dd9e15da7f`, then in it `uvx --from 'uv>=0.12.19' uv sync --no-default-groups --extra mac` and `uvx --from 'uv>=0.12.19' uv run --no-default-groups hf download mstrasser/Jeff-Qwen3.5-2B --local-dir checkpoints/jeff-2b`. `scripts/serve-jeff.sh` serves it on MLX, which runs Jeff's Qwen models only, so Jeff-Gemma4-E2B is not used here.
 
-[Clef-flash](https://huggingface.co/ggml-org/Clef-Flash-GGUF) needs llama.cpp build 11403: `/v1/systemone` and the clef architecture landed after Homebrew's 0.5.0. Unpack the [b11403 release](https://github.com/ggml-org/llama.cpp/releases/tag/b11403) `llama-b11403-bin-macos-arm64.tar.gz` into `~/.local/opt/llama.cpp/b11403/` (or point `LLAMA_SERVER` at its `llama-server`). `scripts/serve-llama.sh clef-flash` (or `clef`) checks the build, downloads the GGUF at a pinned revision (9.7 GB, or 19.2 GB for Clef) and serves it with the whole prompt in one batch (`-ub 8192`), which clef requires.
+[Clef-flash](https://huggingface.co/ggml-org/Clef-Flash-GGUF) needs llama.cpp build 11403: `/v1/systemone` and the clef architecture landed after Homebrew's 0.5.0. Unpack the [b11403 release](https://github.com/ggml-org/llama.cpp/releases/tag/b11403) `llama-b11403-bin-macos-arm64.tar.gz` into `~/.local/opt/llama.cpp/b11403/` (or point `LLAMA_SERVER` at its `llama-server`). `scripts/serve-llama.sh clef-flash` (or `clef`) checks the build, downloads the GGUF at a pinned revision (9.7 GB, or 19.2 GB for Clef) and serves it with the whole prompt in one batch (`-ub 8192`), which clef requires. `scripts/serve-llama.sh julia-1`, `lev` and `openjev` serve the other ggml-org decision GGUFs the same way (0.17, 4.5 and 19.4 GB).
 
 The Ollaya 0.18.0 daemon (see Ports) adds `pplx-decider:flash`, `nimble:9b-v3`, `sura:2b`, `sura:0.8b` and `d1-omni`: `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya pull sura:2b`, and so on. Ollaya 0.7.3 cannot load them.
 
@@ -265,7 +292,7 @@ Every server binds to `127.0.0.1` only.
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
 | 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (or `kev-0.8b`, `kev-9b`) |
 | 8765 | Jeff System One API (`jeff-latest`) | `scripts/serve-jeff.sh` |
-| 8020 | llama-server System One API (`Clef-Flash-Q8_0@4a7a08c` or `Clef-Q4_K_M@5f70656`) | `scripts/serve-llama.sh clef-flash` (or `clef`) |
+| 8020 | llama-server System One API (`Clef-Flash-Q8_0@4a7a08c`, `Clef-Q4_K_M@5f70656`, `OpenJev-Q4_K_M@d2c376d`, `lev-Q8_0@2ef3b3c` or `Julia-1-Q8_0@1e6b48a`) | `scripts/serve-llama.sh clef-flash` (or `clef`, `openjev`, `lev`, `julia-1`) |
 | 8030 | Von System One API (`von-latest`) | `scripts/serve-von.sh` |
 | 8040 | Nace llama-server System One API (`drex-v1.5-Q8_0@37c2b59`) | `scripts/serve-drex.sh` |
 | 8050 | OpenDecider System One API (serves `hf.co/manjunathshiva/opendecider-small-td-GGUF:Q8_0`) | `scripts/serve-opendecider.sh` |
@@ -346,6 +373,9 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 | OpenDecider-td | 83% | 80% | 74% | 76%† | 78%† | 83% | 75% | 86%† |
 | Ollaya-td | 80% | 45% | 64% | 63% | 75%† | 53% | 19% | 77% |
 | d1-omni | 85% | 45% | 90% | 67% | 54% | 48% | 25% | 79% |
+| OpenJev | 88% | 88% | 82% | 83% | 70% | 89% | 77% | 82% |
+| lev | 76% | 76% | 91%† | 78% | 63% | 86% | 76% | 92%† |
+| Julia-1 | 52% | 42% | 84% | 52% | 56% | 50% | 24% | 62% |
 | Sura-2B | 84% | 82% | 71% | 56% | 56% | 77% | 66% | 51% |
 | Sura-0.8B | 82% | 74% | 65% | 57% | 57% | 75% | 62% | 60% |
 | Kev-0.8B | 75% | 75% | 88%† | 65% | 46% | 80% | 63% | 71% |
@@ -363,15 +393,15 @@ Accuracy, first timed call (`†` = the engine trained on a train split of data 
 `†`: Kev (all three sizes) trained on BANKING77's train split, and Jeff on PAWS's. Ollaya-td's card names
 the four typed-decisions workflows as its fine-tuning data. OpenDecider-td's card lists typed-decisions' train split,
 `clinc/clinc_oos` and PAWS (transfer-v4's `paws` source) among its training sets. PAWS's test split is 80 of
-transfer-v4's 764 decisions. Von's card lists Banking77 and dair-ai/emotion in its training corpus without naming
+transfer-v4's 764 decisions. lev's card lists `banking77` and `clinc_oos` among its 26 training datasets. Von's card lists Banking77 and dair-ai/emotion in its training corpus without naming
 the split; transfer-v4's `emotion` source (116 decisions) is dair-ai/emotion. An engine without a mark either did not train on the set or does not publish its training
-data (Winnow, Laya, CLM, Clef, Clef-flash, Decider, Decision-Eos, JevK5, pplx-decider, coba, Nimble, Drex, d1-omni). See the training table below.
+data (Winnow, Laya, CLM, Clef, Clef-flash, Decider, Decision-Eos, JevK5, pplx-decider, coba, Nimble, Drex, d1-omni, OpenJev, Julia-1). See the training table below.
 `*`: of 1,965 graded decisions; coba refused 7 typed-decisions states longer than its 512-token context
 (`STATE_TRUNCATED`), so 35 decisions have no answer.
 
 pplx-decider, nimble-v3 and the two coba sizes were measured 2026-10-30..11-01 with the same protocol, on the
 same machine (`reports/2026-11-01-analysis.md`); Drex v1.5, OpenDecider-td, d1-omni and the two Sura sizes on
-2026-11-10.
+2026-11-10; OpenJev, lev and Julia-1 on 2026-11-11.
 
 First-call p50, ms:
 
@@ -390,6 +420,9 @@ First-call p50, ms:
 | Decider-2B | 3153.7 | 3153.3 | 1189.8 | 638.9 | 19049.7 | 366.6 | 902.6 | 906.3 |
 | JevK5 | 591.5 | 608.3 | failed | 279.9 | 2872.4 | 193.5 | 361.0 | failed |
 | OpenDecider-td | 413.9 | 432.1 | 254.9 | 161.3 | 1024.0 | 130.4 | 274.7 | 228.3 |
+| OpenJev | 2556.7 | 4601.1 | 1918.0 | 893.9 | 9796.6 | 819.6 | 1284.2 | 1507.2 |
+| lev | 789.9 | 823.2 | 561.9 | 436.4 | 2343.2 | 180.9 | 485.7 | 481.4 |
+| Julia-1 | 112.9 | 41.4 | 23.4 | 18.2 | 50.5 | 14.4 | 18.5 | 16.9 |
 | Ollaya-td | 274.9 | 721.7 | 191.4 | 126.5 | 2082.0 | 119.7 | 385.8 | 136.6 |
 | d1-omni | 257.7 | 359.5 | 196.8 | 108.4 | 1825.8 | 70.7 | 192.7 | 146.9 |
 | Sura-2B | 1095.2 | 1183.7 | 1214.4 | 921.0 | 3349.1 | 637.7 | 921.8 | 1220.8 |
@@ -411,7 +444,8 @@ Ollaya server log records `device=cpu` for each load), so their latencies compar
 llama.cpp rows. pplx-decider and nimble-v3 ran the same way (CPU, fp32, ONNX) in Ollaya 0.18.0, which is why
 nimble-v3, a 9B, takes 4.7-132 s per first call here. Sura-2B, Sura-0.8B and d1-omni ran on CPU in Ollaya 0.18.0
 too. The other Ollaya rows ran on Metal: Laya and coba on MLX, Winnow and JevK5 on llama.cpp (Q8_0). Drex ran on
-Metal in Nace's llama.cpp fork, OpenDecider-td on Metal in Ollama.
+Metal in Nace's llama.cpp fork, OpenDecider-td on Metal in Ollama, and OpenJev, lev and Julia-1 on Metal in
+llama.cpp b11403, like the Clefs.
 
 What each engine was trained on, as far as its authors publish it:
 
@@ -432,6 +466,9 @@ What each engine was trained on, as far as its authors publish it:
 | Drex v1.5 | unknown: post-trained from MiMo-V2.6-Distill-Qwen-9B, data not published | `nace-ai/drex-v1.5` model card |
 | OpenDecider-td | typed-decisions train split, `clinc/clinc_oos`, `go_emotions`, PAWS, among others; the typed-decisions test split "was never used for training" | `manjunathshiva/opendecider-small-td` model card (`datasets`) |
 | d1-omni | unknown: post-trained from LFM2.5-Encoder-350M, data not published | `LiquidAI/d1-omni-600M` model card |
+| OpenJev | unknown: fine-tuned from an unnamed base, training sets not listed; its own test sets "held out from our fine-tuning" | `openjev/openjev` model card |
+| lev | `banking77` and `clinc_oos` (intent detection), among 200,000 examples from 26 public datasets; the build refuses S1Bench subsets | `interfaze-ai/lev` model card, Training |
+| Julia-1 | unknown: "decision-format examples" from a private pipeline; typed-decisions is named only as its evaluation set | `SupersonicLabs/Julia-1` model card |
 | Sura (2B, 0.8B) | none of the benchmarks' datasets ("zero-shot"): distilled from pplx-decider:flash on about 340,000 permissively licensed questions, coba's zero-shot data | Ollaya registry entry |
 
 Nobody trained on the 30-item sets, which were written for this repo.
@@ -457,7 +494,8 @@ Read these results with the following caveats:
 - **Clef-flash and Clef:** `ggml-org/Clef-Flash-GGUF` Q8_0 and `ggml-org/Clef-GGUF` Q4_K_M on llama.cpp b11403, one request at a time. Both read all the
   questions of a request in one prompt and decide them jointly; the bench sends each item's questions in one request,
   so their multi-question items are decided that way. Their latencies come from llama.cpp's Metal backend, the others' from
-  MLX, Ollaya or vllm-metal, so they compare runtimes as much as models.
+  MLX, Ollaya or vllm-metal, so they compare runtimes as much as models. OpenJev, lev and Julia-1 run on the same
+  build with the same flags (`-ub 8192`); OpenJev is its text path only (no `mmproj`).
 - **Von:** `von-sdk` 1.3.7 on Metal (`mps`) with `--noul-decision raw`. Its 0 order-flips come from scoring each
   option independently (`independent_options` in its calibration file), by design.
 - **CLM:** measured on the 30-item and BANKING77 sets only. It picks a choice by comparing embeddings of the option
@@ -506,6 +544,11 @@ Which engine to use. Engines count as different when the exact McNemar p is belo
 - **Drex v1.5:** level with Kev-4B and Kev-9B on every set but typed-decisions (below Kev-9B, p < 0.001) and
   clinc-oos (ahead of Kev-9B, 86 vs 18 discordant, p < 0.001; level with Kev-4B, p = 0.058). On clinc-oos only Clef
   beats it (38 vs 9, p < 0.001).
+- **OpenJev:** level with Clef on five of eight sets (p ≥ 0.289); Clef is ahead on typed-decisions (p = 0.035),
+  BANKING77-20 and clinc-oos (p < 0.001). NSMC 89% and transfer-v4 83% are at the top, but level with the rest of
+  the top group.
+- **lev:** level with Clef on clinc-oos (92%† vs 95%, p = 0.081) and with Kev-9B on BANKING77-20 (p = 1.000), both
+  in-distribution for lev; below the top group on the 30-item sets, transfer-v4 and typed-decisions.
 - **typed-decisions:** OpenDecider-td (0.778) and Ollaya-td (0.753) are both in-distribution; OpenDecider-td is
   ahead (211 vs 161 discordant, p = 0.011) and closer to the gold distributions (KL 0.092 vs 0.134). Those aside, Winnow (0.7265) lands where the dataset card puts
   Jev 1.13.0 (0.727, ceiling 0.735). Those are the card's numbers from its own harness, not re-run here. After
@@ -583,6 +626,9 @@ Order-flip on this set (2026-10-14..16):
 | Drex v1.5 | 17/300 (6%) |
 | OpenDecider-td | 47/300 (16%) |
 | d1-omni | 12/300 (4%) |
+| OpenJev | 28/300 (9%) |
+| lev | 0/300 (0%) |
+| Julia-1 | 41/300 (14%) |
 | Sura-2B | 54/300 (18%) |
 | Sura-0.8B | 74/300 (25%) |
 | Jeff-Qwen3.5-2B | 73/300 (24%) |

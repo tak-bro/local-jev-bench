@@ -82,9 +82,11 @@ ENGINES: dict[str, dict[str, Any]] = {
 for size in ("0.8b", "4b", "9b"):
     ENGINES[f"kev-{size}"] = {"url": os.environ.get("KEV_URL", "http://127.0.0.1:8009"), "model": "kev-latest",
                               "served": ("/v1/models", ("models", 0, "run"), f"jaredpalmer/kev-{size}")}
-# llama-server (scripts/serve-llama.sh) serves one Clef GGUF at a time on one port and names the file and its repo
+# llama-server (scripts/serve-llama.sh) serves one ggml-org decision GGUF at a time on one port and names the file and its repo
 # revision in its alias; `served` checks it.
-for name, alias in (("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656")):
+for name, alias in (("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656"),
+                    ("julia-1", "Julia-1-Q8_0@1e6b48a"), ("lev", "lev-Q8_0@2ef3b3c"),
+                    ("openjev", "OpenJev-Q4_K_M@d2c376d")):
     ENGINES[name] = {"url": os.environ.get("LLAMA_URL", "http://127.0.0.1:8020"), "model": alias,
                      "served": ("/v1/models", ("data", 0, "id"), alias)}
 # Von's /health reports only its von-sdk version, so `served` checks that; the weights' revision is pinned in
