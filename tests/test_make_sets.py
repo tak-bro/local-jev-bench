@@ -6,6 +6,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "bench"))
 import make_sets  # noqa: E402
@@ -137,21 +139,75 @@ def test_klue_ynat_items():
     assert list(q["criteria"]) == ["IT과학", "경제", "사회", "생활문화", "세계", "스포츠", "정치"]
 
 
-CLINC_NAMES = ["transfer", "translate", "oos_irrelevant"]
+CLINC_NAMES = ["transfer", "translate", "oos"]
 
 
-def test_clinc_oos_top_k_and_oos_items():
-    train = [{"text": "t", "intent": 1}, {"text": "t", "intent": 1}, {"text": "t", "intent": 0}]
-    test = [{"text": "turn on bluetooth", "intent": 1}, {"text": "rare one", "intent": 2}]
-    items = make_sets.clinc_oos(train, test, ["what is the meaning of life?"], CLINC_NAMES,
-                                k=2, n=2, m=1, seed=0)
-    in_scope = [it for it in items if it["meta"]["source"] == "clinc150"]
-    oos = [it for it in items if it["meta"]["source"] == "clinc-oos"]
-    # top-2 by train frequency are intents 1 and 0 (2 and 1 rows); the intent-2 row is out of scope
-    assert len(in_scope) == 1 and in_scope[0]["expected"] == {"intent": "translate"}
-    assert list(in_scope[0]["questions"]["intent"]["criteria"]) == ["transfer", "translate"]
-    assert len(oos) == 1 and oos[0]["expected"] == {"in_scope": False}
-    assert oos[0]["questions"]["in_scope"]["type"] == "noul"
+def clinc_rows() -> tuple[list[dict], list[dict]]:
+    # `oos` (label 2) is the most frequent train label, as in CLINC150 plus
+    train = [{"text": "t", "intent": i} for i in (0, 1, 2, 2, 2)]
+    test = ([{"text": f"transfer {i}", "intent": 0} for i in range(3)]
+            + [{"text": f"translate {i}", "intent": 1} for i in range(3)]
+            + [{"text": f"weather {i}", "intent": 2} for i in range(3)])
+    return train, test
+
+
+def test_clinc_oos_never_lists_oos_as_an_intent():
+    items = make_sets.clinc_oos(*clinc_rows(), CLINC_NAMES, k=2, n=3, m=2, seed=0)
+    choices = [it for it in items if "intent" in it["expected"]]
+    assert len(choices) == 3
+    assert list(choices[0]["questions"]["intent"]["criteria"]) == ["transfer", "translate"]
+    assert all(it["expected"]["intent"] != "oos" for it in choices)
+    gate = next(it for it in items if "in_scope" in it["expected"])["questions"]["in_scope"]
+    assert gate["type"] == "noul" and "oos" not in gate["instructions"]
+
+
+def test_clinc_oos_nouls_are_balanced_and_unshared():
+    items = make_sets.clinc_oos(*clinc_rows(), CLINC_NAMES, k=2, n=3, m=2, seed=0)
+    nouls = [it for it in items if "in_scope" in it["expected"]]
+    # an engine that always answers one way gets half the nouls
+    assert sorted(it["expected"]["in_scope"] for it in nouls) == [False, False, True, True]
+    assert all(it["state"].startswith("weather") for it in nouls if not it["expected"]["in_scope"])
+    assert len({it["state"] for it in items}) == len(items)  # no utterance twice
+    assert len({it["id"] for it in items}) == len(items)
+
+
+def test_clinc_oos_refuses_too_few_rows():
+    with pytest.raises(SystemExit, match="in-scope"):
+        make_sets.clinc_oos(*clinc_rows(), CLINC_NAMES, k=2, n=5, m=2, seed=0)
+
+
+MASSIVE_NAMES = ["alarm_set", "play_music", "general_quirky", "weather_query"]
+
+
+def massive_rows() -> tuple[list[dict], list[dict]]:
+    en = [{"id": "1", "intent": 0, "utt": "wake me at six"}, {"id": "2", "intent": 1, "utt": "play jazz"},
+          {"id": "3", "intent": 2, "utt": "tell me a joke"}, {"id": "4", "intent": 1, "utt": "play rock"},
+          {"id": "5", "intent": 3, "utt": "is it raining"}, {"id": "6", "intent": 1, "utt": "play pop"}]
+    ko = [{"id": "1", "intent": 0, "utt": "여섯 시에 깨워 줘", "judgments": {"intent_score": [1, 1, 2]}},
+          {"id": "2", "intent": 1, "utt": "재즈 틀어 줘", "judgments": {"intent_score": [1, 1, 1]}},
+          {"id": "3", "intent": 2, "utt": "농담 해 줘", "judgments": {"intent_score": [1, 1, 1]}},
+          {"id": "4", "intent": 1, "utt": "록 틀어", "judgments": {"intent_score": [1, 0, 1]}},
+          {"id": "5", "intent": 3, "utt": "비 와", "judgments": {"intent_score": [1, 1, 1]}}]
+    return en, ko
+
+
+def test_massive_pairs_keep_parallel_rows_whose_intent_survived_translation():
+    pairs = make_sets.massive_pairs(*massive_rows(), MASSIVE_NAMES, k=2, n=10)
+    # play_music (3 rows) and alarm_set (1, ties weather_query, lower id) are the top 2; general_quirky is skipped,
+    # id 4 has a judge's intent_score 0, id 6 has no ko-KR row
+    assert sorted(en["id"] for en, _ in pairs) == ["1", "2"]
+    assert all(en["id"] == ko["id"] for en, ko in pairs)
+
+
+def test_massive_en_and_ko_differ_only_in_the_utterance():
+    pairs = make_sets.massive_pairs(*massive_rows(), MASSIVE_NAMES, k=2, n=10)
+    en, ko = make_sets.massive(pairs, MASSIVE_NAMES, "en"), make_sets.massive(pairs, MASSIVE_NAMES, "ko")
+    assert [it["id"] for it in en] == [it["id"] for it in ko]
+    for e, k in zip(en, ko):
+        assert e["questions"] == k["questions"] and e["expected"] == k["expected"]
+        assert e["state"] != k["state"]
+    assert list(en[0]["questions"]["intent"]["criteria"]) == ["alarm_set", "play_music"]
+    assert {it["state"] for it in ko} == {"여섯 시에 깨워 줘", "재즈 틀어 줘"}
 
 
 def test_clinc_names_reads_classlabel_metadata():
