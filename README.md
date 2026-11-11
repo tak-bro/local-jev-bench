@@ -1,4 +1,4 @@
-# local-jev-bench: local Jev-style decision models on Apple Silicon (Kev, Winnow, Clef, StartLux, OneJev, OpenJev, Drex, lev, OpenDecider, Von, Julia, Jeff, AnyJev, Laya, CLM, Decider)
+# local-jev-bench: local Jev-style decision models on Apple Silicon
 
 English | [한국어](README.ko.md)
 
@@ -6,6 +6,44 @@ local-jev-bench runs Jev-style System One decision models (typed questions in, c
 Apple Silicon Mac, and benchmarks them on the same questions. The sets are English and Korean customer tickets, the
 public BANKING77 20-way intent set, Kev's out-of-distribution transfer-v4 set, the typed-decisions leaderboard set,
 and two Korean sets: NSMC movie reviews and KLUE-YNAT news headlines.
+
+## At a glance
+
+![Accuracy of every engine on every set, as a heatmap](docs/charts/accuracy.svg)
+
+![Median first-call latency against mean accuracy, with the Pareto front](docs/charts/speed-vs-accuracy.svg)
+
+- **Most accurate overall:** Clef (mean of the 8 sets 86.5%), then StartLux-4B (85.0%) and Winnow-12B (84.1%).
+  Clef costs 1.5-8.4 s per call here; StartLux-4B 122-1273 ms.
+- **Best per set:** StartLux-4B on transfer-v4 (87%) and typed-decisions (79%, level with OpenDecider-td's
+  in-distribution 78%†), Clef on clinc-oos (95%), Clef-flash on BANKING77-20 (97%), pplx-decider on KLUE-YNAT (83%).
+- **Fastest at its accuracy (the dashed line):** Julia-1, Ollaya, Kev-0.8B, StartLux-4B, Clef. No engine is both
+  faster and more accurate than these.
+- **Ties:** many top-group gaps are 1-2 points and not significant; two engines differ only when the paired
+  McNemar p is below 0.05 (see [FAQ](#faq)).
+
+The charts are drawn from `bench/runs/<set>/report.md` by `uv run python bench/charts.py`.
+
+## Quick picks
+
+One line per need, each backed by a result below. Two engines count as different only when the paired McNemar
+p is below 0.05 (see [FAQ](#faq)); treat close calls as ties.
+
+| Need | Engine | Why |
+|---|---|---|
+| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Drex v1.5, OpenJev, OneJev, StartLux-4B, Clef-flash or Clef | top group on most sets |
+| Best out-of-distribution transfer (transfer-v4) | StartLux-4B | 87% (665/764), ahead of pplx-decider's 84% (p < 0.001), most of it on the `emotion` source |
+| Best typed-decisions | StartLux-4B (79%, training data not itemised) or OpenDecider-td (in-distribution, 78%†; level, p = 0.121) | see caveats |
+| Best Korean (NSMC + KLUE-YNAT) | pplx-decider or Winnow-12B | KLUE-YNAT 83% vs 79% (p = 0.111), NSMC 87% vs 88%; OpenJev's NSMC 89% is level with both |
+| Best clinc-oos (intents + out-of-scope) | Clef, then lev (in-distribution) or Drex v1.5 | 95% vs 92%† (p = 0.081) vs 88% (p < 0.001); Drex ahead of Kev-9B and Clef-flash (p < 0.001) |
+| Fastest | Ollaya (`laya`) | 10.2-43.7 ms first-call p50 outside typed-decisions |
+| Best calibrated | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
+
+Full tables, per-set caveats and McNemar results are in [Results](#results-2026-10-1416-m3-max-36-gb) and [FAQ](#faq).
+
+## Findings
+
+<details><summary>Key results per set and per engine (click to expand)</summary>
 
 **Key results (M3 Max 36 GB; every engine remeasured on every set 2026-10-14..16 on an idle machine, which reproduced the earlier accuracy counts).**
 Kev-9B, Kev-4B, Winnow-E4B, Winnow-12B, Decider-4B, pplx-decider, Drex v1.5, OpenJev, OneJev, StartLux-4B,
@@ -198,6 +236,12 @@ NSMC and KLUE-YNAT; AnyJev and CLM are worse calibrated still on some. Kev-0.8B 
 accurate as Ollaya or more on every set but clinc-oos (71% vs 79%). Kev-4B reproduces its model card on transfer-v4 (534/656 against 0.817). Details are in
 [Results](#results-2026-10-1416-m3-max-36-gb).
 
+</details>
+
+## Engines
+
+<details><summary>The twenty-seven engine families and where they come from (click to expand)</summary>
+
 It sets up twenty-seven engine families:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
@@ -230,22 +274,7 @@ It sets up twenty-seven engine families:
 
 All speak TypeSafe's `POST /v1/systemone` wire format.
 
-## Quick picks
-
-One line per need, each backed by a result below. Two engines count as different only when the paired McNemar
-p is below 0.05 (see [FAQ](#faq)); treat close calls as ties.
-
-| Need | Engine | Why |
-|---|---|---|
-| Most accurate, generalist | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Drex v1.5, OpenJev, OneJev, StartLux-4B, Clef-flash or Clef | top group on most sets |
-| Best out-of-distribution transfer (transfer-v4) | StartLux-4B | 87% (665/764), ahead of pplx-decider's 84% (p < 0.001), most of it on the `emotion` source |
-| Best typed-decisions | StartLux-4B (79%, training data not itemised) or OpenDecider-td (in-distribution, 78%†; level, p = 0.121) | see caveats |
-| Best Korean (NSMC + KLUE-YNAT) | pplx-decider or Winnow-12B | KLUE-YNAT 83% vs 79% (p = 0.111), NSMC 87% vs 88%; OpenJev's NSMC 89% is level with both |
-| Best clinc-oos (intents + out-of-scope) | Clef, then lev (in-distribution) or Drex v1.5 | 95% vs 92%† (p = 0.081) vs 88% (p < 0.001); Drex ahead of Kev-9B and Clef-flash (p < 0.001) |
-| Fastest | Ollaya (`laya`) | 10.2-43.7 ms first-call p50 outside typed-decisions |
-| Best calibrated | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
-
-Full tables, per-set caveats and McNemar results are in [Results](#results-2026-10-1416-m3-max-36-gb) and [FAQ](#faq).
+</details>
 
 ## Architecture
 
@@ -351,6 +380,7 @@ uv run python bench/run.py                           # 30 questions x 3 reps on 
 uv run python bench/run.py --smoke --engine <e>       # shape only (anyjev-raw, anyjev-l0, kev-0.8b, kev-4b, kev-9b, winnow, jeff), its server up
 uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
 uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
+uv run python bench/charts.py --check                       # docs/charts/*.svg match the reports (no --check: redraw)
 uv run python bench/make_sets.py transfer-v4        # Kev's out-of-distribution dev set (764) into bench/data/, gitignored
 uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test (400 cases, 2,000 decisions) with gold distributions
 uv run python bench/make_sets.py nsmc               # 300 Korean movie reviews, positive or not (HF card: CC BY 2.0)
