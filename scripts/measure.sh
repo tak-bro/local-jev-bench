@@ -24,7 +24,7 @@ fi
 engine=$1
 shift
 case $engine in
-    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | julia-1 | lev | openjev | drex-1.5 | opendecider-td | von) ;;
+    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | julia-1 | lev | openjev | drex-1.5 | opendecider-td | startlux-4b | onejev-4b | von) ;;
     *)
         echo "unknown engine: $engine" >&2
         exit 2
@@ -148,6 +148,13 @@ else
             ;;
         opendecider-td)
             start opendecider "${OPENDECIDER_URL:-http://127.0.0.1:8050}/ready" 200 "$scripts/serve-opendecider.sh"
+            ;;
+        startlux-4b)
+            start startlux "${STARTLUX_URL:-http://127.0.0.1:8060}/health" 200 "$scripts/serve-startlux.sh"
+            ;;
+        onejev-4b)
+            # qev answers /health only after its llama-server child has loaded the GGUF
+            start onejev "${ONEJEV_URL:-http://127.0.0.1:8070}/health" 200 "$scripts/serve-onejev.sh"
             ;;
         von)
             start von "${VON_URL:-http://127.0.0.1:8030}/health" 200 "$scripts/serve-von.sh"
