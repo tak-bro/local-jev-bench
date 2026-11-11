@@ -196,7 +196,7 @@ def test_serve_jeff_refuses_another_commit(tmp_path):
     assert r.returncode == 1 and "f067882" in r.stderr
 
 
-@pytest.mark.parametrize("engine", ["clef-flash", "clef"])
+@pytest.mark.parametrize("engine", ["clef-flash", "clef", "julia-1", "lev", "openjev"])
 def test_serve_llama_alias_is_what_the_bench_expects(engine):
     # The alias pins the GGUF file and revision; bench/run.py checks /v1/models against the same string.
     r = sh("scripts/serve-llama.sh", "--print-alias", engine)
@@ -567,6 +567,8 @@ def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
                                          ("sura-2b", "sura:2b"), ("sura-0.8b", "sura:0.8b"), ("d1-omni", "d1-omni"),
                                          ("jeff", "jeff-latest"), ("jeff-0.8b", "jeff-latest"),
                                          ("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656"), ("drex-1.5", "drex-v1.5-Q8_0@37c2b59"),
+                                         ("julia-1", "Julia-1-Q8_0@1e6b48a"), ("lev", "lev-Q8_0@2ef3b3c"),
+                                         ("openjev", "OpenJev-Q4_K_M@d2c376d"),
                                          ("opendecider-td", "opendecider"),
                                          ("von", "von-latest")])
 def test_new_engines_send_their_model(monkeypatch, name, model):
@@ -589,6 +591,7 @@ def test_new_engines_send_their_model(monkeypatch, name, model):
     ("jeff-0.8b", "/health", {"status": "ready", "model": "jeff-qwen3.5-0.8b"}),
     ("clef-flash", "/v1/models", {"object": "list", "data": [{"id": "Clef-Flash-Q8_0@4a7a08c"}]}),
     ("clef", "/v1/models", {"object": "list", "data": [{"id": "Clef-Q4_K_M@5f70656"}]}),
+    ("lev", "/v1/models", {"object": "list", "data": [{"id": "lev-Q8_0@2ef3b3c"}]}),
     ("von", "/health", {"status": "ok", "version": "1.3.7", "engine": "von-1.3"}),
 ])
 def test_served_identity_matches(monkeypatch, name, route, body):

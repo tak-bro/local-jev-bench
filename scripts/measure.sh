@@ -24,7 +24,7 @@ fi
 engine=$1
 shift
 case $engine in
-    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | drex-1.5 | opendecider-td | von) ;;
+    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | julia-1 | lev | openjev | drex-1.5 | opendecider-td | von) ;;
     *)
         echo "unknown engine: $engine" >&2
         exit 2
@@ -138,7 +138,7 @@ else
             start "$engine" "${KEV_URL:-http://127.0.0.1:8009}/v1/models" 200 \
                 env KEV_RUN="jaredpalmer/$engine" "$scripts/serve-kev.sh"
             ;;
-        clef-flash | clef)
+        clef-flash | clef | julia-1 | lev | openjev)
             # /health answers 503 until the GGUF is loaded
             start "$engine" "${LLAMA_URL:-http://127.0.0.1:8020}/health" 200 "$scripts/serve-llama.sh" "$engine"
             ;;

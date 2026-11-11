@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Serve a Clef GGUF with llama.cpp's llama-server, whose /v1/systemone answers in TypeSafe's wire format, on
-# localhost:${LLAMA_PORT:-8020}. clef-flash and clef share the port; the alias (GGUF file plus repo revision) is what
+# Serve a ggml-org decision GGUF (Clef, Julia-1, lev, OpenJev) with llama.cpp's llama-server, whose /v1/systemone
+# answers in TypeSafe's wire format, on localhost:${LLAMA_PORT:-8020}. All of them share the port; the alias (GGUF file plus repo revision) is what
 # bench/run.py checks /v1/models against before it measures.
 #   scripts/serve-llama.sh clef-flash                # ggml-org/Clef-Flash-GGUF Q8_0
 #   scripts/serve-llama.sh clef                      # ggml-org/Clef-GGUF Q4_K_M (27B)
+#   scripts/serve-llama.sh julia-1                   # ggml-org/Julia-1-GGUF Q8_0 (144M ModernBERT)
+#   scripts/serve-llama.sh lev                       # ggml-org/lev-GGUF Q8_0 (4B)
+#   scripts/serve-llama.sh openjev                   # ggml-org/OpenJev-GGUF Q4_K_M (27B, text only)
 #   scripts/serve-llama.sh --print-alias clef-flash  # the model name the bench sends and expects
 # llama-server comes from the b11403 release, unpacked so that LLAMA_SERVER (default below) points at it:
 # https://github.com/ggml-org/llama.cpp/releases/tag/b11403. /v1/systemone (ggml-org/llama.cpp#29818) and the clef
@@ -19,8 +22,11 @@ fi
 case ${1:-} in
     clef-flash) repo=ggml-org/Clef-Flash-GGUF file=Clef-Flash-Q8_0.gguf rev=4a7a08c09bc63baf043b62b5ba89dd67a0357d95 ;;
     clef) repo=ggml-org/Clef-GGUF file=Clef-Q4_K_M.gguf rev=5f70656b6670c65eb85ad07a11efe211b5f211bd ;;
+    julia-1) repo=ggml-org/Julia-1-GGUF file=Julia-1-Q8_0.gguf rev=1e6b48a6983d7467f8eedc2cb0d21267b5fc052d ;;
+    lev) repo=ggml-org/lev-GGUF file=lev-Q8_0.gguf rev=2ef3b3c3ab3defcab1058ab34cac52c467fa9304 ;;
+    openjev) repo=ggml-org/OpenJev-GGUF file=OpenJev-Q4_K_M.gguf rev=d2c376d11b6c466ab7bdc9fa458ace41cdf3e776 ;;
     *)
-        echo "unknown engine: ${1:-} (clef-flash or clef)" >&2
+        echo "unknown engine: ${1:-} (clef-flash, clef, julia-1, lev or openjev)" >&2
         exit 2
         ;;
 esac
@@ -44,7 +50,7 @@ fi
 # Cached after the first download; the revision pins the exact file.
 gguf=$(cd "$(dirname "$0")/.." && uv run hf download "$repo" "$file" --revision "$rev" --quiet)
 
-# Clef evaluates the whole prompt (state, every question and option) in one batch, so it must fit in --ubatch-size.
+# Clef (and the others, run the same way) evaluates the whole prompt (state, every question and option) in one batch, so it must fit in --ubatch-size.
 # One slot: the other engines are measured one call at a time too.
 exec "$server" -m "$gguf" --alias "$alias" \
     --host 127.0.0.1 --port "$port" \
