@@ -1,4 +1,4 @@
-# local-jev-bench: Apple Silicon 맥에서 돌리는 Jev 스타일 결정 모델 (Kev, Winnow, Clef, StartLux, OneJev, OpenJev, Drex, lev, OpenDecider, Von, Julia, Jeff, AnyJev, Laya, CLM, Decider)
+# local-jev-bench: Apple Silicon 맥에서 돌리는 Jev 스타일 결정 모델
 
 [English](README.md) | 한국어
 
@@ -9,6 +9,44 @@ local-jev-bench는 Jev 스타일의 System One 결정 모델을 Apple Silicon �
 - Kev의 분포 밖 셋 transfer-v4
 - typed-decisions 리더보드 셋
 - 한국어 셋 두 개: NSMC 영화 리뷰, KLUE-YNAT 뉴스 제목
+
+## 차트로 보기
+
+![모든 엔진의 셋별 정확도 히트맵](docs/charts/accuracy.svg)
+
+![첫 호출 지연 중앙값과 평균 정확도, 파레토 경계](docs/charts/speed-vs-accuracy.svg)
+
+- **전체 정확도 1위:** Clef(8개 셋 평균 86.5%). 다음은 StartLux-4B(85.0%), Winnow-12B(84.1%)다.
+  여기서 Clef는 호출당 1.5-8.4초, StartLux-4B는 122-1273ms다.
+- **셋별 1위:** transfer-v4(87%)와 typed-decisions(79%, OpenDecider-td의 분포 내 78%†와 동률)는 StartLux-4B,
+  clinc-oos(95%)는 Clef, BANKING77-20(97%)은 Clef-flash, KLUE-YNAT(83%)은 pplx-decider다.
+- **속도 대비 가장 정확한 엔진(점선):** Julia-1, Ollaya, Kev-0.8B, StartLux-4B, Clef. 이들보다 빠르면서 더 정확한
+  엔진은 없다.
+- **동률:** 상위권 사이의 1-2포인트 차이는 대부분 유의하지 않다. 짝지은 McNemar p가 0.05 미만일 때만 두 엔진이
+  다르다고 본다([FAQ](#faq)).
+
+차트는 `uv run python bench/charts.py`가 `bench/runs/<set>/report.md`에서 그린다.
+
+## 한눈에 보기
+
+필요별로 한 줄씩, 전부 아래 결과에서 뽑았다. 두 엔진이 다르다고 말할 조건은 McNemar p < 0.05([FAQ](#faq) 참고)다.
+그보다 가까우면 같다고 본다.
+
+| 필요 | 엔진 | 이유 |
+|---|---|---|
+| 전반적으로 가장 정확 | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Drex v1.5, OpenJev, OneJev, StartLux-4B, Clef-flash, Clef | 대부분 셋에서 상위 그룹 |
+| 분포 밖 전이(transfer-v4) 최고 | StartLux-4B | 87%(665/764). pplx-decider 84%보다 나음(p < 0.001). 대부분 `emotion` 출처에서 |
+| typed-decisions 최고 | StartLux-4B(79%, 학습 데이터 세부 미공개) 또는 OpenDecider-td(분포 안, 78%†. 둘은 같음, p = 0.121) | 주의점 참고 |
+| 한국어(NSMC + KLUE-YNAT) 최고 | pplx-decider 또는 Winnow-12B | KLUE-YNAT 83% vs 79%(p = 0.111), NSMC 87% vs 88%. OpenJev의 NSMC 89%는 둘과 같음 |
+| clinc-oos(인텐트 + 범위 밖) 최고 | Clef, 다음 lev(분포 안) 또는 Drex v1.5 | 95% vs 92%†(p = 0.081) vs 88%(p < 0.001). Drex는 Kev-9B·Clef-flash보다 나음(p < 0.001) |
+| 가장 빠름 | Ollaya(`laya`) | typed-decisions 제외 첫 호출 p50 10.2-43.7ms |
+| 보정 최고 | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
+
+전체 표·셋별 주의점·McNemar 결과는 [결과](#결과-2026-10-1416-m3-max-36gb)와 [FAQ](#faq)에 있다.
+
+## 결과 요약
+
+<details><summary>셋별·엔진별 핵심 결과 (펼치기)</summary>
 
 **핵심 결과 (M3 Max 36GB. 2026-10-14~16에 유휴 머신에서 모든 엔진을 모든 셋에 다시 쟀고, 이전 정확도 수치가 그대로 재현됐다).**
 전체적으로 가장 정확한 엔진은 Kev-9B, Kev-4B, Winnow-E4B, Winnow-12B, Decider-4B, pplx-decider, Drex v1.5, OpenJev, OneJev, StartLux-4B, Clef, Clef-flash다.
@@ -51,6 +89,12 @@ typed-decisions에서는 StartLux-4B(79%, 학습 데이터 세부 미공개)와 
 
 가장 빠른 엔진은 Ollaya(Laya)다. typed-decisions의 긴 state를 빼면 첫 호출 p50이 10-44ms다. 대신 정확도는 낮은 편이다. typed-decisions에서 전체 최하위이고, clinc-oos(79%)를 빼면 모든 셋에서 하위 다섯 안에 든다. 보정(ECE)은 한국어 30문항, BANKING77-20, typed-decisions, NSMC, KLUE-YNAT에서 Kev·Winnow·Jeff·Ollaya 중 가장 나쁘다. AnyJev와 CLM은 일부 셋에서 그보다도 나쁘다. Kev-0.8B는 같은 셋에서 27-52ms이고, clinc-oos(71% vs 79%)를 빼면 모든 셋에서 정확도가 Ollaya와 같거나 더 높다. Kev-4B는 transfer-v4에서 모델 카드 수치를 재현했다(534/656, 카드 0.817). 자세한 내용은 [결과](#결과-2026-10-1416-m3-max-36gb) 절에 있다.
 
+</details>
+
+## 엔진
+
+<details><summary>엔진 스물여섯 가지와 출처 (펼치기)</summary>
+
 엔진은 스물여섯 가지다.
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): [vllm-metal](https://github.com/vllm-project/vllm-metal)로 서빙하는 Qwen3-8B 인코더와 75MB짜리 CLM 헤드.
@@ -82,22 +126,7 @@ typed-decisions에서는 StartLux-4B(79%, 학습 데이터 세부 미공개)와 
 
 모든 엔진은 TypeSafe의 `POST /v1/systemone` 형식으로 응답한다.
 
-## 한눈에 보기
-
-필요별로 한 줄씩, 전부 아래 결과에서 뽑았다. 두 엔진이 다르다고 말할 조건은 McNemar p < 0.05([FAQ](#faq) 참고)다.
-그보다 가까우면 같다고 본다.
-
-| 필요 | 엔진 | 이유 |
-|---|---|---|
-| 전반적으로 가장 정확 | Kev-9B, Kev-4B, Winnow-E4B/12B, Decider-4B, pplx-decider, Drex v1.5, OpenJev, OneJev, StartLux-4B, Clef-flash, Clef | 대부분 셋에서 상위 그룹 |
-| 분포 밖 전이(transfer-v4) 최고 | StartLux-4B | 87%(665/764). pplx-decider 84%보다 나음(p < 0.001). 대부분 `emotion` 출처에서 |
-| typed-decisions 최고 | StartLux-4B(79%, 학습 데이터 세부 미공개) 또는 OpenDecider-td(분포 안, 78%†. 둘은 같음, p = 0.121) | 주의점 참고 |
-| 한국어(NSMC + KLUE-YNAT) 최고 | pplx-decider 또는 Winnow-12B | KLUE-YNAT 83% vs 79%(p = 0.111), NSMC 87% vs 88%. OpenJev의 NSMC 89%는 둘과 같음 |
-| clinc-oos(인텐트 + 범위 밖) 최고 | Clef, 다음 lev(분포 안) 또는 Drex v1.5 | 95% vs 92%†(p = 0.081) vs 88%(p < 0.001). Drex는 Kev-9B·Clef-flash보다 나음(p < 0.001) |
-| 가장 빠름 | Ollaya(`laya`) | typed-decisions 제외 첫 호출 p50 10.2-43.7ms |
-| 보정 최고 | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
-
-전체 표·셋별 주의점·McNemar 결과는 [결과](#결과-2026-10-1416-m3-max-36gb)와 [FAQ](#faq)에 있다.
+</details>
 
 ## 아키텍처
 
@@ -210,6 +239,7 @@ uv run python bench/run.py                           # 30 questions x 3 reps on 
 uv run python bench/run.py --smoke --engine <e>       # shape only (anyjev-raw, anyjev-l0, kev-0.8b, kev-4b, kev-9b, winnow, jeff), its server up
 uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
 uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
+uv run python bench/charts.py --check                       # docs/charts/*.svg가 report와 일치 (--check 없이: 다시 그림)
 uv run python bench/make_sets.py transfer-v4        # Kev의 분포 밖 development 세트(764)를 bench/data/에, gitignore
 uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test(400케이스, 2,000판단), gold 분포 포함
 uv run python bench/make_sets.py nsmc               # 한국어 영화 리뷰 300개, 긍정 여부 (HF 카드: CC BY 2.0)

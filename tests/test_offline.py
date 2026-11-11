@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "bench"))
 sys.path.insert(0, str(ROOT / "tests"))
 import run  # noqa: E402
+import charts  # noqa: E402
 import score  # noqa: E402
 from standin_server import LocalHTTPServer  # noqa: E402
 
@@ -743,3 +744,9 @@ def test_serve_name_is_what_the_bench_expects(script, engine):
     r = sh(script, "--print-name")
     assert r.returncode == 0, r.stderr
     assert r.stdout.strip() == run.ENGINES[engine]["model"] == run.ENGINES[engine]["served"][2]
+
+
+def test_readme_charts_match_the_reports():
+    # README's charts are drawn from the committed reports; a new run must redraw them (bench/charts.py).
+    for path, content in charts.charts().items():
+        assert path.read_text() == content, f"{path.name} is stale: uv run python bench/charts.py"
