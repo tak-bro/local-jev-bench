@@ -98,6 +98,13 @@ ENGINES["drex-1.5"] = {"url": os.environ.get("DREX_URL", "http://127.0.0.1:8040"
 # Ollama tag it serves.
 ENGINES["opendecider-td"] = {"url": os.environ.get("OPENDECIDER_URL", "http://127.0.0.1:8050"), "model": "opendecider",
                              "served": ("/health", ("model",), "hf.co/manjunathshiva/opendecider-small-td-GGUF:Q8_0")}
+# StartLux-Decision (scripts/serve-startlux.sh, MLX) and OneJev (scripts/serve-onejev.sh, qev over llama.cpp) report
+# the name they were started with on /health: the model folder or GGUF file plus its repo revision.
+for name, url_env, port, served_name in (
+        ("startlux-4b", "STARTLUX_URL", 8060, "StartLux-Decision-v1.1-4B-Instant-MLX-8bit@56f18ac"),
+        ("onejev-4b", "ONEJEV_URL", 8070, "OneJev1.6-4B.Q8_0@2b605ac")):
+    ENGINES[name] = {"url": os.environ.get(url_env, f"http://127.0.0.1:{port}"), "model": served_name,
+                     "served": ("/health", ("model",), served_name)}
 ENGINES["von"] = {"url": os.environ.get("VON_URL", "http://127.0.0.1:8030"), "model": "von-latest",
                   "served": ("/health", ("version",), "1.3.7")}
 # A bare benchmark runs the two engines that can share the machine. The others each need most of the Metal

@@ -37,9 +37,11 @@ questions count only in sets graded by argmax, which read their level probabilit
 | nimble-v3 | nimble:9b-v3 | 7640.9 | 7674.4 | 7674.4 | 9141.8 | 300 | 233/300 (78%, 73-82) | 0.360 (300) | 0.132 | n/a | 18/300 (6%) | 0 | normal |
 | ollaya | laya | 19.3 | 13.2 | 13.2 | 13.6 | 300 | 129/300 (43%, 38-49) | 0.831 (300) | 0.288 | n/a | 89/300 (30%) | 0 | normal |
 | ollaya-td | laya:typed-decisions | 399.5 | 385.8 | 385.8 | 407.2 | 300 | 56/300 (19%, 15-23) | 0.837 (300) | 0.033 | n/a | 227/300 (76%) | 0 | normal |
+| onejev-4b | OneJev1.6-4B.Q8_0@2b605ac | 304.4 | 335.1 | 335.1 | 366.9 | 300 | 234/300 (78%, 73-82) | 0.326 (300) | 0.056 | n/a | 9/300 (3%) | 0 | normal |
 | opendecider-td | opendecider | 225.5 | 274.7 | 274.7 | 286.5 | 300 | 224/300 (75%, 69-79) | 0.362 (300) | 0.086 | n/a | 26/300 (9%) | 0 | warn |
 | openjev | OpenJev-Q4_K_M@d2c376d | 1284.2 | 1272.0 | 1272.0 | 1301.9 | 300 | 230/300 (77%, 72-81) | 0.335 (300) | 0.120 | n/a | 14/300 (5%) | 0 | normal |
 | pplx-decider | pplx-decider:flash | 2432.4 | 2430.1 | 2430.1 | 2453.5 | 300 | 249/300 (83%, 78-87) | 0.248 (300) | 0.079 | n/a | 22/300 (7%) | 0 | normal |
+| startlux-4b | StartLux-Decision-v1.1-4B-Instant-MLX-8bit@56f18ac | 194.6 | 216.7 | 216.7 | 227.7 | 300 | 230/300 (77%, 72-81) | 0.338 (300) | 0.087 | n/a | 17/300 (6%) | 0 | normal |
 | sura-0.8b | sura:0.8b | 379.7 | 394.7 | 394.7 | 451.0 | 300 | 186/300 (62%, 56-67) | 0.514 (300) | 0.111 | n/a | 34/300 (11%) | 0 | normal |
 | sura-2b | sura:2b | 841.6 | 921.8 | 921.8 | 933.1 | 300 | 197/300 (66%, 60-71) | 0.465 (300) | 0.095 | n/a | 28/300 (9%) | 0 | normal |
 | von | von-latest | 58.8 | 52.1 | 52.1 | 55.6 | 300 | 45/300 (15%, 11-19) | 0.922 (300) | 0.200 | n/a | 0/300 (0%) | 0 | normal |
@@ -74,9 +76,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-l0 | nimble-v3 | 300 | 15 | 22 | 0.324 |
 | anyjev-l0 | ollaya | 300 | 126 | 29 | <0.001 |
 | anyjev-l0 | ollaya-td | 300 | 188 | 18 | <0.001 |
+| anyjev-l0 | onejev-4b | 300 | 16 | 24 | 0.268 |
 | anyjev-l0 | opendecider-td | 300 | 22 | 20 | 0.878 |
 | anyjev-l0 | openjev | 300 | 26 | 30 | 0.689 |
 | anyjev-l0 | pplx-decider | 300 | 19 | 42 | 0.004 |
+| anyjev-l0 | startlux-4b | 300 | 21 | 25 | 0.659 |
 | anyjev-l0 | sura-0.8b | 300 | 64 | 24 | <0.001 |
 | anyjev-l0 | sura-2b | 300 | 55 | 26 | 0.002 |
 | anyjev-l0 | von | 300 | 198 | 17 | <0.001 |
@@ -102,9 +106,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | anyjev-raw | nimble-v3 | 300 | 19 | 24 | 0.542 |
 | anyjev-raw | ollaya | 300 | 127 | 28 | <0.001 |
 | anyjev-raw | ollaya-td | 300 | 188 | 16 | <0.001 |
+| anyjev-raw | onejev-4b | 300 | 19 | 25 | 0.451 |
 | anyjev-raw | opendecider-td | 300 | 24 | 20 | 0.652 |
 | anyjev-raw | openjev | 300 | 30 | 32 | 0.899 |
 | anyjev-raw | pplx-decider | 300 | 23 | 44 | 0.014 |
+| anyjev-raw | startlux-4b | 300 | 28 | 30 | 0.896 |
 | anyjev-raw | sura-0.8b | 300 | 64 | 22 | <0.001 |
 | anyjev-raw | sura-2b | 300 | 56 | 25 | <0.001 |
 | anyjev-raw | von | 300 | 198 | 15 | <0.001 |
@@ -129,9 +135,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef | nimble-v3 | 300 | 19 | 19 | 1.000 |
 | clef | ollaya | 300 | 122 | 18 | <0.001 |
 | clef | ollaya-td | 300 | 193 | 16 | <0.001 |
+| clef | onejev-4b | 300 | 18 | 19 | 1.000 |
 | clef | opendecider-td | 300 | 30 | 21 | 0.262 |
 | clef | openjev | 300 | 19 | 16 | 0.736 |
 | clef | pplx-decider | 300 | 18 | 34 | 0.036 |
+| clef | startlux-4b | 300 | 22 | 19 | 0.755 |
 | clef | sura-0.8b | 300 | 69 | 22 | <0.001 |
 | clef | sura-2b | 300 | 60 | 24 | <0.001 |
 | clef | von | 300 | 202 | 14 | <0.001 |
@@ -155,9 +163,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | clef-flash | nimble-v3 | 300 | 14 | 16 | 0.856 |
 | clef-flash | ollaya | 300 | 121 | 19 | <0.001 |
 | clef-flash | ollaya-td | 300 | 189 | 14 | <0.001 |
+| clef-flash | onejev-4b | 300 | 19 | 22 | 0.755 |
 | clef-flash | opendecider-td | 300 | 28 | 21 | 0.392 |
 | clef-flash | openjev | 300 | 22 | 21 | 1.000 |
 | clef-flash | pplx-decider | 300 | 14 | 32 | 0.011 |
+| clef-flash | startlux-4b | 300 | 22 | 21 | 1.000 |
 | clef-flash | sura-0.8b | 300 | 69 | 24 | <0.001 |
 | clef-flash | sura-2b | 300 | 61 | 27 | <0.001 |
 | clef-flash | von | 300 | 202 | 16 | <0.001 |
@@ -180,9 +190,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | coba-1b | nimble-v3 | 300 | 3 | 178 | <0.001 |
 | coba-1b | ollaya | 300 | 20 | 91 | <0.001 |
 | coba-1b | ollaya-td | 300 | 43 | 41 | 0.913 |
+| coba-1b | onejev-4b | 300 | 5 | 181 | <0.001 |
 | coba-1b | opendecider-td | 300 | 7 | 173 | <0.001 |
 | coba-1b | openjev | 300 | 2 | 174 | <0.001 |
 | coba-1b | pplx-decider | 300 | 5 | 196 | <0.001 |
+| coba-1b | startlux-4b | 300 | 5 | 177 | <0.001 |
 | coba-1b | sura-0.8b | 300 | 14 | 142 | <0.001 |
 | coba-1b | sura-2b | 300 | 10 | 149 | <0.001 |
 | coba-1b | von | 300 | 45 | 32 | 0.171 |
@@ -204,9 +216,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | coba-400m | nimble-v3 | 300 | 19 | 147 | <0.001 |
 | coba-400m | ollaya | 300 | 73 | 97 | 0.077 |
 | coba-400m | ollaya-td | 300 | 92 | 43 | <0.001 |
+| coba-400m | onejev-4b | 300 | 17 | 146 | <0.001 |
 | coba-400m | opendecider-td | 300 | 16 | 135 | <0.001 |
 | coba-400m | openjev | 300 | 30 | 155 | <0.001 |
 | coba-400m | pplx-decider | 300 | 24 | 168 | <0.001 |
+| coba-400m | startlux-4b | 300 | 26 | 151 | <0.001 |
 | coba-400m | sura-0.8b | 300 | 25 | 106 | <0.001 |
 | coba-400m | sura-2b | 300 | 25 | 117 | <0.001 |
 | coba-400m | von | 300 | 80 | 20 | <0.001 |
@@ -227,9 +241,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | d1-omni | nimble-v3 | 300 | 12 | 171 | <0.001 |
 | d1-omni | ollaya | 300 | 16 | 71 | <0.001 |
 | d1-omni | ollaya-td | 300 | 57 | 39 | 0.082 |
+| d1-omni | onejev-4b | 300 | 11 | 171 | <0.001 |
 | d1-omni | opendecider-td | 300 | 14 | 164 | <0.001 |
 | d1-omni | openjev | 300 | 11 | 167 | <0.001 |
 | d1-omni | pplx-decider | 300 | 7 | 182 | <0.001 |
+| d1-omni | startlux-4b | 300 | 11 | 167 | <0.001 |
 | d1-omni | sura-0.8b | 300 | 20 | 132 | <0.001 |
 | d1-omni | sura-2b | 300 | 17 | 140 | <0.001 |
 | d1-omni | von | 300 | 60 | 31 | 0.003 |
@@ -249,9 +265,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-2b | nimble-v3 | 300 | 14 | 27 | 0.060 |
 | decider-2b | ollaya | 300 | 112 | 21 | <0.001 |
 | decider-2b | ollaya-td | 300 | 179 | 15 | <0.001 |
+| decider-2b | onejev-4b | 300 | 13 | 27 | 0.038 |
 | decider-2b | opendecider-td | 300 | 27 | 31 | 0.694 |
 | decider-2b | openjev | 300 | 18 | 28 | 0.184 |
 | decider-2b | pplx-decider | 300 | 14 | 43 | <0.001 |
+| decider-2b | startlux-4b | 300 | 19 | 29 | 0.193 |
 | decider-2b | sura-0.8b | 300 | 58 | 24 | <0.001 |
 | decider-2b | sura-2b | 300 | 51 | 28 | 0.013 |
 | decider-2b | von | 300 | 190 | 15 | <0.001 |
@@ -270,9 +288,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decider-4b | nimble-v3 | 300 | 16 | 37 | 0.005 |
 | decider-4b | ollaya | 300 | 103 | 20 | <0.001 |
 | decider-4b | ollaya-td | 300 | 172 | 16 | <0.001 |
+| decider-4b | onejev-4b | 300 | 12 | 34 | 0.002 |
 | decider-4b | opendecider-td | 300 | 24 | 36 | 0.155 |
 | decider-4b | openjev | 300 | 12 | 30 | 0.008 |
 | decider-4b | pplx-decider | 300 | 7 | 44 | <0.001 |
+| decider-4b | startlux-4b | 300 | 11 | 29 | 0.006 |
 | decider-4b | sura-0.8b | 300 | 55 | 29 | 0.006 |
 | decider-4b | sura-2b | 300 | 46 | 31 | 0.110 |
 | decider-4b | von | 300 | 187 | 20 | <0.001 |
@@ -290,9 +310,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | decision-eos | nimble-v3 | 300 | 17 | 61 | <0.001 |
 | decision-eos | ollaya | 300 | 82 | 22 | <0.001 |
 | decision-eos | ollaya-td | 300 | 150 | 17 | <0.001 |
+| decision-eos | onejev-4b | 300 | 9 | 54 | <0.001 |
 | decision-eos | opendecider-td | 300 | 19 | 54 | <0.001 |
 | decision-eos | openjev | 300 | 14 | 55 | <0.001 |
 | decision-eos | pplx-decider | 300 | 16 | 76 | <0.001 |
+| decision-eos | startlux-4b | 300 | 21 | 62 | <0.001 |
 | decision-eos | sura-0.8b | 300 | 38 | 35 | 0.815 |
 | decision-eos | sura-2b | 300 | 34 | 42 | 0.422 |
 | decision-eos | von | 300 | 163 | 19 | <0.001 |
@@ -309,9 +331,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | drex-1.5 | nimble-v3 | 300 | 11 | 19 | 0.200 |
 | drex-1.5 | ollaya | 300 | 117 | 21 | <0.001 |
 | drex-1.5 | ollaya-td | 300 | 186 | 17 | <0.001 |
+| drex-1.5 | onejev-4b | 300 | 16 | 25 | 0.211 |
 | drex-1.5 | opendecider-td | 300 | 27 | 26 | 1.000 |
 | drex-1.5 | openjev | 300 | 21 | 26 | 0.560 |
 | drex-1.5 | pplx-decider | 300 | 15 | 39 | 0.001 |
+| drex-1.5 | startlux-4b | 300 | 18 | 23 | 0.533 |
 | drex-1.5 | sura-0.8b | 300 | 63 | 24 | <0.001 |
 | drex-1.5 | sura-2b | 300 | 51 | 23 | 0.002 |
 | drex-1.5 | von | 300 | 195 | 15 | <0.001 |
@@ -327,9 +351,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jeff | nimble-v3 | 300 | 16 | 27 | 0.126 |
 | jeff | ollaya | 300 | 115 | 22 | <0.001 |
 | jeff | ollaya-td | 300 | 179 | 13 | <0.001 |
+| jeff | onejev-4b | 300 | 15 | 27 | 0.088 |
 | jeff | opendecider-td | 300 | 19 | 21 | 0.875 |
 | jeff | openjev | 300 | 25 | 33 | 0.358 |
 | jeff | pplx-decider | 300 | 15 | 42 | <0.001 |
+| jeff | startlux-4b | 300 | 22 | 30 | 0.332 |
 | jeff | sura-0.8b | 300 | 55 | 19 | <0.001 |
 | jeff | sura-2b | 300 | 44 | 19 | 0.002 |
 | jeff | von | 300 | 192 | 15 | <0.001 |
@@ -344,9 +370,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jeff-0.8b | nimble-v3 | 300 | 23 | 50 | 0.002 |
 | jeff-0.8b | ollaya | 300 | 114 | 37 | <0.001 |
 | jeff-0.8b | ollaya-td | 300 | 169 | 19 | <0.001 |
+| jeff-0.8b | onejev-4b | 300 | 18 | 46 | <0.001 |
 | jeff-0.8b | opendecider-td | 300 | 22 | 40 | 0.030 |
 | jeff-0.8b | openjev | 300 | 34 | 58 | 0.016 |
 | jeff-0.8b | pplx-decider | 300 | 24 | 67 | <0.001 |
+| jeff-0.8b | startlux-4b | 300 | 30 | 54 | 0.012 |
 | jeff-0.8b | sura-0.8b | 300 | 49 | 29 | 0.031 |
 | jeff-0.8b | sura-2b | 300 | 40 | 31 | 0.342 |
 | jeff-0.8b | von | 300 | 173 | 12 | <0.001 |
@@ -360,9 +388,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | jevk5 | nimble-v3 | 300 | 15 | 26 | 0.117 |
 | jevk5 | ollaya | 300 | 113 | 20 | <0.001 |
 | jevk5 | ollaya-td | 300 | 181 | 15 | <0.001 |
+| jevk5 | onejev-4b | 300 | 7 | 19 | 0.029 |
 | jevk5 | opendecider-td | 300 | 20 | 22 | 0.878 |
 | jevk5 | openjev | 300 | 28 | 36 | 0.382 |
 | jevk5 | pplx-decider | 300 | 15 | 42 | <0.001 |
+| jevk5 | startlux-4b | 300 | 16 | 24 | 0.268 |
 | jevk5 | sura-0.8b | 300 | 55 | 19 | <0.001 |
 | jevk5 | sura-2b | 300 | 44 | 19 | 0.002 |
 | jevk5 | von | 300 | 192 | 15 | <0.001 |
@@ -375,9 +405,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | julia-1 | nimble-v3 | 300 | 6 | 168 | <0.001 |
 | julia-1 | ollaya | 300 | 8 | 66 | <0.001 |
 | julia-1 | ollaya-td | 300 | 42 | 27 | 0.091 |
+| julia-1 | onejev-4b | 300 | 7 | 170 | <0.001 |
 | julia-1 | opendecider-td | 300 | 11 | 164 | <0.001 |
 | julia-1 | openjev | 300 | 5 | 164 | <0.001 |
 | julia-1 | pplx-decider | 300 | 3 | 181 | <0.001 |
+| julia-1 | startlux-4b | 300 | 8 | 167 | <0.001 |
 | julia-1 | sura-0.8b | 300 | 7 | 122 | <0.001 |
 | julia-1 | sura-2b | 300 | 9 | 135 | <0.001 |
 | julia-1 | von | 300 | 61 | 35 | 0.010 |
@@ -389,9 +421,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | kev-0.8b | nimble-v3 | 300 | 16 | 61 | <0.001 |
 | kev-0.8b | ollaya | 300 | 93 | 34 | <0.001 |
 | kev-0.8b | ollaya-td | 300 | 149 | 17 | <0.001 |
+| kev-0.8b | onejev-4b | 300 | 8 | 54 | <0.001 |
 | kev-0.8b | opendecider-td | 300 | 15 | 51 | <0.001 |
 | kev-0.8b | openjev | 300 | 20 | 62 | <0.001 |
 | kev-0.8b | pplx-decider | 300 | 15 | 76 | <0.001 |
+| kev-0.8b | startlux-4b | 300 | 19 | 61 | <0.001 |
 | kev-0.8b | sura-0.8b | 300 | 41 | 39 | 0.911 |
 | kev-0.8b | sura-2b | 300 | 41 | 50 | 0.402 |
 | kev-0.8b | von | 300 | 161 | 18 | <0.001 |
@@ -402,9 +436,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | kev-4b | nimble-v3 | 300 | 20 | 31 | 0.161 |
 | kev-4b | ollaya | 300 | 112 | 19 | <0.001 |
 | kev-4b | ollaya-td | 300 | 183 | 17 | <0.001 |
+| kev-4b | onejev-4b | 300 | 11 | 23 | 0.058 |
 | kev-4b | opendecider-td | 300 | 25 | 27 | 0.890 |
 | kev-4b | openjev | 300 | 20 | 28 | 0.312 |
 | kev-4b | pplx-decider | 300 | 14 | 41 | <0.001 |
+| kev-4b | startlux-4b | 300 | 14 | 22 | 0.243 |
 | kev-4b | sura-0.8b | 300 | 61 | 25 | <0.001 |
 | kev-4b | sura-2b | 300 | 56 | 31 | 0.010 |
 | kev-4b | von | 300 | 196 | 19 | <0.001 |
@@ -414,9 +450,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | kev-9b | nimble-v3 | 300 | 16 | 31 | 0.040 |
 | kev-9b | ollaya | 300 | 110 | 21 | <0.001 |
 | kev-9b | ollaya-td | 300 | 178 | 16 | <0.001 |
+| kev-9b | onejev-4b | 300 | 11 | 27 | 0.014 |
 | kev-9b | opendecider-td | 300 | 28 | 34 | 0.526 |
 | kev-9b | openjev | 300 | 19 | 31 | 0.119 |
 | kev-9b | pplx-decider | 300 | 12 | 43 | <0.001 |
+| kev-9b | startlux-4b | 300 | 16 | 28 | 0.096 |
 | kev-9b | sura-0.8b | 300 | 65 | 33 | 0.002 |
 | kev-9b | sura-2b | 300 | 55 | 34 | 0.033 |
 | kev-9b | von | 300 | 190 | 17 | <0.001 |
@@ -425,9 +463,11 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | lev | nimble-v3 | 300 | 17 | 22 | 0.522 |
 | lev | ollaya | 300 | 121 | 22 | <0.001 |
 | lev | ollaya-td | 300 | 189 | 17 | <0.001 |
+| lev | onejev-4b | 300 | 11 | 17 | 0.345 |
 | lev | opendecider-td | 300 | 26 | 22 | 0.665 |
 | lev | openjev | 300 | 24 | 26 | 0.888 |
 | lev | pplx-decider | 300 | 16 | 37 | 0.005 |
+| lev | startlux-4b | 300 | 17 | 19 | 0.868 |
 | lev | sura-0.8b | 300 | 64 | 22 | <0.001 |
 | lev | sura-2b | 300 | 56 | 25 | <0.001 |
 | lev | von | 300 | 196 | 13 | <0.001 |
@@ -435,49 +475,72 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 | lev | winnow-12b | 300 | 16 | 25 | 0.211 |
 | nimble-v3 | ollaya | 300 | 125 | 21 | <0.001 |
 | nimble-v3 | ollaya-td | 300 | 191 | 14 | <0.001 |
+| nimble-v3 | onejev-4b | 300 | 19 | 20 | 1.000 |
 | nimble-v3 | opendecider-td | 300 | 31 | 22 | 0.272 |
 | nimble-v3 | openjev | 300 | 26 | 23 | 0.775 |
 | nimble-v3 | pplx-decider | 300 | 20 | 36 | 0.044 |
+| nimble-v3 | startlux-4b | 300 | 26 | 23 | 0.775 |
 | nimble-v3 | sura-0.8b | 300 | 63 | 16 | <0.001 |
 | nimble-v3 | sura-2b | 300 | 58 | 22 | <0.001 |
 | nimble-v3 | von | 300 | 204 | 16 | <0.001 |
 | nimble-v3 | winnow | 300 | 29 | 17 | 0.104 |
 | nimble-v3 | winnow-12b | 300 | 17 | 21 | 0.627 |
 | ollaya | ollaya-td | 300 | 91 | 18 | <0.001 |
+| ollaya | onejev-4b | 300 | 19 | 124 | <0.001 |
 | ollaya | opendecider-td | 300 | 25 | 120 | <0.001 |
 | ollaya | openjev | 300 | 14 | 115 | <0.001 |
 | ollaya | pplx-decider | 300 | 12 | 132 | <0.001 |
+| ollaya | startlux-4b | 300 | 19 | 120 | <0.001 |
 | ollaya | sura-0.8b | 300 | 26 | 83 | <0.001 |
 | ollaya | sura-2b | 300 | 25 | 93 | <0.001 |
 | ollaya | von | 300 | 106 | 22 | <0.001 |
 | ollaya | winnow | 300 | 23 | 115 | <0.001 |
 | ollaya | winnow-12b | 300 | 17 | 125 | <0.001 |
+| ollaya-td | onejev-4b | 300 | 14 | 192 | <0.001 |
 | ollaya-td | opendecider-td | 300 | 16 | 184 | <0.001 |
 | ollaya-td | openjev | 300 | 11 | 185 | <0.001 |
 | ollaya-td | pplx-decider | 300 | 8 | 201 | <0.001 |
+| ollaya-td | startlux-4b | 300 | 16 | 190 | <0.001 |
 | ollaya-td | sura-0.8b | 300 | 12 | 142 | <0.001 |
 | ollaya-td | sura-2b | 300 | 14 | 155 | <0.001 |
 | ollaya-td | von | 300 | 39 | 28 | 0.222 |
 | ollaya-td | winnow | 300 | 14 | 179 | <0.001 |
 | ollaya-td | winnow-12b | 300 | 12 | 193 | <0.001 |
+| onejev-4b | opendecider-td | 300 | 28 | 18 | 0.184 |
+| onejev-4b | openjev | 300 | 29 | 25 | 0.683 |
+| onejev-4b | pplx-decider | 300 | 17 | 32 | 0.044 |
+| onejev-4b | startlux-4b | 300 | 21 | 17 | 0.627 |
+| onejev-4b | sura-0.8b | 300 | 63 | 15 | <0.001 |
+| onejev-4b | sura-2b | 300 | 53 | 16 | <0.001 |
+| onejev-4b | von | 300 | 202 | 13 | <0.001 |
+| onejev-4b | winnow | 300 | 24 | 11 | 0.041 |
+| onejev-4b | winnow-12b | 300 | 14 | 17 | 0.720 |
 | opendecider-td | openjev | 300 | 30 | 36 | 0.539 |
 | opendecider-td | pplx-decider | 300 | 20 | 45 | 0.003 |
+| opendecider-td | startlux-4b | 300 | 22 | 28 | 0.480 |
 | opendecider-td | sura-0.8b | 300 | 59 | 21 | <0.001 |
 | opendecider-td | sura-2b | 300 | 50 | 23 | 0.002 |
 | opendecider-td | von | 300 | 191 | 12 | <0.001 |
 | opendecider-td | winnow | 300 | 28 | 25 | 0.784 |
 | opendecider-td | winnow-12b | 300 | 20 | 33 | 0.098 |
 | openjev | pplx-decider | 300 | 17 | 36 | 0.013 |
+| openjev | startlux-4b | 300 | 26 | 26 | 1.000 |
 | openjev | sura-0.8b | 300 | 68 | 24 | <0.001 |
 | openjev | sura-2b | 300 | 63 | 30 | <0.001 |
 | openjev | von | 300 | 199 | 14 | <0.001 |
 | openjev | winnow | 300 | 34 | 25 | 0.298 |
 | openjev | winnow-12b | 300 | 13 | 20 | 0.296 |
+| pplx-decider | startlux-4b | 300 | 29 | 10 | 0.003 |
 | pplx-decider | sura-0.8b | 300 | 84 | 21 | <0.001 |
 | pplx-decider | sura-2b | 300 | 68 | 16 | <0.001 |
 | pplx-decider | von | 300 | 212 | 8 | <0.001 |
 | pplx-decider | winnow | 300 | 45 | 17 | <0.001 |
 | pplx-decider | winnow-12b | 300 | 30 | 18 | 0.111 |
+| startlux-4b | sura-0.8b | 300 | 67 | 23 | <0.001 |
+| startlux-4b | sura-2b | 300 | 57 | 24 | <0.001 |
+| startlux-4b | von | 300 | 197 | 12 | <0.001 |
+| startlux-4b | winnow | 300 | 30 | 21 | 0.262 |
+| startlux-4b | winnow-12b | 300 | 17 | 24 | 0.349 |
 | sura-0.8b | sura-2b | 300 | 22 | 33 | 0.177 |
 | sura-0.8b | von | 300 | 157 | 16 | <0.001 |
 | sura-0.8b | winnow | 300 | 24 | 59 | <0.001 |
@@ -491,6 +554,6 @@ exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
 
 ## By source
 
-| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | coba-1b | coba-400m | d1-omni | decider-2b | decider-4b | decision-eos | drex-1.5 | jeff | jeff-0.8b | jevk5 | julia-1 | kev-0.8b | kev-4b | kev-9b | lev | nimble-v3 | ollaya | ollaya-td | opendecider-td | openjev | pplx-decider | sura-0.8b | sura-2b | von | winnow | winnow-12b |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| klue-ynat | 300 | 226/300 (75%) | 228/300 (76%) | 233/300 (78%) | 231/300 (77%) | 58/300 (19%) | 105/300 (35%) | 74/300 (25%) | 220/300 (73%) | 212/300 (71%) | 189/300 (63%) | 225/300 (75%) | 222/300 (74%) | 206/300 (69%) | 222/300 (74%) | 71/300 (24%) | 188/300 (63%) | 222/300 (74%) | 218/300 (73%) | 228/300 (76%) | 233/300 (78%) | 129/300 (43%) | 56/300 (19%) | 224/300 (75%) | 230/300 (77%) | 249/300 (83%) | 186/300 (62%) | 197/300 (66%) | 45/300 (15%) | 221/300 (74%) | 237/300 (79%) |
+| source | decisions | anyjev-l0 | anyjev-raw | clef | clef-flash | coba-1b | coba-400m | d1-omni | decider-2b | decider-4b | decision-eos | drex-1.5 | jeff | jeff-0.8b | jevk5 | julia-1 | kev-0.8b | kev-4b | kev-9b | lev | nimble-v3 | ollaya | ollaya-td | onejev-4b | opendecider-td | openjev | pplx-decider | startlux-4b | sura-0.8b | sura-2b | von | winnow | winnow-12b |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| klue-ynat | 300 | 226/300 (75%) | 228/300 (76%) | 233/300 (78%) | 231/300 (77%) | 58/300 (19%) | 105/300 (35%) | 74/300 (25%) | 220/300 (73%) | 212/300 (71%) | 189/300 (63%) | 225/300 (75%) | 222/300 (74%) | 206/300 (69%) | 222/300 (74%) | 71/300 (24%) | 188/300 (63%) | 222/300 (74%) | 218/300 (73%) | 228/300 (76%) | 233/300 (78%) | 129/300 (43%) | 56/300 (19%) | 234/300 (78%) | 224/300 (75%) | 230/300 (77%) | 249/300 (83%) | 230/300 (77%) | 186/300 (62%) | 197/300 (66%) | 45/300 (15%) | 221/300 (74%) | 237/300 (79%) |
