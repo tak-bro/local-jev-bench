@@ -16,7 +16,7 @@ and two Korean sets: NSMC movie reviews and KLUE-YNAT news headlines.
 - **Most accurate overall:** Clef (mean of the 8 sets 86.5%), then StartLux-4B (85.0%) and Winnow-12B (84.1%).
   Clef costs 1.5-8.4 s per call here; StartLux-4B 122-1273 ms.
 - **Best per set:** StartLux-4B on transfer-v4 (87%) and typed-decisions (79%, level with OpenDecider-td's
-  in-distribution 78%†), Clef on clinc-oos (95%), Clef-flash on BANKING77-20 (97%), pplx-decider on KLUE-YNAT (83%).
+  in-distribution 78%†), Clef on clinc-oos (95%, v1 set, withdrawn), Clef-flash on BANKING77-20 (97%), pplx-decider on KLUE-YNAT (83%).
 - **Fastest at its accuracy (the dashed line):** Julia-1, Ollaya, Kev-0.8B, StartLux-4B, Clef. No engine is both
   faster and more accurate than these.
 - **Ties:** many top-group gaps are 1-2 points and not significant; two engines differ only when the paired
@@ -35,7 +35,7 @@ p is below 0.05 (see [FAQ](#faq)); treat close calls as ties.
 | Best out-of-distribution transfer (transfer-v4) | StartLux-4B | 87% (665/764), ahead of pplx-decider's 84% (p < 0.001), most of it on the `emotion` source |
 | Best typed-decisions | StartLux-4B (79%, training data not itemised) or OpenDecider-td (in-distribution, 78%†; level, p = 0.121) | see caveats |
 | Best Korean (NSMC + KLUE-YNAT) | pplx-decider or Winnow-12B | KLUE-YNAT 83% vs 79% (p = 0.111), NSMC 87% vs 88%; OpenJev's NSMC 89% is level with both |
-| Best clinc-oos (intents + out-of-scope) | Clef, then lev (in-distribution) or Drex v1.5 | 95% vs 92%† (p = 0.081) vs 88% (p < 0.001); Drex ahead of Kev-9B and Clef-flash (p < 0.001) |
+| Best clinc-oos (intents + out-of-scope) | withdrawn: the v1 set mostly measured picking the `oos` option ([audit](reports/2026-11-12-set-audit.md)) | v1: Clef 95%, lev 92%†, Drex v1.5 88%; remeasure on v2 |
 | Fastest | Ollaya (`laya`) | 10.2-43.7 ms first-call p50 outside typed-decisions |
 | Best calibrated | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
 
@@ -60,7 +60,7 @@ transfer-v4 score (87%):
 - **NSMC and KLUE-YNAT (Korean):** the three, Clef-flash and Clef cannot be told apart, except Clef over Kev-4B on
   NSMC (p = 0.043) and over Kev-9B on KLUE-YNAT (p = 0.014); Winnow-12B, a fourth top engine, leads KLUE-YNAT
   (79%, ahead of Kev-4B, Kev-9B and Winnow-E4B, p ≤ 0.024).
-- **clinc-oos (CLINC150's 20 largest intents, 300 choice decisions, plus 100 out-of-scope yes/no):** Clef leads
+- **clinc-oos (measured on the v1 set, withdrawn 2026-11-12: see [the set audit](reports/2026-11-12-set-audit.md)). v1 listed `oos` itself as one of the 20 options, so 186 of the 300 choices had the answer `oos`, and all 100 yes/no items expected "no". The v1 results below mostly measure how readily an engine picks `oos`. `make_sets.py clinc-oos` now builds v2; remeasure before you compare engines on it.** v1 (CLINC150's 20 largest intents, 300 choice decisions, plus 100 out-of-scope yes/no): Clef leads
   alone, 95% (380/400), ahead of every engine (p < 0.001) on both halves (choice 283/300, out-of-scope 97/100).
   Kev-4B and Winnow-12B follow at 84% (p = 0.894 between them). Kev-9B picks the intent well (269/300, second only to
   Clef) but calls 86 of the 100 out-of-scope requests in scope, so it ends at 71%, below Kev-4B (p < 0.001).
@@ -385,13 +385,17 @@ uv run python bench/make_sets.py transfer-v4        # Kev's out-of-distribution 
 uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test (400 cases, 2,000 decisions) with gold distributions
 uv run python bench/make_sets.py nsmc               # 300 Korean movie reviews, positive or not (HF card: CC BY 2.0)
 uv run python bench/make_sets.py klue-ynat          # 300 Korean headlines, 7 topics (KLUE, CC BY-SA 4.0)
-uv run python bench/make_sets.py clinc-oos          # CLINC150 top-20 intents (300 choice) + 100 out-of-scope noul
+uv run python bench/make_sets.py clinc-oos          # CLINC150 20 seeded intents (300 choice) + 100 in-scope / 100 out-of-scope noul
+uv run python bench/make_sets.py massive-en         # MASSIVE 20 intents, 300 en-US utterances (CC BY 4.0)
+uv run python bench/make_sets.py massive-ko         # the same 300 utterances in ko-KR: same ids, options and question
 uv run python bench/make_sets.py judge-mtbench      # 200 MT-Bench human-judged answer pairs x 2 orders (CC BY 4.0)
 uv run python bench/make_sets.py judge-ko           # 200 Korean-Human-Judgements pairs x 2 orders (evaluation only)
 uv run python bench/make_sets.py judge-length       # 100 human-winner answers against their own padded copy x 2 orders
 uv run python bench/make_judge_self.py --x qwen3:8b --y <other family>   # self-preference pairs, generated on Ollama
 uv run python bench/judge_bias.py bench/runs/judge-*   # position, length and self-preference bias, kappa vs humans
 uv run python bench/cascade.py --out bench/runs/cascade.md --figures reports/figures   # cascade routing from the raw logs, no engine called
+uv run python bench/consensus.py bench/runs/nsmc bench/runs/klue-ynat   # label-noise candidates: the top engines all wrong the same way
+uv run python bench/lang_gap.py bench/runs/massive-en bench/runs/massive-ko   # English vs Korean per engine, paired McNemar
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
 

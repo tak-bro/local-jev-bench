@@ -19,7 +19,7 @@ local-jev-bench는 Jev 스타일의 System One 결정 모델을 Apple Silicon �
 - **전체 정확도 1위:** Clef(8개 셋 평균 86.5%). 다음은 StartLux-4B(85.0%), Winnow-12B(84.1%)다.
   여기서 Clef는 호출당 1.5-8.4초, StartLux-4B는 122-1273ms다.
 - **셋별 1위:** transfer-v4(87%)와 typed-decisions(79%, OpenDecider-td의 분포 내 78%†와 동률)는 StartLux-4B,
-  clinc-oos(95%)는 Clef, BANKING77-20(97%)은 Clef-flash, KLUE-YNAT(83%)은 pplx-decider다.
+  clinc-oos(95%, v1 세트, 철회)는 Clef, BANKING77-20(97%)은 Clef-flash, KLUE-YNAT(83%)은 pplx-decider다.
 - **속도 대비 가장 정확한 엔진(점선):** Julia-1, Ollaya, Kev-0.8B, StartLux-4B, Clef. 이들보다 빠르면서 더 정확한
   엔진은 없다.
 - **동률:** 상위권 사이의 1-2포인트 차이는 대부분 유의하지 않다. 짝지은 McNemar p가 0.05 미만일 때만 두 엔진이
@@ -38,7 +38,7 @@ local-jev-bench는 Jev 스타일의 System One 결정 모델을 Apple Silicon �
 | 분포 밖 전이(transfer-v4) 최고 | StartLux-4B | 87%(665/764). pplx-decider 84%보다 나음(p < 0.001). 대부분 `emotion` 출처에서 |
 | typed-decisions 최고 | StartLux-4B(79%, 학습 데이터 세부 미공개) 또는 OpenDecider-td(분포 안, 78%†. 둘은 같음, p = 0.121) | 주의점 참고 |
 | 한국어(NSMC + KLUE-YNAT) 최고 | pplx-decider 또는 Winnow-12B | KLUE-YNAT 83% vs 79%(p = 0.111), NSMC 87% vs 88%. OpenJev의 NSMC 89%는 둘과 같음 |
-| clinc-oos(인텐트 + 범위 밖) 최고 | Clef, 다음 lev(분포 안) 또는 Drex v1.5 | 95% vs 92%†(p = 0.081) vs 88%(p < 0.001). Drex는 Kev-9B·Clef-flash보다 나음(p < 0.001) |
+| clinc-oos(인텐트 + 범위 밖) 최고 | 철회: v1 세트는 대부분 `oos` 옵션 선택 성향을 쟀다([감사](reports/2026-11-12-set-audit.md)) | v1: Clef 95%, lev 92%†, Drex v1.5 88%. v2로 재측정 필요 |
 | 가장 빠름 | Ollaya(`laya`) | typed-decisions 제외 첫 호출 p50 10.2-43.7ms |
 | 보정 최고 | Clef-flash | typed-decisions ECE 0.021, KL 0.220 |
 
@@ -55,7 +55,7 @@ typed-decisions에서는 StartLux-4B(79%, 학습 데이터 세부 미공개)와 
 - **transfer-v4**: Kev가 Winnow보다 낫다(Kev-9B 81% vs 77%, p = 0.003). 하지만 차이는 정책 구조 홀드아웃 출처 두 개에서만 난다. 이 두 출처는 Kev가 학습하는 프로그램 생성 정책 데이터에서 구조만 뺀 것이다(Kev-4B 160/176, Winnow 125/176). Kev가 학습하지 않은 공개 출처 여섯 개에서는 셋이 같고(588개 중 454, 465, 460, p ≥ 0.228), 학습 없는 AnyJev도 같다(raw 458, L0 457).
 - **typed-decisions**: Winnow가 Kev-4B(73% vs 67%)와 Kev-9B(69%)보다 모두 낫다(둘 다 p < 0.001).
 - **NSMC와 KLUE-YNAT(한국어)**: 셋과 Clef-flash·Clef를 구분할 수 없다. 예외는 NSMC에서 Clef가 Kev-4B보다(p = 0.043), KLUE-YNAT에서 Kev-9B보다(p = 0.014) 나은 두 경우다. 네 번째 상위 엔진 Winnow-12B는 KLUE-YNAT에서 앞선다(79%, Kev-4B·Kev-9B·Winnow-E4B보다 p ≤ 0.024).
-- **clinc-oos(CLINC150 상위 20개 인텐트, 선택 300개 + 범위 밖 yes/no 100개)**: Clef가 단독 1위다. 95%(380/400)로 모든 엔진을 앞서고(p < 0.001), 두 절반 모두 강하다(선택 283/300, 범위 밖 97/100). 그다음은 Kev-4B와 Winnow-12B로 84%다(둘 사이 p = 0.894). Kev-9B는 의도 선택은 Clef 다음(269/300)이지만 범위 밖 요청 100개 중 86개를 범위 안이라고 답해 71%로 Kev-4B보다 낮다(p < 0.001). Clef-flash는 반대로 범위 밖 97/100, 선택 197/300(74%)이다. Ollaya(79%)와 Ollaya-td(77%)는 점수 대부분을 범위 밖 절반(96-99/100)에서 얻는다.
+- **clinc-oos(v1 세트로 측정, 2026-11-12 철회: [세트 감사](reports/2026-11-12-set-audit.md) 참조). v1은 `oos` 자체를 20개 옵션 중 하나로 넣어 선택 300개 중 186개의 정답이 `oos`였고, yes/no 100개는 정답이 전부 "아니오"였다. 아래 v1 결과는 대부분 엔진이 `oos`를 얼마나 쉽게 고르는지를 잰 것이다. `make_sets.py clinc-oos`는 이제 v2를 만든다. 엔진을 비교하려면 재측정해야 한다.** v1(CLINC150 상위 20개 인텐트, 선택 300개 + 범위 밖 yes/no 100개): Clef가 단독 1위다. 95%(380/400)로 모든 엔진을 앞서고(p < 0.001), 두 절반 모두 강하다(선택 283/300, 범위 밖 97/100). 그다음은 Kev-4B와 Winnow-12B로 84%다(둘 사이 p = 0.894). Kev-9B는 의도 선택은 Clef 다음(269/300)이지만 범위 밖 요청 100개 중 86개를 범위 안이라고 답해 71%로 Kev-4B보다 낮다(p < 0.001). Clef-flash는 반대로 범위 밖 97/100, 선택 197/300(74%)이다. Ollaya(79%)와 Ollaya-td(77%)는 점수 대부분을 범위 밖 절반(96-99/100)에서 얻는다.
 - **AnyJev(학습 없는 Qwen3-8B)**: KLUE-YNAT에서는 상위 그룹과 같고(75-76%), transfer-v4에서는 Winnow와 같다(75%). typed-decisions에서는 뒤진다(61-63%). 거기서는 gold 분포와의 거리도 멀다(KL 2.8-3.8, 상위 그룹은 0.2-0.3). BANKING77-20에서는 자기 README를 다시 재현했고, 대응 검정으로 보면 L0의 정확도 향상이 실제로 있다(p = 0.005).
 - **Clef-flash(Cloudflare, 9B, 2026-10-05 측정)**: 상위 그룹에 든다. BANKING77-20을 빼면 모든 셋에서 Kev-9B와 같다. BANKING77-20에서는 앞선다(97% vs 90%, p < 0.001; Clef-flash는 학습 데이터를 공개하지 않는다). transfer-v4에서는 Winnow보다 낫지만(82% vs 77%, p = 0.003), 이것도 정책 홀드아웃 두 출처에서만이다(176개 중 152 vs 125). 공개 출처 여섯 개에서는 Kev, Winnow, AnyJev와 같다(588개 중 471, p > 0.08). typed-decisions에서 전체 엔진 중 ECE가 가장 낮고(0.021, KL 0.220), 선택지 순서를 뒤집어도 답을 하나도 바꾸지 않는다. 대신 여기서는 느리다. llama.cpp에서 첫 호출 p50이 415-2246ms로, 같은 유휴 머신의 Kev-9B보다 1.5-2.8배다. Cloudflare가 자사 GPU에서 보고한 중앙값은 38.8ms다.
 - **Clef(Cloudflare, 27B, 2026-10-05 측정)**: clinc-oos를 빼면 어느 셋에서도 Clef-flash와 구분되지 않는다(p ≥ 0.092. clinc-oos는 95% vs 74%, p < 0.001). 시간은 3.4-3.7배 든다(첫 호출 p50 1480-8365ms, Q4_K_M. Cloudflare가 자사 GPU에서 보고한 중앙값은 209.3ms). Kev-9B와는 BANKING77-20(96% vs 90%, p < 0.001), typed-decisions(72% vs 69%, p = 0.004), KLUE-YNAT(78% vs 73%, p = 0.014), clinc-oos(p < 0.001)를 빼면 같다. typed-decisions gold 분포에는 분포 안 파인튜닝 둘(OpenDecider-td, Ollaya-td) 다음으로 가깝다(KL 0.196 vs 0.092, 0.134).
@@ -244,12 +244,16 @@ uv run python bench/make_sets.py transfer-v4        # Kev의 분포 밖 developm
 uv run python bench/make_sets.py typed-decisions    # LocalLLaMA/typed-decisions test(400케이스, 2,000판단), gold 분포 포함
 uv run python bench/make_sets.py nsmc               # 한국어 영화 리뷰 300개, 긍정 여부 (HF 카드: CC BY 2.0)
 uv run python bench/make_sets.py klue-ynat          # 한국어 뉴스 제목 300개, 7개 분야 (KLUE, CC BY-SA 4.0)
-uv run python bench/make_sets.py clinc-oos          # CLINC150 상위 20개 인텐트(300 choice) + 분포 밖 100개(noul)
+uv run python bench/make_sets.py clinc-oos          # CLINC150 시드로 뽑은 인텐트 20개(300 choice) + 범위 안 100·범위 밖 100(noul)
+uv run python bench/make_sets.py massive-en         # MASSIVE 인텐트 20개, en-US 발화 300개 (CC BY 4.0)
+uv run python bench/make_sets.py massive-ko         # 같은 발화 300개의 ko-KR판: id·옵션·질문 동일
 uv run python bench/make_sets.py judge-mtbench      # MT-Bench 사람 판정 답변 쌍 200개 x 두 순서 (CC BY 4.0)
 uv run python bench/make_sets.py judge-ko           # Korean-Human-Judgements 쌍 200개 x 두 순서 (평가 전용)
 uv run python bench/make_sets.py judge-length       # 사람이 고른 답 100개를 길이만 늘린 사본과 비교 x 두 순서
 uv run python bench/make_judge_self.py --x qwen3:8b --y <다른 계열>   # 자기 선호용 쌍, Ollama에서 생성
 uv run python bench/judge_bias.py bench/runs/judge-*   # 위치·길이·자기 선호 편향, 사람 판정과의 kappa
+uv run python bench/consensus.py bench/runs/nsmc bench/runs/klue-ynat   # 라벨 노이즈 후보: 상위 엔진이 모두 같은 오답
+uv run python bench/lang_gap.py bench/runs/massive-en bench/runs/massive-ko   # 엔진별 영어 대 한국어, 짝지은 McNemar
 uv run python bench/cascade.py --out bench/runs/cascade.md --figures reports/figures   # 원시 로그로 cascade 라우팅 모의, 엔진 호출 없음
 uv run pytest -q                              # offline tests, fake servers, no model loaded
 ```
