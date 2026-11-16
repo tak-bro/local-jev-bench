@@ -197,12 +197,13 @@ def heatmap(table: dict[str, dict[str, Cell | None]]) -> str:
 
 
 def speed_vs_accuracy(table: dict[str, dict[str, Cell | None]]) -> str:
-    width, height = 960, 680
-    px0, px1, py0, py1 = 70, width - 30, 80, height - 70  # plot box: x left/right, y top/bottom
-    xmin, xmax = 8.0, 30_000.0
-    ymin, ymax = 50.0, 90.0
     engines = [e for e in ranked(table) if complete(table[e])]
     pts = {e: (statistics.median(table[e][d].p50 for d, _ in SETS), mean_acc(table[e])) for e in engines}
+    # Keep every point inside the box, and the vertical scale (and so label room) the same however low it goes.
+    ymin, ymax = min(50.0, 5 * math.floor(min(acc for _, acc in pts.values()) / 5)), 90.0
+    width, height = 960, 150 + round(530 * (ymax - ymin) / 40)
+    px0, px1, py0, py1 = 70, width - 30, 80, height - 70  # plot box: x left/right, y top/bottom
+    xmin, xmax = 8.0, 30_000.0
 
     def sx(ms: float) -> float:
         return px0 + (math.log10(ms) - math.log10(xmin)) / (math.log10(xmax) - math.log10(xmin)) * (px1 - px0)

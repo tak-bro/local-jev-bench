@@ -1,8 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="680" viewBox="0 0 960 680" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
-<rect width="960" height="680" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="945" viewBox="0 0 960 945" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+<rect width="960" height="945" fill="#ffffff"/>
 <text x="70.0" y="26.0" font-size="16" text-anchor="start" font-weight="bold" fill="#111111">Speed vs accuracy (engines measured on all 10 sets)</text>
 <text x="70.0" y="44.0" font-size="11" text-anchor="start" font-weight="normal" fill="#555555">x: median over the 10 sets of first-call p50 (log scale). y: unweighted mean accuracy of the 10 sets.</text>
 <text x="70.0" y="60.0" font-size="11" text-anchor="start" font-weight="normal" fill="#555555">Line: the fastest engine at each accuracy (Pareto front). Hollow = ran on CPU here, so its latency does not compare with the Metal engines.</text>
+<line x1="70" y1="875.0" x2="930" y2="875.0" stroke="#e5e5e5"/>
+<text x="62.0" y="879.0" font-size="11" text-anchor="end" font-weight="normal" fill="#555555">30%</text>
+<line x1="70" y1="808.8" x2="930" y2="808.8" stroke="#e5e5e5"/>
+<text x="62.0" y="812.8" font-size="11" text-anchor="end" font-weight="normal" fill="#555555">35%</text>
+<line x1="70" y1="742.5" x2="930" y2="742.5" stroke="#e5e5e5"/>
+<text x="62.0" y="746.5" font-size="11" text-anchor="end" font-weight="normal" fill="#555555">40%</text>
+<line x1="70" y1="676.2" x2="930" y2="676.2" stroke="#e5e5e5"/>
+<text x="62.0" y="680.2" font-size="11" text-anchor="end" font-weight="normal" fill="#555555">45%</text>
 <line x1="70" y1="610.0" x2="930" y2="610.0" stroke="#e5e5e5"/>
 <text x="62.0" y="614.0" font-size="11" text-anchor="end" font-weight="normal" fill="#555555">50%</text>
 <line x1="70" y1="543.8" x2="930" y2="543.8" stroke="#e5e5e5"/>
@@ -21,24 +29,24 @@
 <text x="62.0" y="150.2" font-size="11" text-anchor="end" font-weight="normal" fill="#555555">85%</text>
 <line x1="70" y1="80.0" x2="930" y2="80.0" stroke="#e5e5e5"/>
 <text x="62.0" y="84.0" font-size="11" text-anchor="end" font-weight="normal" fill="#555555">90%</text>
-<line x1="93.3" y1="80" x2="93.3" y2="610" stroke="#e5e5e5"/>
-<text x="93.3" y="628.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">10 ms</text>
-<line x1="208.1" y1="80" x2="208.1" y2="610" stroke="#e5e5e5"/>
-<text x="208.1" y="628.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">30 ms</text>
-<line x1="333.9" y1="80" x2="333.9" y2="610" stroke="#e5e5e5"/>
-<text x="333.9" y="628.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">100 ms</text>
-<line x1="448.8" y1="80" x2="448.8" y2="610" stroke="#e5e5e5"/>
-<text x="448.8" y="628.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">300 ms</text>
-<line x1="574.6" y1="80" x2="574.6" y2="610" stroke="#e5e5e5"/>
-<text x="574.6" y="628.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">1 s</text>
-<line x1="689.4" y1="80" x2="689.4" y2="610" stroke="#e5e5e5"/>
-<text x="689.4" y="628.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">3 s</text>
-<line x1="815.2" y1="80" x2="815.2" y2="610" stroke="#e5e5e5"/>
-<text x="815.2" y="628.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">10 s</text>
-<line x1="930.0" y1="80" x2="930.0" y2="610" stroke="#e5e5e5"/>
-<text x="930.0" y="628.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">30 s</text>
-<rect x="70" y="80" width="860" height="530" fill="none" stroke="#999999"/>
-<text x="500.0" y="658.0" font-size="12" text-anchor="middle" font-weight="normal" fill="#111111">first-call p50, median of 10 sets (faster is left)</text>
+<line x1="93.3" y1="80" x2="93.3" y2="875" stroke="#e5e5e5"/>
+<text x="93.3" y="893.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">10 ms</text>
+<line x1="208.1" y1="80" x2="208.1" y2="875" stroke="#e5e5e5"/>
+<text x="208.1" y="893.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">30 ms</text>
+<line x1="333.9" y1="80" x2="333.9" y2="875" stroke="#e5e5e5"/>
+<text x="333.9" y="893.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">100 ms</text>
+<line x1="448.8" y1="80" x2="448.8" y2="875" stroke="#e5e5e5"/>
+<text x="448.8" y="893.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">300 ms</text>
+<line x1="574.6" y1="80" x2="574.6" y2="875" stroke="#e5e5e5"/>
+<text x="574.6" y="893.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">1 s</text>
+<line x1="689.4" y1="80" x2="689.4" y2="875" stroke="#e5e5e5"/>
+<text x="689.4" y="893.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">3 s</text>
+<line x1="815.2" y1="80" x2="815.2" y2="875" stroke="#e5e5e5"/>
+<text x="815.2" y="893.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">10 s</text>
+<line x1="930.0" y1="80" x2="930.0" y2="875" stroke="#e5e5e5"/>
+<text x="930.0" y="893.0" font-size="11" text-anchor="middle" font-weight="normal" fill="#555555">30 s</text>
+<rect x="70" y="80" width="860" height="795" fill="none" stroke="#999999"/>
+<text x="500.0" y="923.0" font-size="12" text-anchor="middle" font-weight="normal" fill="#111111">first-call p50, median of 10 sets (faster is left)</text>
 <path d="M85.7,622.6 L177.1,472.6 L207.4,458.5 L231.0,302.5 L252.7,269.9 L279.2,215.1 L329.5,158.3 L419.3,102.7 L700.1,99.0" fill="none" stroke="#21918c" stroke-width="2" stroke-dasharray="6 4"/>
 <circle cx="700.1" cy="99.0" r="5" fill="#21918c" stroke="#21918c" stroke-width="2"/>
 <text x="709.1" y="103.0" font-size="11" text-anchor="start" font-weight="bold" fill="#111111">Clef</text>
