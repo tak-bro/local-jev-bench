@@ -24,7 +24,7 @@ fi
 engine=$1
 shift
 case $engine in
-    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | julia-1 | lev | openjev | drex-1.5 | opendecider-td | startlux-4b | onejev-4b | von) ;;
+    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | julia-1 | lev | openjev | drex-1.5 | opendecider-td | startlux-4b | onejev-4b | jev-style-0.8b | jev-style-2b | rizzo-flow-4b | von) ;;
     *)
         echo "unknown engine: $engine" >&2
         exit 2
@@ -155,6 +155,12 @@ else
         onejev-4b)
             # qev answers /health only after its llama-server child has loaded the GGUF
             start onejev "${ONEJEV_URL:-http://127.0.0.1:8070}/health" 200 "$scripts/serve-onejev.sh"
+            ;;
+        jev-style-0.8b | jev-style-2b)
+            start jevstyle "${JEVSTYLE_URL:-http://127.0.0.1:8080}/healthz" 200 "$scripts/serve-jevstyle.sh" "${engine#jev-style-}"
+            ;;
+        rizzo-flow-4b)
+            start rizzo "${RIZZO_URL:-http://127.0.0.1:8017}/health" 200 "$scripts/serve-rizzo.sh"
             ;;
         von)
             start von "${VON_URL:-http://127.0.0.1:8030}/health" 200 "$scripts/serve-von.sh"

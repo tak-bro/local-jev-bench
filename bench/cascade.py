@@ -42,7 +42,7 @@ from pathlib import Path
 import score
 
 SETS = ("questions", "questions_ko", "questions_banking77", "transfer-v4", "typed-decisions", "nsmc", "klue-ynat",
-        "clinc-oos")
+        "clinc-oos", "massive-en", "massive-ko")
 RUNS = Path(__file__).with_name("runs")
 WITHIN = 0.01
 

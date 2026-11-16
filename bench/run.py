@@ -105,6 +105,15 @@ for name, url_env, port, served_name in (
         ("onejev-4b", "ONEJEV_URL", 8070, "OneJev1.6-4B.Q8_0@2b605ac")):
     ENGINES[name] = {"url": os.environ.get(url_env, f"http://127.0.0.1:{port}"), "model": served_name,
                      "served": ("/health", ("model",), served_name)}
+# Jev-Style (scripts/serve-jevstyle.sh, MLX) reports the release's model id on /healthz; jev-style 0.6.3 pins each
+# release's weights revision itself. Both releases share the port; measure.sh runs one at a time.
+for name, served_name in (("jev-style-0.8b", "jev-style-0.8b-decision-v3"), ("jev-style-2b", "jev-style-2b-decision-v4")):
+    ENGINES[name] = {"url": os.environ.get("JEVSTYLE_URL", "http://127.0.0.1:8080"), "model": served_name,
+                     "served": ("/healthz", ("model",), served_name)}
+# Rizzo Flow (scripts/serve-rizzo.sh, its own llama.cpp b11081 runtime) answers only for the model name it derives from
+# the GGUF it loaded, and /health names that GGUF's pinned repo revision.
+ENGINES["rizzo-flow-4b"] = {"url": os.environ.get("RIZZO_URL", "http://127.0.0.1:8017"), "model": "rizzo-flow-4b-q8_0",
+                            "served": ("/health", ("model", "gguf_revision"), "55633c8cbd2b826bd3eefdeb05310450996649df")}
 ENGINES["von"] = {"url": os.environ.get("VON_URL", "http://127.0.0.1:8030"), "model": "von-latest",
                   "served": ("/health", ("version",), "1.3.7")}
 # A bare benchmark runs the two engines that can share the machine. The others each need most of the Metal

@@ -129,6 +129,8 @@ def fake_on_path(tmp_path, *names) -> dict:
     ("scripts/serve-von.sh", []),
     ("scripts/serve-startlux.sh", []),
     ("scripts/serve-onejev.sh", []),
+    ("scripts/serve-jevstyle.sh", ["0.8b"]),
+    ("scripts/serve-rizzo.sh", []),
 ])
 def test_serve_refuses_busy_port(tmp_path, script, args):
     with socket.socket() as s:
@@ -137,7 +139,8 @@ def test_serve_refuses_busy_port(tmp_path, script, args):
         port = s.getsockname()[1]
         env = {**fake_on_path(tmp_path, "vllm", "uv"), "CLM_PORT": str(port), "ANYJEV_PORT": str(port),
                "KEV_PORT": str(port), "JEFF_PORT": str(port), "LLAMA_PORT": str(port),
-               "VON_PORT": str(port), "STARTLUX_PORT": str(port), "ONEJEV_PORT": str(port)}
+               "VON_PORT": str(port), "STARTLUX_PORT": str(port), "ONEJEV_PORT": str(port),
+               "JEVSTYLE_PORT": str(port), "RIZZO_PORT": str(port)}
         r = sh(script, *[a.format(port=port) for a in args], env=env)
     assert r.returncode == 1, (r.returncode, r.stderr)
     assert "already in use" in r.stderr
@@ -575,6 +578,9 @@ def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
                                          ("opendecider-td", "opendecider"),
                                          ("startlux-4b", "StartLux-Decision-v1.1-4B-Instant-MLX-8bit@56f18ac"),
                                          ("onejev-4b", "OneJev1.6-4B.Q8_0@2b605ac"),
+                                         ("jev-style-0.8b", "jev-style-0.8b-decision-v3"),
+                                         ("jev-style-2b", "jev-style-2b-decision-v4"),
+                                         ("rizzo-flow-4b", "rizzo-flow-4b-q8_0"),
                                          ("von", "von-latest")])
 def test_new_engines_send_their_model(monkeypatch, name, model):
     seen = []
@@ -601,6 +607,10 @@ def test_new_engines_send_their_model(monkeypatch, name, model):
     ("startlux-4b", "/health", {"status": "ok", "model": "StartLux-Decision-v1.1-4B-Instant-MLX-8bit@56f18ac",
                                 "kind": "instant"}),
     ("onejev-4b", "/health", {"status": "ok", "model": "OneJev1.6-4B.Q8_0@2b605ac", "fork_mode": "sequential"}),
+    ("jev-style-0.8b", "/healthz", {"status": "ok", "model": "jev-style-0.8b-decision-v3", "backend": "mlx"}),
+    ("jev-style-2b", "/healthz", {"status": "ok", "model": "jev-style-2b-decision-v4", "backend": "mlx"}),
+    ("rizzo-flow-4b", "/health", {"status": "ready", "model": {"source": "XHToken/Spark-X2.5-4B", "precision": "q8_0",
+                                  "gguf_revision": "55633c8cbd2b826bd3eefdeb05310450996649df"}}),
 ])
 def test_served_identity_matches(monkeypatch, name, route, body):
     srv = FakeServer({route: lambda _: (200, body)})
@@ -737,11 +747,13 @@ def test_hub_revision_is_none_off_hub_or_offline(monkeypatch):
     assert run.hub_revision("kev-9b") is None  # unreachable Hub is None, never an error
 
 
-@pytest.mark.parametrize("script, engine", [("scripts/serve-startlux.sh", "startlux-4b"),
-                                            ("scripts/serve-onejev.sh", "onejev-4b")])
-def test_serve_name_is_what_the_bench_expects(script, engine):
+@pytest.mark.parametrize("script, args, engine", [("scripts/serve-startlux.sh", [], "startlux-4b"),
+                                                  ("scripts/serve-onejev.sh", [], "onejev-4b"),
+                                                  ("scripts/serve-jevstyle.sh", ["0.8b"], "jev-style-0.8b"),
+                                                  ("scripts/serve-jevstyle.sh", ["2b"], "jev-style-2b")])
+def test_serve_name_is_what_the_bench_expects(script, args, engine):
     # The name pins the model files and revision; bench/run.py checks /health against the same string.
-    r = sh(script, "--print-name")
+    r = sh(script, *args, "--print-name")
     assert r.returncode == 0, r.stderr
     assert r.stdout.strip() == run.ENGINES[engine]["model"] == run.ENGINES[engine]["served"][2]
 

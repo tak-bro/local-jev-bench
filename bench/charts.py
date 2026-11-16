@@ -31,6 +31,8 @@ SETS = (
     ("nsmc", "NSMC"),
     ("klue-ynat", "KLUE-YNAT"),
     ("clinc-oos", "clinc-oos"),
+    ("massive-en", "MASSIVE-en"),
+    ("massive-ko", "MASSIVE-ko"),
 )
 
 # Engine id (log file stem) -> the name the README uses.
@@ -38,11 +40,12 @@ NAMES = {
     "anyjev-l0": "AnyJev L0", "anyjev-raw": "AnyJev raw", "clef-flash": "Clef-flash", "clef": "Clef",
     "clm": "CLM-8B", "coba-1b": "coba-1b", "coba-400m": "coba-400m", "d1-omni": "d1-omni",
     "decider-2b": "Decider-2B", "decider-4b": "Decider-4B", "decision-eos": "Decision-Eos", "drex-1.5": "Drex v1.5",
-    "jeff-0.8b": "Jeff-Qwen3.5-0.8B", "jeff": "Jeff-Qwen3.5-2B", "jevk5": "JevK5", "julia-1": "Julia-1",
+    "jeff-0.8b": "Jeff-Qwen3.5-0.8B", "jeff": "Jeff-Qwen3.5-2B", "jev-style-0.8b": "Jev-Style 0.8B v3",
+    "jev-style-2b": "Jev-Style 2B v4", "jevk5": "JevK5", "julia-1": "Julia-1",
     "kev-0.8b": "Kev-0.8B", "kev-4b": "Kev-4B", "kev-9b": "Kev-9B", "lev": "lev", "nimble-v3": "nimble-v3",
     "ollaya-td": "Ollaya-td", "ollaya": "Ollaya", "onejev-4b": "OneJev-4B", "opendecider-td": "OpenDecider-td",
-    "openjev": "OpenJev", "pplx-decider": "pplx-decider", "startlux-4b": "StartLux-4B", "sura-0.8b": "Sura-0.8B",
-    "sura-2b": "Sura-2B", "von": "Von", "winnow-12b": "Winnow-12B", "winnow": "Winnow-E4B",
+    "openjev": "OpenJev", "pplx-decider": "pplx-decider", "rizzo-flow-4b": "Rizzo Flow 4B", "startlux-4b": "StartLux-4B",
+    "sura-0.8b": "Sura-0.8B", "sura-2b": "Sura-2B", "von": "Von", "winnow-12b": "Winnow-12B", "winnow": "Winnow-E4B",
 }
 
 # The README's `†` cells: the engine trained on a train split of data in that set (README § Results footnote).
@@ -53,6 +56,11 @@ IN_DISTRIBUTION = {
     ("lev", "questions_banking77"), ("lev", "clinc-oos"),
     ("onejev-4b", "questions_banking77"), ("onejev-4b", "clinc-oos"),
     ("von", "questions_banking77"), ("von", "transfer-v4"),
+    ("jev-style-0.8b", "typed-decisions"), ("jev-style-0.8b", "transfer-v4"), ("jev-style-0.8b", "clinc-oos"),
+    ("jev-style-0.8b", "massive-en"), ("jev-style-0.8b", "massive-ko"),
+    ("jev-style-2b", "questions_banking77"), ("jev-style-2b", "clinc-oos"),
+    ("jev-style-2b", "massive-en"), ("jev-style-2b", "massive-ko"),
+    ("rizzo-flow-4b", "transfer-v4"),
 }
 
 # Engines the README notes ran on CPU here, so their latency does not compare with the Metal rows.
@@ -143,13 +151,13 @@ def svg(width: int, height: int, body: list[str]) -> str:
 
 def heatmap(table: dict[str, dict[str, Cell | None]]) -> str:
     name_w, cell_w, row_h, top, left = 150, 100, 22, 66, 12
-    cols = [*SETS, ("mean", "mean of 8")]
+    cols = [*SETS, ("mean", f"mean of {len(SETS)}")]
     width = left + name_w + cell_w * len(cols) + 12
     order = ranked(table)
     height = top + row_h * len(order) + 52
     body = [
         text(left, 22, "Accuracy by engine and set (first timed call)", size=16, weight="bold"),
-        text(left, 40, "Sorted by the unweighted mean of the 8 sets. † = trained on this set's train split. "
+        text(left, 40, f"Sorted by the unweighted mean of the {len(SETS)} sets. † = trained on this set's train split. "
                        "- = not run, failed = refused the set.", size=11, fill="#555555"),
     ]
     for j, (_, label) in enumerate(cols):
@@ -210,9 +218,9 @@ def speed_vs_accuracy(table: dict[str, dict[str, Cell | None]]) -> str:
             best = pts[e][1]
 
     body = [
-        text(px0, 26, "Speed vs accuracy (engines measured on all 8 sets)", size=16, weight="bold"),
-        text(px0, 44, "x: median over the 8 sets of first-call p50 (log scale). y: unweighted mean accuracy "
-                      "of the 8 sets.", size=11, fill="#555555"),
+        text(px0, 26, f"Speed vs accuracy (engines measured on all {len(SETS)} sets)", size=16, weight="bold"),
+        text(px0, 44, f"x: median over the {len(SETS)} sets of first-call p50 (log scale). y: unweighted mean accuracy "
+                      f"of the {len(SETS)} sets.", size=11, fill="#555555"),
         text(px0, 60, "Line: the fastest engine at each accuracy (Pareto front). Hollow = ran on CPU here, "
                       "so its latency does not compare with the Metal engines.", size=11, fill="#555555"),
     ]
@@ -226,7 +234,7 @@ def speed_vs_accuracy(table: dict[str, dict[str, Cell | None]]) -> str:
         body.append(text(x, py1 + 18, f"{ms / 1000:g} s" if ms >= 1000 else f"{ms} ms", size=11,
                          anchor="middle", fill="#555555"))
     body.append(f'<rect x="{px0}" y="{py0}" width="{px1 - px0}" height="{py1 - py0}" fill="none" stroke="#999999"/>')
-    body.append(text((px0 + px1) / 2, height - 22, "first-call p50, median of 8 sets (faster is left)", size=12,
+    body.append(text((px0 + px1) / 2, height - 22, f"first-call p50, median of {len(SETS)} sets (faster is left)", size=12,
                      anchor="middle"))
     path = " ".join(f"{'M' if k == 0 else 'L'}{sx(pts[e][0]):.1f},{sy(pts[e][1]):.1f}" for k, e in enumerate(front))
     body.append(f'<path d="{path}" fill="none" stroke="#21918c" stroke-width="2" stroke-dasharray="6 4"/>')
