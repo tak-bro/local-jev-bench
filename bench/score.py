@@ -4,8 +4,10 @@
     uv run python bench/score.py bench/runs/questions --check   # exit 1 if report.md is not what the logs give
 
 A raw log is one JSON object per line. The first is `{"header": {set, set_sha256, engine, model, reps, warmup,
-started, host, served}}` (`served`: what the server said it runs, null when the request's model pins it) and the
-last is `{"footer": {finished}}`, written only when the run completes. Every line between is one engine call,
+started, host, power, served, hub_revision, runtime}}` (`served`: what the server said it runs, null when the
+request's model pins it; `runtime`: an Ollaya engine's daemon version and tag digest; logs before 2026-11-17 lack
+`power` and `runtime`) and the last is `{"footer": {finished, power}}`, written only when the run completes. Every
+line between is one engine call,
 `{item, call, rep, answers, error, ms, pressure}`, where `call` is `cold`, `warmup`, `timed` (rep 0..reps-1) or
 `reversed` (one call per item with choice options reversed).
 
@@ -415,17 +417,32 @@ def pairs(items: list[dict], runs: dict[str, list[dict]]) -> list[str]:
         "## Pairwise differences (McNemar exact)",
         "",
         "Over the decisions both engines had graded: `b` = only engine A right, `c` = only engine B right, `p` = two-sided",
-        "exact McNemar p value. With many pairs, some p values under 0.05 come by chance.",
+        "exact McNemar p value. With many pairs, some p values under 0.05 come by chance; `p (Holm)` adjusts for every",
+        "pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds across the whole table.",
         "",
-        "| engine A | engine B | both graded | b | c | p |",
-        "|---|---|---|---|---|---|",
+        "| engine A | engine B | both graded | b | c | p | p (Holm) |",
+        "|---|---|---|---|---|---|---|",
     ]
+    rows = []
     for a, b in itertools.combinations(runs, 2):
         both = right[a].keys() & right[b].keys()
         only_a = sum(right[a][k] and not right[b][k] for k in both)
         only_b = sum(right[b][k] and not right[a][k] for k in both)
-        lines.append(f"| {a} | {b} | {len(both)} | {only_a} | {only_b} | {p_cell(mcnemar_exact(only_a, only_b))} |")
+        rows.append((a, b, len(both), only_a, only_b, mcnemar_exact(only_a, only_b)))
+    adjusted = holm([r[-1] for r in rows])
+    lines += [f"| {a} | {b} | {n} | {only_a} | {only_b} | {p_cell(p)} | {p_cell(adj)} |"
+              for (a, b, n, only_a, only_b, p), adj in zip(rows, adjusted)]
     return lines
+
+
+def holm(ps: list[float]) -> list[float]:
+    """Holm-Bonferroni adjusted p values, in the order given: the k-th smallest of m (k from 1) is scaled by m - k + 1,
+    kept at least as large as every smaller one's adjusted value, and capped at 1."""
+    out, running = [0.0] * len(ps), 0.0
+    for rank, i in enumerate(sorted(range(len(ps)), key=ps.__getitem__)):
+        running = max(running, min(1.0, (len(ps) - rank) * ps[i]))
+        out[i] = running
+    return out
 
 
 def p_cell(p: float) -> str:

@@ -189,7 +189,7 @@ uv sync
 - 어댑터는 AnyJev 기본 방식(`allowed_token_ids` + top-K) 대신, 라벨마다 id로 logprob을 요청한다(`logprob_token_ids`). vllm-metal 0.30.0은 그 필터를 적용하기 전의 logprob을 주기 때문에, 라벨이 top-K에서 빠질 수 있다.
 - 서버 응답에 라벨 토큰이 빠져 있으면 확률을 임의로 채우지 않고 HTTP 502를 돌려준다.
 
-[Kev](https://github.com/jaredpalmer/kev)는 자기 체크아웃 안에 별도 uv 환경(torch, mlx-lm)을 둔다. 그래서 이 레포의 의존성이 아니다. `git clone https://github.com/jaredpalmer/kev ~/workspace/tak-bro/kev && (cd ~/workspace/tak-bro/kev && uv sync --extra serve)`로 준비한다. `scripts/serve-kev.sh`는 Qwen3.5-4B-Base 위에 `jaredpalmer/kev-4b` 어댑터를 얹은 `/v1/systemone` 서버를 띄운다. `KEV_RUN=jaredpalmer/kev-0.8b`나 `jaredpalmer/kev-9b`를 주면 같은 포트에서 다른 크기를 띄운다. 엔진 `kev-0.8b`·`kev-4b`·`kev-9b`는 측정 전에 `/v1/models`를 확인해 다른 크기가 떠 있으면 거부한다.
+[Kev](https://github.com/jaredpalmer/kev)는 자기 체크아웃 안에 별도 uv 환경(torch, mlx-lm)을 둔다. 그래서 이 레포의 의존성이 아니다. `git clone https://github.com/jaredpalmer/kev ~/workspace/tak-bro/kev && cd ~/workspace/tak-bro/kev && git checkout 0fe8fc97c2bcc247fa3efb6e5c32af4e99770e91 && uv sync --extra serve`로 여기서 잰 커밋에 맞춰 준비한다(`scripts/serve-kev.sh`는 다른 커밋을 거부한다. `KEV_COMMIT`로 바꾼다). `scripts/serve-kev.sh`는 Qwen3.5-4B-Base 위에 `jaredpalmer/kev-4b` 어댑터를 얹은 `/v1/systemone` 서버를 띄운다. `scripts/serve-kev.sh kev-0.8b`나 `kev-9b`는 같은 포트에서 다른 크기를 띄운다. 어댑터마다 Hub 리비전을 고정하고(`jaredpalmer/kev-4b@6cfce5c…`) Kev가 서버를 띄울 때 그 리비전을 받는다. 엔진 `kev-0.8b`·`kev-4b`·`kev-9b`는 측정 전에 `/v1/models`를 확인해 다른 크기나 리비전이 떠 있으면 거부한다.
 
 [Winnow](https://ollaya.dev/library/winnow)는 Ollaya에서 돈다. `ollaya pull winnow:e4b`(8.0GB, Gemma 4, Q8_0)로 받고 `winnow` 엔진으로 잰다. `ollaya pull winnow:12b`(12.7GB)는 형제를 `winnow-12b`로 잰다. 같은 방식으로 `ollaya pull laya:typed-decisions`(`ollaya-td`), `ollaya pull decider`·`ollaya pull decider:4b`(`decider-2b`, `decider-4b`), `ollaya pull decision`(`decision-eos`), `ollaya pull jevk5`(`jevk5`)를 받는다. `bench/run.py`의 `ENGINES`가 엔진 이름마다 태그를 고정하고(환경변수로 변경 가능) `scripts/measure.sh`가 끝나면 그 태그를 내린다. `ollaya stop winnow:e4b`로 내린다.
 
@@ -225,10 +225,10 @@ Ollaya 0.18.0 데몬(포트 참고)에는 `pplx-decider:flash`, `nimble:9b-v3`, 
 | 8090 | CLM용 Qwen3-8B 인코더 | `scripts/serve-embed.sh Qwen/Qwen3-8B 8090 qwen3-8b` |
 | 8700 | CLM System One API | `scripts/serve-clm.sh` |
 | 11435 | Ollaya 0.7.3 데몬 (`laya`, `winnow:e4b`, `coba:400m`, `coba:1b` 등) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
-| 11436 | 자기 모델 저장소를 쓰는 Ollaya 0.18.0 데몬 (`pplx-decider:flash`, `nimble:9b-v3`, `sura:2b`, `sura:0.8b`, `d1-omni`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`. 측정할 때는 `OLLAYA_URL=http://127.0.0.1:11436`을 주고 `~/.local/ollaya-0.18/bin`을 `PATH` 앞에 둔다 |
+| 11436 | 자기 모델 저장소를 쓰는 Ollaya 0.18.0 데몬 (`pplx-decider:flash`, `nimble:9b-v3`, `sura:2b`, `sura:0.8b`, `d1-omni`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`. 이 엔진들은 `scripts/measure.sh`가 띄운다(`OLLAYA_018_URL`·`OLLAYA_018_BIN`·`OLLAYA_018_MODELS`로 바꾼다) |
 | 8092 | AnyJev용 Qwen3-8B 생성 서버 | `scripts/serve-llm.sh Qwen/Qwen3-8B 8092 qwen3-8b` |
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
-| 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (또는 `kev-0.8b`, `kev-9b`) |
+| 8009 | Kev System One API (`kev-latest`) | `scripts/serve-kev.sh kev-4b` (또는 `kev-0.8b`, `kev-9b`) |
 | 8765 | Jeff System One API (`jeff-latest`) | `scripts/serve-jeff.sh` |
 | 8020 | llama-server System One API (`Clef-Flash-Q8_0@4a7a08c`, `Clef-Q4_K_M@5f70656`, `OpenJev-Q4_K_M@d2c376d`, `lev-Q8_0@2ef3b3c`, `Julia-1-Q8_0@1e6b48a` 중 하나) | `scripts/serve-llama.sh clef-flash` (또는 `clef`, `openjev`, `lev`, `julia-1`) |
 | 8030 | Von System One API (`von-latest`) | `scripts/serve-von.sh` |
@@ -259,7 +259,8 @@ uv run python bench/run.py --smoke --engine clm      # CLM README example within
 uv run python bench/run.py --smoke --engine ollaya   # same example, shape only
 uv run python bench/run.py                           # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
 uv run python bench/run.py --smoke --engine <e>       # shape only (anyjev-raw, anyjev-l0, kev-0.8b, kev-4b, kev-9b, winnow, jeff), its server up
-uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
+uv run python bench/run.py --engine <e> --questions bench/questions_banking77.jsonl   # 1 rep: 이 셋의 프로토콜
+uv run python bench/matrix.py --dry-run              # 전체 측정 패스: 남은 엔진 x 셋 (--dry-run 없이: 측정)
 uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
 uv run python bench/charts.py --check                       # docs/charts/*.svg가 report와 일치 (--check 없이: 다시 그림)
 uv run python bench/make_sets.py transfer-v4        # Kev의 분포 밖 development 세트(764)를 bench/data/에, gitignore
@@ -288,7 +289,9 @@ AnyJev와 Kev는 각각 Metal 메모리 대부분을 쓴다. 그래서 엔진은
 
 `scripts/measure.sh [--reps N] <엔진> <셋>...`이 세 단계를 한 번에 하고, 중간에 실패해도 서버를 내린다. 서버 출력은 `logs/<이름>.log`에 남는다.
 
-실행은 모든 호출(확률을 포함한 답·지연·메모리 압력)을 `bench/runs/<셋>/<엔진>.jsonl`에 남기고 실행이 끝나면 그 엔진의 이전 기록을 덮어쓴다(중단된 실행은 이전 기록을 남긴다). `bench/score.py`는 그 디렉터리의 기록 전부로 `bench/runs/<셋>/report.md`를 다시 만든다. 다른 버전의 셋이나 다른 `--reps`로 잰 기록은 거부한다. AnyJev 어댑터는 측정할 때마다 재시작한다. L0의 배치 prior가 어댑터가 처리한 모든 호출에 걸쳐 누적되기 때문이다.
+실행은 모든 호출(확률을 포함한 답·지연·메모리 압력)을 `bench/runs/<셋>/<엔진>.jsonl`에 남기고 실행이 끝나면 그 엔진의 이전 기록을 덮어쓴다(중단된 실행은 이전 기록을 남긴다). `bench/score.py`는 그 디렉터리의 기록 전부로 `bench/runs/<셋>/report.md`를 다시 만든다. 다른 버전의 셋이나 다른 `--reps`로 잰 기록은 거부한다. `--reps`를 안 주면 `bench/run.py`가 프로토콜 값을 쓴다. 30문항 셋 두 개는 문항당 timed 호출 3번, 나머지 셋은 1번이다(`PROTOCOL_REPS`). 측정 중 서버가 죽으면(연결 실패·타임아웃·HTTP 5xx가 5번 연달아, 또는 워밍업 호출에서 한 번이라도) 실행을 멈추고 이전 기록을 그대로 둔다. 입력 거부(HTTP 4xx)는 실패한 호출로 기록한다. 기록 헤더에는 전원과 macOS 발열 경고가, Ollaya 엔진이면 데몬 버전과 태그 digest가 남는다. 엔진이 요구하는 버전과 다른 Ollaya 데몬은 `bench/run.py`가 거부한다. AnyJev 어댑터는 측정할 때마다 재시작한다. L0의 배치 prior가 어댑터가 처리한 모든 호출에 걸쳐 누적되기 때문이다.
+
+`bench/matrix.py`가 전체 패스를 돈다. 모든 엔진을 모든 셋에 `scripts/measure.sh`로 재고, 호출 타임아웃은 300초, 가장 느린 두 엔진(Decider-4B, nimble-v3)은 맨 뒤에 둔다. Mac이 AC 전원이고, 메모리 압력이 normal이고, 응답하는 엔진 서버가 없고, 두 Ollaya 데몬 모두 모델을 올려 두지 않았을 때만 시작하며, 도는 동안 `caffeinate`로 잠들지 않게 한다. 패스는 `logs/matrix.since`의 시각에 시작한다. 다시 실행하면 그 패스에서 이미 잰 엔진 x 셋을 건너뛰므로 중간에 멈춘 패스가 이어서 돈다(`--new-pass`는 처음부터). 진행은 `logs/matrix.status`에 남고, 마지막에 모든 report를 `bench/score.py --check`로 확인한다.
 
 벤치마크는 상태와 질문 지시문을 합친 텍스트가 Qwen3 토큰 2048개를 넘는 문항을 거부한다. 이 텍스트가 CLM이 실제로 임베딩하는 입력인데, `clm-serve`는 긴 입력을 오류 없이 잘라 버리기 때문이다. 손으로 만든 30문항 정확도는 동작 확인용이지 벤치마크가 아니다.
 
@@ -300,7 +303,8 @@ AnyJev와 Kev는 각각 Metal 메모리 대부분을 쓴다. 그래서 엔진은
 - **채점**: 정확도는 판단(문항 x 질문)마다 각 문항의 첫 timed 호출로 매긴다.
 - **전체 표**: `bench/runs/<셋>/report.md`에 있다. 문항 수와 Wilson 95% 구간, Brier, ECE, order-flip, McNemar 대응 표, 출처별 분해가 들어 있다.
   `bench/score.py <dir> --check`가 옆의 원자료로 이 표를 다시 만들어 같은지 확인한다.
-- **Ollaya 모델**: 영어 셋에는 `laya`, 한국어 셋에는 `laya:multilingual`을 썼다.
+- **Ollaya 모델**: `laya`로 쟀다. `laya`는 한국어 입력에 `laya:multilingual`, 영어에 `laya:en`으로 답한다(2026-11-17 한국어 30문항으로 확인: `laya`와 `laya:multilingual`은 기록된 답과 같고 `laya:en`은 다르다).
+- **p 값**: 아래 p는 쌍 하나씩의 값이다. 엔진 36개면 셋마다 630쌍이고, report의 `p (Holm)` 열이 그 전부에 대해 보정한다. 열 셋을 합쳐 p < 0.05인 쌍 4,298개 중 보정 뒤에도 남는 것은 3,205개라서, 0.01 < p < 0.05로 인용한 주장은 보정을 못 견딜 수 있다.
 - **이번 측정**: clinc-oos를 v2 세트로 바꾸고 MASSIVE-en·MASSIVE-ko를 더했으며, Jev-Style 0.8B v3·Jev-Style 2B v4·Rizzo Flow 4B를 추가했다.
 - **재현**: 2026-10-14~16 측정과 겹치는 일곱 셋에서 정확도 수치를 문항 수까지 전부 재현했다. 예외는 AnyJev로, 네 셋에서 1-3판단 움직였다. CLM은 처음으로 모든 셋을 쟀다. 이전 해석은 `reports/`에, 영어 대 한국어 비교는 `reports/2026-11-16-lang-gap.md`에 있다.
 

@@ -365,7 +365,7 @@ uv sync
 
 [AnyJev](https://github.com/nokia-applied-research/AnyJev) comes from `uv sync`. Its vLLM backend reads label logprobs over HTTP and imports `transformers` only for the tokenizer, so torch is not needed. `serve/anyjev_server.py` wraps it in the `/v1/systemone` format. The request's `model` picks the correction level (`anyjev-raw` or `anyjev-l0`). The adapter asks the generate server for each label's logprob by id (`logprob_token_ids`) rather than AnyJev's `allowed_token_ids` + top-K, because vllm-metal 0.30.0 reports logprobs before that filter and a label can fall out of the top K. A label token missing from the server's logprobs is an HTTP 502, not a filled-in probability.
 
-[Kev](https://github.com/jaredpalmer/kev) keeps its own uv environment (torch, mlx-lm) in its checkout, so it is not a dependency here. `git clone https://github.com/jaredpalmer/kev ~/workspace/tak-bro/kev && (cd ~/workspace/tak-bro/kev && uv sync --extra serve)` sets it up. `scripts/serve-kev.sh` runs its `/v1/systemone` server with the `jaredpalmer/kev-4b` adapter on Qwen3.5-4B-Base; `KEV_RUN=jaredpalmer/kev-0.8b` or `jaredpalmer/kev-9b` serves another size on the same port. The engines `kev-0.8b`, `kev-4b` and `kev-9b` check `/v1/models` before a run and refuse a server running another size.
+[Kev](https://github.com/jaredpalmer/kev) keeps its own uv environment (torch, mlx-lm) in its checkout, so it is not a dependency here. `git clone https://github.com/jaredpalmer/kev ~/workspace/tak-bro/kev && cd ~/workspace/tak-bro/kev && git checkout 0fe8fc97c2bcc247fa3efb6e5c32af4e99770e91 && uv sync --extra serve` sets it up at the commit measured here (`scripts/serve-kev.sh` refuses another; `KEV_COMMIT` overrides). `scripts/serve-kev.sh` runs its `/v1/systemone` server with the `jaredpalmer/kev-4b` adapter on Qwen3.5-4B-Base; `scripts/serve-kev.sh kev-0.8b` or `kev-9b` serves another size on the same port. Each adapter is pinned to a Hub revision (`jaredpalmer/kev-4b@6cfce5c…`), which Kev resolves at serve time. The engines `kev-0.8b`, `kev-4b` and `kev-9b` check `/v1/models` before a run and refuse a server running another size or revision.
 
 [Winnow](https://ollaya.dev/library/winnow) runs in Ollaya: `ollaya pull winnow:e4b` (8.0 GB, Gemma 4, Q8_0), measured as the `winnow` engine. `ollaya pull winnow:12b` (12.7 GB) adds the larger sibling, measured as `winnow-12b`. The same pattern adds the rest: `ollaya pull laya:typed-decisions` (`ollaya-td`), `ollaya pull decider` and `ollaya pull decider:4b` (`decider-2b`, `decider-4b`), `ollaya pull decision` (`decision-eos`), `ollaya pull jevk5` (`jevk5`). `bench/run.py`'s `ENGINES` pins the tag per engine name (env-overridable), and `scripts/measure.sh` unloads that tag afterwards. `ollaya stop winnow:e4b` unloads it.
 
@@ -401,10 +401,10 @@ Every server binds to `127.0.0.1` only.
 | 8090 | Qwen3-8B encoder for CLM | `scripts/serve-embed.sh Qwen/Qwen3-8B 8090 qwen3-8b` |
 | 8700 | CLM System One API | `scripts/serve-clm.sh` |
 | 11435 | Ollaya 0.7.3 daemon (`laya`, `winnow:e4b`, `winnow:12b`, `laya:typed-decisions`, `decider`, `decider:4b`, `decision`, `jevk5`, `coba:400m`, `coba:1b`) | `OLLAYA_HOST=127.0.0.1:11435 ~/.local/bin/ollaya serve` |
-| 11436 | Ollaya 0.18.0 daemon with its own model store (`pplx-decider:flash`, `nimble:9b-v3`, `sura:2b`, `sura:0.8b`, `d1-omni`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`; measure with `OLLAYA_URL=http://127.0.0.1:11436` and `~/.local/ollaya-0.18/bin` first on `PATH` |
+| 11436 | Ollaya 0.18.0 daemon with its own model store (`pplx-decider:flash`, `nimble:9b-v3`, `sura:2b`, `sura:0.8b`, `d1-omni`) | `OLLAYA_HOST=127.0.0.1:11436 OLLAYA_MODELS=~/.ollaya-0.18/models ~/.local/ollaya-0.18/bin/ollaya serve`; `scripts/measure.sh` starts it for these engines (`OLLAYA_018_URL`, `OLLAYA_018_BIN`, `OLLAYA_018_MODELS` override) |
 | 8092 | Qwen3-8B generate server for AnyJev | `scripts/serve-llm.sh Qwen/Qwen3-8B 8092 qwen3-8b` |
 | 8710 | AnyJev System One API (`anyjev-raw`, `anyjev-l0`) | `scripts/serve-anyjev.sh` |
-| 8009 | Kev System One API (`kev-latest`) | `KEV_RUN=jaredpalmer/kev-4b scripts/serve-kev.sh` (or `kev-0.8b`, `kev-9b`) |
+| 8009 | Kev System One API (`kev-latest`) | `scripts/serve-kev.sh kev-4b` (or `kev-0.8b`, `kev-9b`) |
 | 8765 | Jeff System One API (`jeff-latest`) | `scripts/serve-jeff.sh` |
 | 8020 | llama-server System One API (`Clef-Flash-Q8_0@4a7a08c`, `Clef-Q4_K_M@5f70656`, `OpenJev-Q4_K_M@d2c376d`, `lev-Q8_0@2ef3b3c` or `Julia-1-Q8_0@1e6b48a`) | `scripts/serve-llama.sh clef-flash` (or `clef`, `openjev`, `lev`, `julia-1`) |
 | 8030 | Von System One API (`von-latest`) | `scripts/serve-von.sh` |
@@ -433,7 +433,8 @@ uv run python bench/run.py --smoke --engine clm      # CLM README example within
 uv run python bench/run.py --smoke --engine ollaya   # same example, shape only
 uv run python bench/run.py                           # 30 questions x 3 reps on CLM and Ollaya, with kernel memory pressure
 uv run python bench/run.py --smoke --engine <e>       # shape only (anyjev-raw, anyjev-l0, kev-0.8b, kev-4b, kev-9b, winnow, jeff), its server up
-uv run python bench/run.py --engine <e> --reps 1 --questions bench/questions_banking77.jsonl
+uv run python bench/run.py --engine <e> --questions bench/questions_banking77.jsonl   # 1 rep: the protocol's for this set
+uv run python bench/matrix.py --dry-run              # the full pass: what is left to measure (no --dry-run: measure it)
 uv run python bench/score.py bench/runs/questions --check   # report.md matches the raw logs
 uv run python bench/charts.py --check                       # docs/charts/*.svg match the reports (no --check: redraw)
 uv run python bench/make_sets.py transfer-v4        # Kev's out-of-distribution dev set (764) into bench/data/, gitignored
@@ -459,8 +460,20 @@ AnyJev and Kev each need most of the Metal memory, so every engine is measured a
 all three and stops the servers even when a step fails; server output goes to `logs/<name>.log`. Each run logs every call (answers with probabilities,
 latency, memory pressure) to `bench/runs/<set>/<engine>.jsonl`, replacing that engine's earlier log once the run finishes, and
 `bench/score.py` rebuilds `bench/runs/<set>/report.md` from all the logs in that directory. It refuses a log measured
-on another version of the set or with another `--reps`. Restart the AnyJev adapter before each run: the L0 batch prior
+on another version of the set or with another `--reps`. Without `--reps`, `bench/run.py` uses the protocol's: 3 timed
+calls per item on the two 30-item sets, 1 on every other set (`PROTOCOL_REPS`). A server that goes down mid-run (no
+connection, a timeout or HTTP 5xx on 5 calls in a row, or on any warm-up call) stops the run and leaves the earlier log
+in place; a refused input (HTTP 4xx) is logged as a failed call. Each log header records the power source and macOS
+thermal notes, and for an Ollaya engine the daemon's version and the tag's digest; `bench/run.py` refuses an Ollaya
+daemon of another version than the engine needs. Restart the AnyJev adapter before each run: the L0 batch prior
 accumulates across every call the adapter has served.
+
+`bench/matrix.py` runs the full pass: every engine on every set through `scripts/measure.sh`, with a 300 s call
+timeout and the two slowest engines (Decider-4B, nimble-v3) last. It refuses to start unless the Mac is on AC power,
+memory pressure is normal, no engine server answers and neither Ollaya daemon holds a model, and keeps the Mac awake
+with `caffeinate` while it runs. A pass starts at the time in `logs/matrix.since`; rerunning it skips every engine x set
+already measured in that pass, so a pass that stops resumes (`--new-pass` starts over). Progress goes to
+`logs/matrix.status`, and the last step checks every report with `bench/score.py --check`.
 
 The benchmark rejects any item whose state plus question instructions (the text CLM actually embeds) exceeds 2048 Qwen3 tokens, because `clm-serve` would otherwise truncate it without an error. Treat the accuracy over 30 hand-written items as a sanity check, not a benchmark.
 
@@ -471,7 +484,11 @@ machine (no other model server loaded). The 30-item sets ran 3 reps; every other
 reversed-option call where the set has choice questions (all but NSMC). Accuracy is graded per decision (item x question) from each item's first timed call. The full
 tables are in `bench/runs/<set>/report.md`: counts with 95% Wilson intervals, Brier, ECE, order-flip, the pairwise
 McNemar table, and per-source breakdowns. Each table is rebuilt from the raw logs next to it by
-`bench/score.py <dir> --check`. Ollaya ran `laya` on the English sets and `laya:multilingual` on the Korean ones.
+`bench/score.py <dir> --check`. Ollaya ran `laya`, which answers Korean input as `laya:multilingual` and English as
+`laya:en` (checked 2026-11-17 on the Korean 30: `laya` and `laya:multilingual` give the logged answers, `laya:en` does
+not). The p values quoted below are per pair; with 36 engines each set's table has 630 pairs, and its `p (Holm)` column
+adjusts for all of them. Across the ten sets 4,298 pairs have p < 0.05 and 3,205 keep it after the adjustment, so a
+claim quoted at 0.01 < p < 0.05 may not survive it.
 This pass replaced clinc-oos with its v2 set, added MASSIVE-en and MASSIVE-ko, and added Jev-Style 0.8B v3, Jev-Style
 2B v4 and Rizzo Flow 4B. On the seven sets it shares with the 2026-10-14..16 pass it reproduced every earlier accuracy
 count except AnyJev's (1-3 decisions on four sets), and it measured CLM on every set for the first time. Earlier

@@ -415,9 +415,43 @@ def test_bench_errors_are_logged_without_answers(engine):
     assert all(r["item"] == "i2" and r["answers"] is None and r["ms"] is None for r in failed)
 
 
-def test_bench_stops_when_the_cold_call_fails(engine):
-    errors, recs = bench_records(engine(free_port()), ITEMS)
-    assert errors == 1 and [r["call"] for r in recs] == ["cold"]  # an engine that fails its warm-up gets no numbers
+def test_bench_stops_when_the_cold_call_is_refused(engine):
+    srv = systemone_server(lambda body: 422)
+    try:
+        errors, recs = bench_records(engine(srv.port), ITEMS)
+    finally:
+        srv.close()
+    assert errors == 1 and [r["call"] for r in recs] == ["cold"]  # an engine that refuses its warm-up gets no numbers
+
+
+def test_bench_raises_when_the_server_is_down_at_the_cold_call(engine):
+    raw = io.StringIO()
+    with pytest.raises(run.EngineDown, match="cannot reach"):
+        run.bench(engine(free_port()), ITEMS, raw)
+    assert [json.loads(line)["call"] for line in raw.getvalue().splitlines()] == ["cold"]
+
+
+def test_bench_raises_after_max_down_server_failures_in_a_row(engine):
+    calls = iter(range(10_000))
+    srv = systemone_server(lambda body: 200 if next(calls) <= run.WARMUP else 503)  # dies after the warm-up
+    raw = io.StringIO()
+    try:
+        with pytest.raises(run.EngineDown, match=f"{run.MAX_DOWN} server-side failures in a row"):
+            run.bench(engine(srv.port), ITEMS, raw)
+    finally:
+        srv.close()
+    recs = [json.loads(line) for line in raw.getvalue().splitlines()]
+    assert len([r for r in recs if r["error"]]) == run.MAX_DOWN
+
+
+def test_refusals_do_not_count_as_the_server_going_down(engine):
+    # A 4xx refuses one input (JevK5's TOO_MANY_OPTIONS, Ollaya's STATE_TRUNCATED); it is logged as a failed call.
+    srv = systemone_server(lambda body: 422 if body["state"] != "state 0" else 200)
+    try:
+        errors, _ = bench_records(engine(srv.port), ITEMS)
+    finally:
+        srv.close()
+    assert errors == (len(ITEMS) - 1) * run.REPS
 
 
 def test_load_questions_rejects_an_empty_file(tmp_path):
@@ -550,13 +584,86 @@ def test_main_writes_raw_log_and_report(engine, monkeypatch, tmp_path):
 def test_main_exits_1_on_engine_errors(engine, monkeypatch, tmp_path):
     qs = tmp_path / "set.jsonl"
     qs.write_text("".join(json.dumps(it) + "\n" for it in ITEMS))
-    assert run_main(monkeypatch, tmp_path, "--engine", engine(free_port()), "--questions", str(qs)) == 1
+    srv = systemone_server(lambda body: 422 if body["state"] == "state 2" else 200)
+    try:
+        assert run_main(monkeypatch, tmp_path, "--engine", engine(srv.port), "--questions", str(qs)) == 1
+    finally:
+        srv.close()
+
+
+def test_a_server_that_goes_down_keeps_the_previous_log(engine, monkeypatch, tmp_path):
+    qs = tmp_path / "set.jsonl"
+    qs.write_text("".join(json.dumps(it) + "\n" for it in ITEMS))
+    name = engine(free_port())
+    old = tmp_path / "runs" / "set" / f"{name}.jsonl"
+    old.parent.mkdir(parents=True)
+    old.write_text("previous run\n")
+    with pytest.raises(SystemExit, match="left as it was"):
+        run_main(monkeypatch, tmp_path, "--engine", name, "--questions", str(qs))
+    assert old.read_text() == "previous run\n"
+    assert old.with_suffix(".jsonl.partial").exists()
+
+
+@pytest.mark.parametrize("stem, reps", [("questions", 3), ("questions_ko", 3), ("transfer-v4", 1), ("set", 1)])
+def test_reps_default_to_the_protocol(engine, monkeypatch, tmp_path, stem, reps):
+    qs = tmp_path / f"{stem}.jsonl"
+    qs.write_text("".join(json.dumps(it) + "\n" for it in ITEMS))
+    srv = systemone_server()
+    try:
+        name = engine(srv.port)
+        assert run_main(monkeypatch, tmp_path, "--engine", name, "--questions", str(qs)) == 0
+    finally:
+        srv.close()
+    lines = (tmp_path / "runs" / stem / f"{name}.jsonl").read_text().splitlines()
+    assert json.loads(lines[0])["header"]["reps"] == reps
+    assert "power" in json.loads(lines[0])["header"] and "power" in json.loads(lines[-1])["footer"]
+
+
+def ollaya_daemon(version="0.7.3", tags=("winnow:e4b",)):
+    return FakeServer({"/api/version": lambda _: (200, {"version": version}),
+                       "/api/tags": lambda _: (200, {"models": [{"name": t, "digest": f"sha-{t}"} for t in tags]})})
+
+
+def test_runtime_logs_the_ollaya_version_and_digest(monkeypatch):
+    srv = ollaya_daemon(tags=("winnow:e4b", "laya:latest"))
+    try:
+        for name in ("winnow", "ollaya"):
+            monkeypatch.setitem(run.ENGINES, name, {**run.ENGINES[name], "url": f"http://127.0.0.1:{srv.port}"})
+        assert run.runtime("winnow") == {"ollaya": "0.7.3", "tag": "winnow:e4b", "digest": "sha-winnow:e4b"}
+        assert run.runtime("ollaya")["tag"] == "laya:latest"  # a bare tag is :latest
+    finally:
+        srv.close()
+    assert run.runtime("kev-4b") is None
+
+
+@pytest.mark.parametrize("name, version, tags, match", [
+    ("sura-2b", "0.7.3", ("sura:2b",), "runs Ollaya 0.7.3, not 0.18"),   # 0.7.3 cannot load it
+    ("winnow", "0.18.0", ("winnow:e4b",), "runs Ollaya 0.18.0, not 0.7"),
+    ("winnow", "0.7.3", ("winnow:12b",), "has no winnow:e4b"),
+])
+def test_runtime_refuses_the_wrong_daemon_or_a_missing_tag(monkeypatch, name, version, tags, match):
+    srv = ollaya_daemon(version, tags)
+    monkeypatch.setitem(run.ENGINES, name, {**run.ENGINES[name], "url": f"http://127.0.0.1:{srv.port}"})
+    try:
+        with pytest.raises(run.EngineError, match=match):
+            run.runtime(name)
+    finally:
+        srv.close()
+
+
+def test_power_names_the_source_and_thermal_notes(monkeypatch):
+    out = {"batt": "Now drawing from 'Battery Power'\n -InternalBattery-0\t80%\n",
+           "therm": "Note: No thermal warning level has been recorded\nCPU_Speed_Limit = 70\n"}
+    monkeypatch.setattr(run.subprocess, "run",
+                        lambda argv, **k: subprocess.CompletedProcess(argv, 0, out[argv[-1]], ""))
+    assert run.power() == "Battery Power; No thermal warning level has been recorded; CPU_Speed_Limit = 70"
 
 
 def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
     benched = []
     monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
     monkeypatch.setattr(run, "bench", lambda engine, items, raw, reps, timeout: benched.append(engine) or 0)
+    monkeypatch.setattr(run, "runtime", lambda engine: None)  # no Ollaya daemon here
     monkeypatch.setattr(run.score, "render", lambda d: "")
     run_main(monkeypatch, tmp_path)
     assert benched == ["clm", "ollaya"]  # new engines are measured one at a time, by name
@@ -597,7 +704,8 @@ def test_new_engines_send_their_model(monkeypatch, name, model):
 
 
 @pytest.mark.parametrize("name, route, body", [
-    ("kev-9b", "/v1/models", {"models": [{"name": "kev-latest", "run": "jaredpalmer/kev-9b"}]}),
+    ("kev-9b", "/v1/models", {"models": [{"name": "kev-latest",
+                                          "run": "jaredpalmer/kev-9b@db029f08b290afd9fee4aa4bbcd9ae48602d1eb0"}]}),
     ("jeff", "/health", {"status": "ready", "model": "jeff-qwen3.5-2b"}),
     ("jeff-0.8b", "/health", {"status": "ready", "model": "jeff-qwen3.5-0.8b"}),
     ("clef-flash", "/v1/models", {"object": "list", "data": [{"id": "Clef-Flash-Q8_0@4a7a08c"}]}),
@@ -727,24 +835,30 @@ def test_unreadable_identity_is_an_error(monkeypatch):
         srv.close()
 
 
-def test_hub_revision_resolves_kev_adapters(monkeypatch):
-    import huggingface_hub
-
-    monkeypatch.setattr(huggingface_hub.HfApi, "model_info", lambda self, repo: type("I", (), {"sha": "abc123"})())
-    assert run.hub_revision("kev-4b") == "abc123"
-
-
-def test_hub_revision_is_none_off_hub_or_offline(monkeypatch):
+def test_hub_revision_is_the_pinned_kev_revision():
+    assert run.hub_revision("kev-4b") == run.KEV_REVISIONS["4b"]
     assert run.hub_revision("winnow") is None
     assert run.hub_revision("von") is None
 
-    def boom(*a, **k):
-        raise OSError("offline")
 
-    import huggingface_hub
+@pytest.mark.parametrize("engine", ["kev-0.8b", "kev-4b", "kev-9b"])
+def test_serve_kev_run_is_what_the_bench_expects(engine):
+    # The run pins the adapter's Hub revision; bench/run.py checks /v1/models against the same string.
+    r = sh("scripts/serve-kev.sh", "--print-run", engine)
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.strip() == run.ENGINES[engine]["served"][2]
 
-    monkeypatch.setattr(huggingface_hub.HfApi, "model_info", boom)
-    assert run.hub_revision("kev-9b") is None  # unreachable Hub is None, never an error
+
+def test_serve_kev_refuses_another_commit(tmp_path):
+    kev = tmp_path / "kev"
+    (kev / "kev").mkdir(parents=True)
+    (kev / "kev" / "serve.py").write_text("")
+    git = lambda *a: subprocess.run(["git", "-C", str(kev), *a], check=True, capture_output=True)  # noqa: E731
+    git("init", "-q")
+    git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "other")
+    r = sh("scripts/serve-kev.sh", env={**fake_on_path(tmp_path, "uv"), "KEV_PORT": str(free_port()),
+                                        "KEV_DIR": str(kev)})
+    assert r.returncode == 1 and "0fe8fc9" in r.stderr
 
 
 @pytest.mark.parametrize("script, args, engine", [("scripts/serve-startlux.sh", [], "startlux-4b"),
