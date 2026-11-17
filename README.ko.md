@@ -104,9 +104,9 @@ typed-decisions에서는 StartLux-4B(79%, 학습 데이터 세부 미공개)와 
 
 ## 엔진
 
-<details><summary>엔진 스물아홉 가지와 출처 (펼치기)</summary>
+<details><summary>엔진 서른한 가지와 출처 (펼치기)</summary>
 
-엔진은 스물아홉 가지다.
+엔진은 서른한 가지다.
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): [vllm-metal](https://github.com/vllm-project/vllm-metal)로 서빙하는 Qwen3-8B 인코더와 75MB짜리 CLM 헤드.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): `laya` 모델을 MLX로 돌린다.
@@ -138,6 +138,8 @@ typed-decisions에서는 StartLux-4B(79%, 학습 데이터 세부 미공개)와 
 - **Jev-Style 0.8B v3 / 2B v4** ([lawrence3699/jev-style](https://github.com/lawrence3699/jev-style), Apache-2.0): Jev-Style-0.8B-Decision-v3와 Jev-Style-2B-Decision-v4(`chaoliangUNSW/…-MLX`, bf16). `jev-style serve --backend mlx`로 띄운다(`jev-style-0.8b`, `jev-style-2b`). 2B v4의 MLX 빌드는 텍스트만 쓴다.
 - **Rizzo Flow 4B** ([Rizzo-AI-Academy/rizzo-flow](https://github.com/Rizzo-AI-Academy/rizzo-flow), Apache-2.0): Spark-X2.5-4B에 typed-decisions LoRA를 병합한 `rizzoaiacademy/rizzo-flow` Q8_0. 자체 llama.cpp b11081 Metal 런타임 위 `rizzo serve`로 돌린다(`rizzo-flow-4b`).
 
+- **bev-decider-0.4B** ([avbiswas/bev-decider](https://github.com/avbiswas/bev-decider), CC BY-NC 4.0): Qwen3-0.6B의 28층 중 앞 20층에 LoRA를 병합하고, 선택지 위에 2층 어텐션 헤드를 올려 구조상 선택지 순서에 영향받지 않는다. 영어 전용. 자체 `bev-decider serve`로 Metal에서 bf16으로 돈다(`bev-decider`).
+- **JEV-9B** ([autotrust/JEV-9B](https://huggingface.co/autotrust/JEV-9B), Apache-2.0): AutoTrust가 TypeSafe Jev 1.13을 증류한 모델. 손대지 않은 Qwen3.5-9B 위에 System 1 LoRA와 24슬롯 결정 헤드를 얹었다. System One 서버가 없어서 `serve/jev_server.py`가 모델 카드의 `transformers` + `peft` 경로를 `/v1/systemone`으로 감싼다. Metal에서 bf16으로 돈다(`jev-9b`). 헤드에 choice 슬롯이 16개이고 score는 0-5 고정 척도라, 어댑터는 선택지 16개나 수준 6개를 넘는 질문을 `TOO_MANY_OPTIONS`로 거부한다. 그래서 JevK5처럼 20지선다 네 셋(BANKING77-20, clinc-oos, MASSIVE-en, MASSIVE-ko)에는 답하지 못한다.
 모든 엔진은 TypeSafe의 `POST /v1/systemone` 형식으로 응답한다.
 
 </details>
@@ -166,6 +168,8 @@ flowchart LR
     client --> qevapi["qev serve :8070<br/>OneJev-4B"]
     client --> jsapi["jev-style serve :8080<br/>Jev-Style 0.8B v3 / 2B v4 (MLX)"]
     client --> rzapi["rizzo serve :8017<br/>Rizzo Flow 4B"]
+    client --> bevapi["bev-decider serve :8100<br/>bev-decider-0.4B"]
+    client --> jevapi["JEV-9B adapter :8110<br/>(transformers on MPS)"]
 
     clmapi --> embed8090["Qwen3-8B 인코더 :8090<br/>(vllm-metal)"]
     anyjevapi --> gen8092["Qwen3-8B generate :8092<br/>(vllm-metal)"]
@@ -213,6 +217,10 @@ Ollaya 0.18.0 데몬(포트 참고)에는 `pplx-decider:flash`, `nimble:9b-v3`, 
 
 [Rizzo Flow](https://github.com/Rizzo-AI-Academy/rizzo-flow)도 uv tool로 돈다. `uv tool install "rizzo-flow @ git+https://github.com/Rizzo-AI-Academy/rizzo-flow@b9ba007ee4d2928bbab5b1d8bfe9009c3696b6de"`. `scripts/serve-rizzo.sh`가 커밋을 확인하고, GGUF(리비전 `55633c8`, sha256 확인)와 llama.cpp b11081 런타임을 `~/.local/opt/rizzo-flow`에 받은 뒤 `:8017`에서 띄운다.
 
+[bev-decider](https://github.com/avbiswas/bev-decider)는 uv tool로 돈다. `uv tool install "bev-decider[serve]==0.2.1"`. `scripts/serve-bev.sh`가 버전을 확인하고, 고정 리비전(`cf5138b`, 1GB)으로 가중치를 받아 `:8100`에서 서빙한다. `/v1/models`가 모델 이름만 알려 주므로 벤치는 그 이름을 확인하고, 리비전은 스크립트에서 고정한다.
+
+[JEV-9B](https://huggingface.co/autotrust/JEV-9B)는 따로 설치할 것이 없다. `serve/jev_server.py`는 인라인 메타데이터로 자기 환경(torch 2.8.0, transformers 5.17.0, peft 0.21.0)을 고정한 uv 스크립트라, 처음 쓸 때 `uv run --script`가 환경을 만든다. `scripts/serve-jev.sh`가 가중치·System 1 어댑터·헤드를 고정 리비전(`7ac669b`, 18GB. 카드의 리포트·영상·비전용·vLLM용 어댑터는 받지 않는다)으로 받아 `:8110`에서 서빙하고, 벤치는 `/health`에서 `JEV-9B@7ac669b`를 확인한다. 카드가 권하는 vLLM 경로는 CUDA가 필요해서, 여기서는 카드의 `transformers` 경로를 쓴다. 어댑터를 백본에 병합하고 질문마다 forward pass 한 번을 돈다.
+
 `contrastive-lm`은 `vllm`을 의존성으로 선언하지만, 실제로는 임베딩 엔드포인트를 HTTP로 호출할 뿐이다. 그래서 `pyproject.toml`에서 이 의존성을 빼서 vLLM이 두 번 설치되지 않게 했다.
 
 ## 포트
@@ -238,6 +246,8 @@ Ollaya 0.18.0 데몬(포트 참고)에는 `pplx-decider:flash`, `nimble:9b-v3`, 
 | 8070 | OneJev `qev` System One API (`OneJev1.6-4B.Q8_0@2b605ac`. 자식 llama-server는 임의 포트) | `scripts/serve-onejev.sh` |
 | 8080 | Jev-Style System One API (`jev-style-0.8b-decision-v3` 또는 `jev-style-2b-decision-v4`) | `scripts/serve-jevstyle.sh 0.8b`(또는 `2b`) |
 | 8017 | Rizzo Flow System One API (`rizzo-flow-4b-q8_0`, GGUF 리비전 `55633c8`) | `scripts/serve-rizzo.sh` |
+| 8100 | bev-decider System One API (`bev-decider-0.4b`, 가중치 리비전 `cf5138b`) | `scripts/serve-bev.sh` |
+| 8110 | JEV-9B 어댑터 System One API (`JEV-9B@7ac669b`) | `scripts/serve-jev.sh` |
 | 11434 | OpenDecider 뒤의 모델 러너인 Ollama 데몬 | `ollama serve`(또는 Ollama 앱) |
 
 포트가 이미 쓰이고 있으면 serve 스크립트는 시작하지 않는다.

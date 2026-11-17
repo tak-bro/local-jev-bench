@@ -46,6 +46,7 @@ NAMES = {
     "ollaya-td": "Ollaya-td", "ollaya": "Ollaya", "onejev-4b": "OneJev-4B", "opendecider-td": "OpenDecider-td",
     "openjev": "OpenJev", "pplx-decider": "pplx-decider", "rizzo-flow-4b": "Rizzo Flow 4B", "startlux-4b": "StartLux-4B",
     "sura-0.8b": "Sura-0.8B", "sura-2b": "Sura-2B", "von": "Von", "winnow-12b": "Winnow-12B", "winnow": "Winnow-E4B",
+    "bev-decider": "bev-decider-0.4B", "jev-9b": "JEV-9B",
 }
 
 # The README's `†` cells: the engine trained on a train split of data in that set (README § Results footnote).
@@ -61,6 +62,7 @@ IN_DISTRIBUTION = {
     ("jev-style-2b", "questions_banking77"), ("jev-style-2b", "clinc-oos"),
     ("jev-style-2b", "massive-en"), ("jev-style-2b", "massive-ko"),
     ("rizzo-flow-4b", "transfer-v4"),
+    ("bev-decider", "questions_banking77"), ("bev-decider", "clinc-oos"), ("bev-decider", "massive-en"),
 }
 
 # Engines the README notes ran on CPU here, so their latency does not compare with the Metal rows.

@@ -285,9 +285,9 @@ accurate as Ollaya or more on every set (clinc-oos 84% vs 88%, p = 0.054). Kev-4
 
 ## Engines
 
-<details><summary>The twenty-nine engine families and where they come from (click to expand)</summary>
+<details><summary>The thirty-one engine families and where they come from (click to expand)</summary>
 
-It sets up twenty-nine engine families:
+It sets up thirty-one engine families:
 
 - **CLM** ([Contrastive-LM/CLM](https://github.com/Contrastive-LM/CLM)): a Qwen3-8B encoder served by [vllm-metal](https://github.com/vllm-project/vllm-metal), plus CLM's 75 MB head.
 - **Ollaya** ([ollaya-dev/ollaya](https://github.com/ollaya-dev/ollaya)): the `laya` model, run on MLX.
@@ -319,6 +319,8 @@ It sets up twenty-nine engine families:
 - **Jev-Style 0.8B v3 / 2B v4** ([lawrence3699/jev-style](https://github.com/lawrence3699/jev-style), Apache-2.0): Jev-Style-0.8B-Decision-v3 and Jev-Style-2B-Decision-v4 (`chaoliangUNSW/…-MLX`, bf16), served by `jev-style serve --backend mlx` (`jev-style-0.8b`, `jev-style-2b`). The 2B v4 MLX build is text only.
 - **Rizzo Flow 4B** ([Rizzo-AI-Academy/rizzo-flow](https://github.com/Rizzo-AI-Academy/rizzo-flow), Apache-2.0): Spark-X2.5-4B with its typed-decisions LoRA merged, as `rizzoaiacademy/rizzo-flow` Q8_0, served by `rizzo serve` on its own llama.cpp b11081 Metal runtime (`rizzo-flow-4b`).
 
+- **bev-decider-0.4B** ([avbiswas/bev-decider](https://github.com/avbiswas/bev-decider), CC BY-NC 4.0): the first 20 of Qwen3-0.6B's 28 layers with a LoRA merged in, plus a two-layer attention head over the options that makes it order-invariant by construction, English only, served by its own `bev-decider serve` on Metal in bf16 (`bev-decider`).
+- **JEV-9B** ([autotrust/JEV-9B](https://huggingface.co/autotrust/JEV-9B), Apache-2.0): AutoTrust's distillation of TypeSafe Jev 1.13 into a System 1 LoRA plus a 24-slot decision head on an untouched Qwen3.5-9B. It ships no System One server, so `serve/jev_server.py` wraps its model card's `transformers` + `peft` path in `/v1/systemone`, on Metal in bf16 (`jev-9b`). Its head has 16 choice slots and a fixed 0-5 score scale, so the adapter refuses a question with more than 16 options or 6 levels with `TOO_MANY_OPTIONS`, so it answers none of the four 20-option sets (BANKING77-20, clinc-oos, MASSIVE-en and MASSIVE-ko), as JevK5 does not.
 All speak TypeSafe's `POST /v1/systemone` wire format.
 
 </details>
@@ -347,6 +349,8 @@ flowchart LR
     client --> qevapi["qev serve :8070<br/>OneJev-4B"]
     client --> jsapi["jev-style serve :8080<br/>Jev-Style 0.8B v3 / 2B v4 (MLX)"]
     client --> rzapi["rizzo serve :8017<br/>Rizzo Flow 4B"]
+    client --> bevapi["bev-decider serve :8100<br/>bev-decider-0.4B"]
+    client --> jevapi["JEV-9B adapter :8110<br/>(transformers on MPS)"]
 
     clmapi --> embed8090["Qwen3-8B encoder :8090<br/>(vllm-metal)"]
     anyjevapi --> gen8092["Qwen3-8B generate :8092<br/>(vllm-metal)"]
@@ -389,6 +393,10 @@ The Ollaya 0.18.0 daemon (see Ports) adds `pplx-decider:flash`, `nimble:9b-v3`, 
 
 [Rizzo Flow](https://github.com/Rizzo-AI-Academy/rizzo-flow) runs as a uv tool too: `uv tool install "rizzo-flow @ git+https://github.com/Rizzo-AI-Academy/rizzo-flow@b9ba007ee4d2928bbab5b1d8bfe9009c3696b6de"`. `scripts/serve-rizzo.sh` checks the commit, downloads the GGUF (rev `55633c8`, sha256 checked) and its llama.cpp b11081 runtime into `~/.local/opt/rizzo-flow`, and serves on `:8017`.
 
+[bev-decider](https://github.com/avbiswas/bev-decider) runs as a uv tool: `uv tool install "bev-decider[serve]==0.2.1"`. `scripts/serve-bev.sh` checks the version, downloads the weights at a pinned revision (`cf5138b`, 1 GB) and serves on `:8100`. Its `/v1/models` names only the model, so the bench checks that name and the revision is pinned in the script.
+
+[JEV-9B](https://huggingface.co/autotrust/JEV-9B) needs no install step: `serve/jev_server.py` is a uv script whose inline metadata pins its own environment (torch 2.8.0, transformers 5.17.0, peft 0.21.0), so `uv run --script` builds it on first use. `scripts/serve-jev.sh` downloads the weights, the System 1 adapter and the head at a pinned revision (`7ac669b`, 18 GB; the card's reports, videos and vision and vLLM adapters are skipped) and serves on `:8110`; the bench checks `/health` for `JEV-9B@7ac669b`. The card's recommended vLLM path needs CUDA, so this is its `transformers` path: the adapter merged into the backbone, one forward pass per question.
+
 `contrastive-lm` declares `vllm` as a dependency, but it only calls the embeddings endpoint over HTTP. `pyproject.toml` overrides that dependency away so a second vLLM is not installed.
 
 ## Ports
@@ -414,6 +422,8 @@ Every server binds to `127.0.0.1` only.
 | 8070 | OneJev `qev` System One API (`OneJev1.6-4B.Q8_0@2b605ac`; its llama-server child takes a random port) | `scripts/serve-onejev.sh` |
 | 8080 | Jev-Style System One API (`jev-style-0.8b-decision-v3` or `jev-style-2b-decision-v4`) | `scripts/serve-jevstyle.sh 0.8b` (or `2b`) |
 | 8017 | Rizzo Flow System One API (`rizzo-flow-4b-q8_0`, GGUF rev `55633c8`) | `scripts/serve-rizzo.sh` |
+| 8100 | bev-decider System One API (`bev-decider-0.4b`, weights rev `cf5138b`) | `scripts/serve-bev.sh` |
+| 8110 | JEV-9B adapter System One API (`JEV-9B@7ac669b`) | `scripts/serve-jev.sh` |
 | 11434 | Ollama daemon, the model runner behind OpenDecider | `ollama serve` (or the Ollama app) |
 
 The serve scripts refuse to start when their port is already taken.
