@@ -114,6 +114,13 @@ for name, served_name in (("jev-style-0.8b", "jev-style-0.8b-decision-v3"), ("je
 # the GGUF it loaded, and /health names that GGUF's pinned repo revision.
 ENGINES["rizzo-flow-4b"] = {"url": os.environ.get("RIZZO_URL", "http://127.0.0.1:8017"), "model": "rizzo-flow-4b-q8_0",
                             "served": ("/health", ("model", "gguf_revision"), "55633c8cbd2b826bd3eefdeb05310450996649df")}
+# bev-decider (scripts/serve-bev.sh) reports only its model name on /v1/models; like Von, the weights' revision is
+# pinned in its serve script.
+ENGINES["bev-decider"] = {"url": os.environ.get("BEV_URL", "http://127.0.0.1:8100"), "model": "bev-decider-0.4b",
+                          "served": ("/v1/models", ("models", 0, "name"), "bev-decider-0.4b")}
+# JEV-9B runs behind our adapter (serve/jev_server.py via scripts/serve-jev.sh), whose /health names the repo revision.
+ENGINES["jev-9b"] = {"url": os.environ.get("JEV_URL", "http://127.0.0.1:8110"), "model": "JEV-9B@7ac669b",
+                     "served": ("/health", ("model",), "JEV-9B@7ac669b")}
 ENGINES["von"] = {"url": os.environ.get("VON_URL", "http://127.0.0.1:8030"), "model": "von-latest",
                   "served": ("/health", ("version",), "1.3.7")}
 # A bare benchmark runs the two engines that can share the machine. The others each need most of the Metal

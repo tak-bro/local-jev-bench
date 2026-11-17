@@ -25,7 +25,7 @@ fi
 engine=$1
 shift
 case $engine in
-    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | julia-1 | lev | openjev | drex-1.5 | opendecider-td | startlux-4b | onejev-4b | jev-style-0.8b | jev-style-2b | rizzo-flow-4b | von) ;;
+    ollaya | winnow | winnow-12b | ollaya-td | decider-2b | decider-4b | decision-eos | jevk5 | pplx-decider | coba-400m | coba-1b | nimble-v3 | sura-2b | sura-0.8b | d1-omni | kev-0.8b | kev-4b | kev-9b | jeff | jeff-0.8b | anyjev-raw | anyjev-l0 | clm | clef-flash | clef | julia-1 | lev | openjev | drex-1.5 | opendecider-td | startlux-4b | onejev-4b | jev-style-0.8b | jev-style-2b | rizzo-flow-4b | von | bev-decider | jev-9b) ;;
     *)
         echo "unknown engine: $engine" >&2
         exit 2
@@ -173,6 +173,13 @@ else
             ;;
         rizzo-flow-4b)
             start rizzo "${RIZZO_URL:-http://127.0.0.1:8017}/health" 200 "$scripts/serve-rizzo.sh"
+            ;;
+        bev-decider)
+            start bev "${BEV_URL:-http://127.0.0.1:8100}/v1/models" 200 "$scripts/serve-bev.sh"
+            ;;
+        jev-9b)
+            # /health answers only after the weights are on the device
+            start jev "${JEV_URL:-http://127.0.0.1:8110}/health" 200 "$scripts/serve-jev.sh"
             ;;
         von)
             start von "${VON_URL:-http://127.0.0.1:8030}/health" 200 "$scripts/serve-von.sh"
