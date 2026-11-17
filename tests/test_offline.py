@@ -663,6 +663,7 @@ def test_bare_bench_runs_only_the_original_engines(monkeypatch, tmp_path):
     benched = []
     monkeypatch.setattr(run, "load_questions", lambda path, count: ITEMS)
     monkeypatch.setattr(run, "bench", lambda engine, items, raw, reps, timeout: benched.append(engine) or 0)
+    monkeypatch.setattr(run, "runtime", lambda engine: None)  # no Ollaya daemon here
     monkeypatch.setattr(run.score, "render", lambda d: "")
     run_main(monkeypatch, tmp_path)
     assert benched == ["clm", "ollaya"]  # new engines are measured one at a time, by name
