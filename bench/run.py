@@ -7,7 +7,8 @@
 
 Every engine speaks the same format, so one client serves all; only the base URL and model differ. Each run writes
 every call to bench/runs/<set>/<engine>.jsonl (replacing that engine's earlier log when it finishes) and regenerates
-bench/runs/<set>/report.md from all the logs there with bench/score.py.
+bench/runs/<set>/report.md from all the logs there with bench/score.py. A run whose server goes down (MAX_DOWN
+server-side failures in a row, or any in the warm-up) stops and keeps the earlier log.
 """
 
 from __future__ import annotations
@@ -26,51 +27,47 @@ import requests
 
 import score
 
+# Two Ollaya daemons serve here (README Ports): 0.7.3 and, for the models 0.7.3 cannot load, 0.18.0 with its own model
+# store. Each Ollaya engine names the daemon version it needs; bench/run.py checks it and logs the tag's digest.
+OLLAYA_URLS = {"0.7": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
+               "0.18": os.environ.get("OLLAYA_018_URL", "http://127.0.0.1:11436")}
+
+
+def ollaya(version: str, env: str, tag: str) -> dict[str, Any]:
+    """An engine served by the Ollaya `version` daemon. Ollaya answers an unpulled tag with 404 MODEL_NOT_FOUND and
+    refuses a request without `model`, so the request's model pins what is measured on the shared port."""
+    return {"url": OLLAYA_URLS[version], "model": os.environ.get(env, tag), "ollaya": version}
+
+
 ENGINES: dict[str, dict[str, Any]] = {
     "clm": {"url": os.environ.get("CLM_URL", "http://127.0.0.1:8700"), "model": None},
-    "ollaya": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"), "model": os.environ.get("OLLAYA_MODEL", "laya")},
+    # `laya` routes by input language: Korean states get `laya:multilingual`'s answers, English ones `laya:en`'s.
+    "ollaya": ollaya("0.7", "OLLAYA_MODEL", "laya"),
     # One AnyJev adapter serves both correction levels; the model field picks the level.
     "anyjev-raw": {"url": os.environ.get("ANYJEV_URL", "http://127.0.0.1:8710"), "model": "anyjev-raw"},
     "anyjev-l0": {"url": os.environ.get("ANYJEV_URL", "http://127.0.0.1:8710"), "model": "anyjev-l0"},
-    # Ollaya answers an unpulled tag with 404 MODEL_NOT_FOUND and refuses a request without `model`, so the
-    # request's model pins what is measured on the shared port.
-    "winnow": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-               "model": os.environ.get("WINNOW_MODEL", "winnow:e4b")},
-    "winnow-12b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                   "model": os.environ.get("WINNOW_12B_MODEL", "winnow:12b")},
+    "winnow": ollaya("0.7", "WINNOW_MODEL", "winnow:e4b"),
+    "winnow-12b": ollaya("0.7", "WINNOW_12B_MODEL", "winnow:12b"),
     # Laya's typed-decisions fine-tune (0.766 accuracy claimed upstream, vs 0.362 for the base English
     # checkpoint on the same decisions); pulled separately, measured under its own name.
-    "ollaya-td": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                  "model": os.environ.get("OLLAYA_TD_MODEL", "laya:typed-decisions")},
+    "ollaya-td": ollaya("0.7", "OLLAYA_TD_MODEL", "laya:typed-decisions"),
     # Other Ollaya-registry decision models. `decider` is Mapika's 2B default tag; `decision` is
     # Decision 1.0 Eos; `jevk5` is alibiserikbay's JevK5 v0.3.
-    "decider-2b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                   "model": os.environ.get("DECIDER_2B_MODEL", "decider")},
-    "decider-4b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                   "model": os.environ.get("DECIDER_4B_MODEL", "decider:4b")},
-    "decision-eos": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                     "model": os.environ.get("DECISION_EOS_MODEL", "decision")},
-    "jevk5": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-              "model": os.environ.get("JEVK5_MODEL", "jevk5")},
-    # `pplx-decider:flash` is Perplexity's pplx-decider-flash v1.2 (Qwen3.5-4B); `coba` is Ollaya's own Ettin
-    # encoders distilled from it; `nimble:9b-v3` is Bespoke-Nimble-9B v3. Nimble-v4 is API-only, so it is
-    # not here.
-    "pplx-decider": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                     "model": os.environ.get("PPLX_DECIDER_MODEL", "pplx-decider:flash")},
-    "coba-400m": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                  "model": os.environ.get("COBA_400M_MODEL", "coba:400m")},
-    "coba-1b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                "model": os.environ.get("COBA_1B_MODEL", "coba:1b")},
-    "nimble-v3": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                  "model": os.environ.get("NIMBLE_V3_MODEL", "nimble:9b-v3")},
-    # Ollaya 0.18.0's own decoder decision models `sura:2b` and `sura:0.8b`, and Liquid AI's d1-omni-600M
-    # (`d1-omni`, text path only, ONNX). Like pplx-decider, 0.7.3 cannot load them.
-    "sura-2b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                "model": os.environ.get("SURA_2B_MODEL", "sura:2b")},
-    "sura-0.8b": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                  "model": os.environ.get("SURA_0_8B_MODEL", "sura:0.8b")},
-    "d1-omni": {"url": os.environ.get("OLLAYA_URL", "http://127.0.0.1:11435"),
-                "model": os.environ.get("D1_OMNI_MODEL", "d1-omni")},
+    "decider-2b": ollaya("0.7", "DECIDER_2B_MODEL", "decider"),
+    "decider-4b": ollaya("0.7", "DECIDER_4B_MODEL", "decider:4b"),
+    "decision-eos": ollaya("0.7", "DECISION_EOS_MODEL", "decision"),
+    "jevk5": ollaya("0.7", "JEVK5_MODEL", "jevk5"),
+    # `coba` is Ollaya's own Ettin encoders distilled from pplx-decider:flash.
+    "coba-400m": ollaya("0.7", "COBA_400M_MODEL", "coba:400m"),
+    "coba-1b": ollaya("0.7", "COBA_1B_MODEL", "coba:1b"),
+    # `pplx-decider:flash` is Perplexity's pplx-decider-flash v1.2 (Qwen3.5-4B); `nimble:9b-v3` is Bespoke-Nimble-9B
+    # v3 (Nimble-v4 is API-only, so it is not here); `sura:2b` and `sura:0.8b` are Ollaya 0.18.0's own decoder decision
+    # models; `d1-omni` is Liquid AI's d1-omni-600M (text path only, ONNX). 0.7.3 cannot load any of them.
+    "pplx-decider": ollaya("0.18", "PPLX_DECIDER_MODEL", "pplx-decider:flash"),
+    "nimble-v3": ollaya("0.18", "NIMBLE_V3_MODEL", "nimble:9b-v3"),
+    "sura-2b": ollaya("0.18", "SURA_2B_MODEL", "sura:2b"),
+    "sura-0.8b": ollaya("0.18", "SURA_0_8B_MODEL", "sura:0.8b"),
+    "d1-omni": ollaya("0.18", "D1_OMNI_MODEL", "d1-omni"),
     "jeff": {"url": os.environ.get("JEFF_URL", "http://127.0.0.1:8765"), "model": "jeff-latest",
              "served": ("/health", ("model",), "jeff-qwen3.5-2b")},
     # Jeff-Qwen3.5-0.8B shares the port; `served` tells the checkpoints apart (`service.name` is
@@ -78,10 +75,13 @@ ENGINES: dict[str, dict[str, Any]] = {
     "jeff-0.8b": {"url": os.environ.get("JEFF_URL", "http://127.0.0.1:8765"), "model": "jeff-latest",
                   "served": ("/health", ("model",), "jeff-qwen3.5-0.8b")},
 }
-# Kev serves one adapter at a time on one port (scripts/serve-kev.sh, KEV_RUN); `served` checks which one is up.
-for size in ("0.8b", "4b", "9b"):
+# Kev serves one adapter at a time on one port (scripts/serve-kev.sh); `served` checks which one is up and at which
+# Hub revision: Kev resolves `repo@revision` from the Hub at serve time and reports the run as it was given.
+KEV_REVISIONS = {"0.8b": "bf75a6a8848ea6960ff2ed108d9ed44c2941174f", "4b": "6cfce5c2fa4b4bd64026336ab649c5ca78857d52",
+                 "9b": "db029f08b290afd9fee4aa4bbcd9ae48602d1eb0"}
+for size, rev in KEV_REVISIONS.items():
     ENGINES[f"kev-{size}"] = {"url": os.environ.get("KEV_URL", "http://127.0.0.1:8009"), "model": "kev-latest",
-                              "served": ("/v1/models", ("models", 0, "run"), f"jaredpalmer/kev-{size}")}
+                              "served": ("/v1/models", ("models", 0, "run"), f"jaredpalmer/kev-{size}@{rev}")}
 # llama-server (scripts/serve-llama.sh) serves one ggml-org decision GGUF at a time on one port and names the file and its repo
 # revision in its alias; `served` checks it.
 for name, alias in (("clef-flash", "Clef-Flash-Q8_0@4a7a08c"), ("clef", "Clef-Q4_K_M@5f70656"),
@@ -133,24 +133,43 @@ README_QUESTIONS = {
 MAX_STATE_TOKENS = int(os.environ.get("MAX_MODEL_LEN", 2048))
 WARMUP = 3
 REPS = 3
+# The published protocol (README Results): 3 timed calls per item on the hand-written 30-item sets, 1 on every other
+# set. `--reps` overrides it; bench/score.py refuses a directory whose logs mix reps.
+PROTOCOL_REPS = {"questions": 3, "questions_ko": 3}
+# Server-side failures in a row (no connection, timeout, 5xx) after which a run stops and keeps the previous log.
+MAX_DOWN = 5
+# One connection for every call, so a fast engine's latency does not include a new TCP handshake each time.
+SESSION = requests.Session()
 
 
 class EngineError(RuntimeError):
     pass
 
 
+class EngineDown(EngineError):
+    """The server failed on its side (no connection, timeout, HTTP 5xx), as opposed to refusing one input (4xx) or
+    answering malformed."""
+
+
+def protocol_reps(path: Path) -> int:
+    return PROTOCOL_REPS.get(path.stem, 1)
+
+
 def ask(engine: str, state: str, questions: dict, timeout: float = 120.0) -> tuple[dict, float]:
-    """POST one request; return (answers, wall-clock ms). Raises EngineError on any failure."""
+    """POST one request; return (answers, wall-clock ms). Raises EngineDown when the server failed on its side and
+    EngineError on any other failure."""
     cfg = ENGINES[engine]
     body: dict[str, Any] = {"state": state, "questions": questions}
     if cfg["model"]:
         body["model"] = cfg["model"]
     t0 = time.perf_counter()
     try:
-        r = requests.post(f"{cfg['url']}/v1/systemone", json=body, timeout=timeout)
+        r = SESSION.post(f"{cfg['url']}/v1/systemone", json=body, timeout=timeout)
     except requests.RequestException as e:
-        raise EngineError(f"{engine}: cannot reach {cfg['url']}: {e}") from e
+        raise EngineDown(f"{engine}: cannot reach {cfg['url']}: {e}") from e
     ms = (time.perf_counter() - t0) * 1000
+    if r.status_code >= 500:
+        raise EngineDown(f"{engine}: HTTP {r.status_code}: {r.text[:200]}")
     if r.status_code != 200:
         raise EngineError(f"{engine}: HTTP {r.status_code}: {r.text[:200]}")
     try:
@@ -169,7 +188,7 @@ def served(engine: str) -> str | None:
     path, keys, want = ENGINES[engine]["served"]
     url = ENGINES[engine]["url"] + path
     try:
-        got: Any = requests.get(url, timeout=30).json()
+        got: Any = SESSION.get(url, timeout=30).json()
         for k in keys:
             got = got[k]
     except (requests.RequestException, ValueError, KeyError, IndexError, TypeError) as e:
@@ -180,18 +199,32 @@ def served(engine: str) -> str | None:
 
 
 def hub_revision(engine: str) -> str | None:
-    """The Hub snapshot revision behind a weights-from-Hub engine, for the log header. Only Kev resolves its
-    adapter from the Hub at serve time (`jaredpalmer/kev-<size>`); the llama-server alias already names its GGUF
-    revision and Von's weights revision is pinned in scripts/serve-von.sh. Anything unreachable (offline tests,
-    no network) is None, never an error."""
-    if not engine.startswith("kev-"):
-        return None
-    try:
-        from huggingface_hub import HfApi
+    """The Hub revision behind a weights-from-Hub engine, for the log header. Only Kev resolves its adapter from the
+    Hub at serve time, at the revision pinned in KEV_REVISIONS (`served` checks the server got it); the llama-server
+    alias already names its GGUF revision and Von's weights revision is pinned in scripts/serve-von.sh."""
+    return KEV_REVISIONS.get(engine.removeprefix("kev-")) if engine.startswith("kev-") else None
 
-        return HfApi().model_info(f"jaredpalmer/{engine}").sha
-    except Exception:
+
+def runtime(engine: str) -> dict | None:
+    """For an Ollaya engine, the daemon's version and the digest of the tag measured: a tag alone does not pin the
+    weights (a later `ollaya pull` replaces them), and two daemon versions serve here. Raises EngineError when the
+    daemon is another version than the engine needs or has not pulled the tag, before any log is replaced."""
+    want = ENGINES[engine].get("ollaya")
+    if want is None:
         return None
+    url, tag = ENGINES[engine]["url"], ENGINES[engine]["model"]
+    name = tag if ":" in tag else f"{tag}:latest"
+    try:
+        version = SESSION.get(f"{url}/api/version", timeout=30).json()["version"]
+        models = SESSION.get(f"{url}/api/tags", timeout=30).json()["models"]
+    except (requests.RequestException, ValueError, KeyError, TypeError) as e:
+        raise EngineError(f"{engine}: cannot read the Ollaya daemon at {url}: {e}") from e
+    if version != want and not version.startswith(f"{want}."):
+        raise EngineError(f"{engine}: {url} runs Ollaya {version}, not {want}; start the right daemon (README Ports)")
+    digest = next((m.get("digest") for m in models if m.get("name") == name), None)
+    if digest is None:
+        raise EngineError(f"{engine}: Ollaya {version} at {url} has no {name}; pull it first")
+    return {"ollaya": version, "tag": name, "digest": digest}
 
 
 def check_shape(engine: str, questions: dict, answers: dict) -> None:
@@ -295,27 +328,33 @@ def reversed_options(questions: dict) -> dict:
 
 def bench(engine: str, items: list[dict], raw: TextIO, reps: int = REPS, timeout: float = 120.0) -> int:
     """Call the engine and log every call to `raw` as one JSON line (format: bench/score.py). Return the number of
-    failed calls. Scoring is bench/score.py's job; nothing here grades an answer."""
-    errors = 0
+    failed calls. Scoring is bench/score.py's job; nothing here grades an answer.
+
+    Raises EngineDown when the warm-up fails on the server's side, or MAX_DOWN calls in a row do: a dead or hung
+    server would otherwise leave a log of errors in place of the previous run's."""
+    errors = down = 0
 
     def call(kind: str, item: dict, questions: dict, rep: int | None = None) -> dict | None:
-        nonlocal errors
+        nonlocal errors, down
         try:
             answers, ms = ask(engine, item["state"], questions, timeout=timeout)
-            error = None
+            error, down = None, 0
         except EngineError as e:
             answers, ms, error = None, None, str(e)
             errors += 1
+            down = down + 1 if isinstance(e, EngineDown) else 0
         raw.write(json.dumps({"item": item["id"], "call": kind, "rep": rep, "answers": answers, "error": error,
                               "ms": ms, "pressure": memory_pressure()}, ensure_ascii=False) + "\n")
         raw.flush()
+        if down >= MAX_DOWN or (down and kind in ("cold", "warmup")):
+            raise EngineDown(f"{error} ({down} server-side failures in a row)")
         return answers
 
     first = items[0]
     # Cold call first (CLM embeds option texts once and caches them), then warm-up calls that are not timed.
     for i in range(1 + WARMUP):
         if call("cold" if i == 0 else "warmup", first, first["questions"]) is None:
-            return errors  # an engine that fails its warm-up gets no numbers at all
+            return errors  # an engine that refuses the warm-up input (4xx) gets no numbers at all
     for it in items:
         answered = [call("timed", it, it["questions"], rep) for rep in range(reps)]
         # After the timed reps, so the extra call does not warm their cache. An item whose rep 0 failed has no
@@ -346,6 +385,18 @@ def host() -> str:
     except (OSError, subprocess.TimeoutExpired) as e:
         return f"unavailable ({e})"
     return f"{chip}, {int(mem) // 2**30} GB" if chip and mem.isdigit() else f"unavailable ({chip!r}, {mem!r})"
+
+
+def power() -> str:
+    """Power source and macOS's thermal and performance warnings (`pmset -g batt`, `pmset -g therm`), logged when a
+    run starts and ends: on battery or throttled, a laptop answers slower than the latency columns assume."""
+    try:
+        batt, therm = (subprocess.run(["pmset", "-g", key], capture_output=True, text=True, timeout=10).stdout
+                       for key in ("batt", "therm"))
+    except (OSError, subprocess.TimeoutExpired) as e:
+        return f"unavailable ({e})"
+    source = batt.splitlines()[0].removeprefix("Now drawing from ").strip("'") if batt.strip() else "unknown source"
+    return "; ".join([source, *(line.removeprefix("Note: ").strip() for line in therm.splitlines() if line.strip())])
 
 
 def now() -> str:
@@ -380,7 +431,8 @@ def main() -> int:
     ap.add_argument("--questions", type=Path, default=Path(__file__).with_name("questions.jsonl"))
     ap.add_argument("--runs", type=Path, default=Path(__file__).with_name("runs"),
                     help="raw logs go to <runs>/<questions file stem>/<engine>.jsonl")
-    ap.add_argument("--reps", type=positive_int, default=REPS, help="timed calls per item (the public set uses 1)")
+    ap.add_argument("--reps", type=positive_int,
+                    help="timed calls per item (default: the protocol's, 3 on the 30-item sets and 1 elsewhere)")
     ap.add_argument("--timeout", type=positive_float, default=120.0,
                     help="per-call HTTP timeout in seconds (CPU engines on long states need more)")
     args = ap.parse_args()
@@ -398,31 +450,36 @@ def main() -> int:
             failed |= bool(fails)
         return 1 if failed else 0
 
+    reps = args.reps or protocol_reps(args.questions)
     items = load_questions(args.questions, qwen_token_counter())
     out = args.runs / args.questions.stem
     out.mkdir(parents=True, exist_ok=True)
     try:
         for engine in engines:  # all of them before any log is replaced, and each again right before its own
             served(engine)
+            runtime(engine)
     except EngineError as e:
         raise SystemExit(str(e)) from e
     errors = 0
     for engine in engines:
         try:
-            identity = served(engine)
+            identity, daemon = served(engine), runtime(engine)
         except EngineError as e:
             raise SystemExit(str(e)) from e
         header = {"set": questions_label(args.questions), "set_sha256": score.sha256(args.questions),
-                  "engine": engine, "model": ENGINES[engine]["model"], "reps": args.reps, "warmup": WARMUP,
-                  "started": now(), "host": host(), "served": identity,
-                  "hub_revision": hub_revision(engine)}
+                  "engine": engine, "model": ENGINES[engine]["model"], "reps": reps, "warmup": WARMUP,
+                  "started": now(), "host": host(), "power": power(), "served": identity,
+                  "hub_revision": hub_revision(engine), "runtime": daemon}
         log = out / f"{engine}.jsonl"
         partial = log.with_suffix(".jsonl.partial")  # not *.jsonl, so bench/score.py never reads it
         with partial.open("w") as raw:
             raw.write(json.dumps({"header": header}) + "\n")
-            errors += bench(engine, items, raw, reps=args.reps, timeout=args.timeout)
+            try:
+                errors += bench(engine, items, raw, reps=reps, timeout=args.timeout)
+            except EngineDown as e:
+                raise SystemExit(f"{e}\nstopped; {log} is left as it was, the calls so far are in {partial}") from e
             # Only a run that got here has a footer; bench/score.py refuses a log without one.
-            raw.write(json.dumps({"footer": {"finished": now()}}) + "\n")
+            raw.write(json.dumps({"footer": {"finished": now(), "power": power()}}) + "\n")
         partial.replace(log)  # an interrupted run leaves the previous log in place
     print(score.render(out), end="")
     return 1 if errors else 0

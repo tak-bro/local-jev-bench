@@ -228,6 +228,24 @@ def test_ollaya_daemon_is_reused_and_the_model_unloaded(tmp_path):
         daemon.kill()
 
 
+def test_ollaya_018_engines_start_the_018_daemon_with_its_store(tmp_path):
+    port = free_port()
+    (tmp_path / "api").mkdir()
+    (tmp_path / "api" / "tags").write_text("{}")
+    fake = tmp_path / "ollaya-018"
+    # `serve` runs the stand-in daemon and records its store; `stop` records the unload
+    fake.write_text(f'#!/bin/sh\necho "$OLLAYA_HOST $OLLAYA_MODELS $@" >> {tmp_path}/ollaya.log\n'
+                    f'[ "$1" = serve ] && exec python3 {STANDIN} {port} {tmp_path}\nexit 0\n')
+    fake.chmod(0o755)
+    env = {**os.environ, "OLLAYA_018_URL": f"http://127.0.0.1:{port}", "OLLAYA_018_BIN": str(fake),
+           "OLLAYA_018_MODELS": "/store-018", "MEASURE_BENCH": "true", "MEASURE_LOGS": str(tmp_path / "logs")}
+    r = subprocess.run(["bash", "scripts/measure.sh", "sura-2b", "a.jsonl"], cwd=ROOT, capture_output=True,
+                       text=True, env=env, timeout=60)
+    assert r.returncode == 0, r.stderr
+    assert (tmp_path / "ollaya.log").read_text().splitlines() == [
+        f"127.0.0.1:{port} /store-018 serve", f"127.0.0.1:{port}  stop sura:2b"]  # no store needed to unload
+
+
 def test_a_failed_unload_is_reported(tmp_path):
     port = free_port()
     (tmp_path / "api").mkdir()

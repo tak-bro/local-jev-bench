@@ -294,8 +294,19 @@ def test_pairs_table(runs):
     assert "| a | b | 4 | 2 | 0 | 0.500 |" in text
     assert "overlapping" not in text  # the pairwise table, not interval overlap, says whether engines differ
     assert "| b | c | 4 | 0 | 0 | 1.000 |" in text
-    pair_rows = [line[:9] for line in text.splitlines() if line.count("|") == 7 and line[2] in "abc"]
+    pair_rows = [line[:9] for line in text.splitlines() if line.count("|") == 8 and line[2] in "abc"]
     assert pair_rows == ["| a | b |", "| a | c |", "| b | c |"]
+    assert "| a | b | 4 | 2 | 0 | 0.500 | 1.000 |" in text  # 0.5 of three pairs: 3 * 0.5, capped at 1
+
+
+@pytest.mark.parametrize("ps, want", [
+    ([], []),
+    ([0.01, 0.04, 0.03], [0.03, 0.06, 0.06]),   # 3 * 0.01, then max(2 * 0.03, 0.03), then max(1 * 0.04, 0.06)
+    ([0.2, 0.001], [0.2, 0.002]),
+    ([0.6, 0.5], [1.0, 1.0]),                   # capped at 1
+])
+def test_holm(ps, want):
+    assert score.holm(ps) == pytest.approx(want)
 
 
 def test_pairs_leave_out_a_decision_either_engine_failed(runs):

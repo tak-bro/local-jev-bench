@@ -2,7 +2,8 @@
 # Start one engine's servers, wait until they answer, benchmark it on each set, and stop them, even when a step fails.
 # Engines that need most of the Metal memory are measured this way one at a time.
 #   scripts/measure.sh kev-9b bench/data/transfer-v4.jsonl bench/data/typed-decisions.jsonl
-#   scripts/measure.sh --reps 3 anyjev-l0 bench/questions.jsonl bench/questions_ko.jsonl
+#   scripts/measure.sh anyjev-l0 bench/questions.jsonl bench/questions_ko.jsonl
+# Without --reps, bench/run.py uses the protocol's reps per set (PROTOCOL_REPS). scripts/matrix.sh runs every engine.
 # The AnyJev adapter restarts before every set: its L0 batch prior accumulates over every call it serves.
 # A server already answering on an engine's port is refused, except Ollaya's daemon: the request names the model, so
 # a running daemon is used as it is and only that model is unloaded afterwards.
@@ -123,20 +124,31 @@ else
             [ "$engine" = sura-2b ] && model=${SURA_2B_MODEL:-sura:2b}
             [ "$engine" = sura-0.8b ] && model=${SURA_0_8B_MODEL:-sura:0.8b}
             [ "$engine" = d1-omni ] && model=${D1_OMNI_MODEL:-d1-omni}
+            ollaya_bin=ollaya
+            ollaya_env=()
+            case $engine in
+                pplx-decider | nimble-v3 | sura-2b | sura-0.8b | d1-omni)
+                    # Ollaya 0.7.3 cannot load these: a second daemon, 0.18.0 with its own model store, serves them
+                    # (README Ports). bench/run.py refuses a daemon of another version.
+                    ollaya_url=${OLLAYA_018_URL:-http://127.0.0.1:11436}
+                    ollaya_bin=${OLLAYA_018_BIN:-$HOME/.local/ollaya-0.18/bin/ollaya}
+                    ollaya_env=(OLLAYA_MODELS="${OLLAYA_018_MODELS:-$HOME/.ollaya-0.18/models}")
+                    ;;
+            esac
             if [ "$(http_code "$ollaya_url/api/tags")" != 200 ]; then
-                start ollaya "$ollaya_url/api/tags" 200 env OLLAYA_HOST="${ollaya_url#http://}" ollaya serve
+                start ollaya "$ollaya_url/api/tags" 200 \
+                    env OLLAYA_HOST="${ollaya_url#http://}" ${ollaya_env[@]+"${ollaya_env[@]}"} "$ollaya_bin" serve
             fi
             # shellcheck disable=SC2329  # called by stop_all
             unload() {
-                if ! OLLAYA_HOST="${ollaya_url#http://}" ollaya stop "$model" > "$logs/unload.log" 2>&1; then
+                if ! OLLAYA_HOST="${ollaya_url#http://}" "$ollaya_bin" stop "$model" > "$logs/unload.log" 2>&1; then
                     echo "could not unload $model from $ollaya_url; it may still hold memory:" >&2
                     cat "$logs/unload.log" >&2
                 fi
             }
             ;;
         kev-0.8b | kev-4b | kev-9b)
-            start "$engine" "${KEV_URL:-http://127.0.0.1:8009}/v1/models" 200 \
-                env KEV_RUN="jaredpalmer/$engine" "$scripts/serve-kev.sh"
+            start "$engine" "${KEV_URL:-http://127.0.0.1:8009}/v1/models" 200 "$scripts/serve-kev.sh" "$engine"
             ;;
         clef-flash | clef | julia-1 | lev | openjev)
             # /health answers 503 until the GGUF is loaded
