@@ -64,7 +64,10 @@ IN_DISTRIBUTION = {
 }
 
 # Engines the README notes ran on CPU here, so their latency does not compare with the Metal rows.
-CPU = {"decider-2b", "decider-4b", "pplx-decider", "nimble-v3", "ollaya-td"}
+CPU = {
+    "decider-2b", "decider-4b", "decision-eos", "ollaya-td",  # Ollaya runner, device=cpu
+    "pplx-decider", "nimble-v3", "sura-2b", "sura-0.8b", "d1-omni",  # Ollaya 0.18.0
+}
 
 FONT = "font-family=\"-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif\""
 VIRIDIS = ((0x44, 0x01, 0x54), (0x3b, 0x52, 0x8b), (0x21, 0x91, 0x8c), (0x5e, 0xc9, 0x62), (0xfd, 0xe7, 0x25))
