@@ -24,20 +24,21 @@ questions count only in sets graded by argmax, which read their level probabilit
 ## Pairwise differences (McNemar exact)
 
 Over the decisions both engines had graded: `b` = only engine A right, `c` = only engine B right, `p` = two-sided
-exact McNemar p value. With many pairs, some p values under 0.05 come by chance.
+exact McNemar p value. With many pairs, some p values under 0.05 come by chance; `p (Holm)` adjusts for every
+pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds across the whole table.
 
-| engine A | engine B | both graded | b | c | p |
-|---|---|---|---|---|---|
-| clef-flash | kev-4b | 200 | 52 | 44 | 0.475 |
-| clef-flash | kev-9b | 200 | 49 | 40 | 0.397 |
-| clef-flash | winnow | 200 | 29 | 34 | 0.615 |
-| clef-flash | winnow-12b | 200 | 26 | 65 | <0.001 |
-| kev-4b | kev-9b | 200 | 42 | 41 | 1.000 |
-| kev-4b | winnow | 200 | 37 | 50 | 0.198 |
-| kev-4b | winnow-12b | 200 | 20 | 67 | <0.001 |
-| kev-9b | winnow | 200 | 33 | 47 | 0.146 |
-| kev-9b | winnow-12b | 200 | 27 | 75 | <0.001 |
-| winnow | winnow-12b | 200 | 32 | 66 | <0.001 |
+| engine A | engine B | both graded | b | c | p | p (Holm) |
+|---|---|---|---|---|---|---|
+| clef-flash | kev-4b | 200 | 52 | 44 | 0.475 | 1.000 |
+| clef-flash | kev-9b | 200 | 49 | 40 | 0.397 | 1.000 |
+| clef-flash | winnow | 200 | 29 | 34 | 0.615 | 1.000 |
+| clef-flash | winnow-12b | 200 | 26 | 65 | <0.001 | <0.001 |
+| kev-4b | kev-9b | 200 | 42 | 41 | 1.000 | 1.000 |
+| kev-4b | winnow | 200 | 37 | 50 | 0.198 | 0.990 |
+| kev-4b | winnow-12b | 200 | 20 | 67 | <0.001 | <0.001 |
+| kev-9b | winnow | 200 | 33 | 47 | 0.146 | 0.874 |
+| kev-9b | winnow-12b | 200 | 27 | 75 | <0.001 | <0.001 |
+| winnow | winnow-12b | 200 | 32 | 66 | <0.001 | 0.005 |
 
 ## By source
 

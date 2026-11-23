@@ -1,7 +1,7 @@
 <svg xmlns='http://www.w3.org/2000/svg' width='760' height='370' viewBox='0 0 760 370' font-family='-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif'>
 <rect width='760' height='370' fill='#fcfcfb'/>
 <text x='16' y='24' font-size='15' font-weight='600' fill='#0b0b0b'>Does the small engine's calibration or ranking predict routing efficiency? (big engine: clef)</text>
-<text x='66' y='76' font-size='13' font-weight='600' fill='#0b0b0b'>small engine ECE <tspan font-weight='400' fill='#52514e'>(Spearman -0.07, p = 0.174)</tspan></text>
+<text x='66' y='76' font-size='13' font-weight='600' fill='#0b0b0b'>small engine ECE <tspan font-weight='400' fill='#52514e'>(Spearman -0.07, p = 0.192)</tspan></text>
 <line x1='66' y1='310.0' x2='366' y2='310.0' stroke='#e8e7e3' stroke-width='1'/>
 <text x='60' y='314.0' font-size='10' fill='#52514e' text-anchor='end'>-0.75</text>
 <line x1='66' y1='278.6' x2='366' y2='278.6' stroke='#e8e7e3' stroke-width='1'/>
@@ -25,8 +25,9 @@
 <text x='306.0' y='324' font-size='10' fill='#52514e' text-anchor='middle'>0.8</text>
 <text x='366.0' y='324' font-size='10' fill='#52514e' text-anchor='middle'>1.0</text>
 <line x1='66' y1='215.7' x2='366' y2='215.7' stroke='#52514e' stroke-width='1'/>
-<circle cx='92.2' cy='210.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions: ECE 0.087, AUROC 0.836, efficiency 0.04</title></circle>
-<circle cx='94.2' cy='207.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions: ECE 0.094, AUROC 0.936, efficiency 0.07</title></circle>
+<circle cx='92.3' cy='210.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions: ECE 0.088, AUROC 0.836, efficiency 0.04</title></circle>
+<circle cx='94.1' cy='206.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions: ECE 0.094, AUROC 0.936, efficiency 0.08</title></circle>
+<circle cx='91.7' cy='150.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / questions: ECE 0.086, AUROC 0.837, efficiency 0.52</title></circle>
 <circle cx='84.2' cy='172.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / questions: ECE 0.061, AUROC 0.916, efficiency 0.35</title></circle>
 <circle cx='177.9' cy='228.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / questions: ECE 0.373, AUROC 0.691, efficiency -0.10</title></circle>
 <circle cx='90.2' cy='141.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / questions: ECE 0.081, AUROC 0.835, efficiency 0.59</title></circle>
@@ -38,6 +39,7 @@
 <circle cx='76.5' cy='279.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / questions: ECE 0.035, AUROC 0.917, efficiency -0.50</title></circle>
 <circle cx='137.0' cy='199.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / questions: ECE 0.237, AUROC 0.816, efficiency 0.13</title></circle>
 <circle cx='80.0' cy='187.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / questions: ECE 0.047, AUROC 0.828, efficiency 0.22</title></circle>
+<circle cx='84.7' cy='216.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / questions: ECE 0.062, AUROC 0.924, efficiency -0.01</title></circle>
 <circle cx='85.5' cy='238.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / questions: ECE 0.065, AUROC 0.859, efficiency -0.18</title></circle>
 <circle cx='87.4' cy='175.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / questions: ECE 0.071, AUROC 0.922, efficiency 0.32</title></circle>
 <circle cx='80.8' cy='229.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / questions: ECE 0.049, AUROC 0.913, efficiency -0.11</title></circle>
@@ -60,8 +62,9 @@
 <circle cx='111.1' cy='172.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / questions: ECE 0.150, AUROC 0.822, efficiency 0.34</title></circle>
 <circle cx='80.7' cy='173.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / questions: ECE 0.049, AUROC 0.877, efficiency 0.34</title></circle>
 <circle cx='90.5' cy='269.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / questions: ECE 0.082, AUROC 0.923, efficiency -0.43</title></circle>
-<circle cx='88.3' cy='199.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions_ko: ECE 0.074, AUROC 0.894, efficiency 0.13</title></circle>
-<circle cx='93.0' cy='187.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions_ko: ECE 0.090, AUROC 0.917, efficiency 0.23</title></circle>
+<circle cx='88.2' cy='201.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions_ko: ECE 0.074, AUROC 0.891, efficiency 0.12</title></circle>
+<circle cx='93.0' cy='187.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions_ko: ECE 0.090, AUROC 0.917, efficiency 0.22</title></circle>
+<circle cx='112.0' cy='186.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / questions_ko: ECE 0.153, AUROC 0.756, efficiency 0.23</title></circle>
 <circle cx='83.8' cy='163.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / questions_ko: ECE 0.059, AUROC 0.891, efficiency 0.42</title></circle>
 <circle cx='141.1' cy='235.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / questions_ko: ECE 0.250, AUROC 0.621, efficiency -0.16</title></circle>
 <circle cx='118.8' cy='188.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / questions_ko: ECE 0.176, AUROC 0.851, efficiency 0.22</title></circle>
@@ -73,6 +76,7 @@
 <circle cx='83.7' cy='200.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / questions_ko: ECE 0.059, AUROC 0.969, efficiency 0.12</title></circle>
 <circle cx='100.3' cy='161.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / questions_ko: ECE 0.114, AUROC 0.863, efficiency 0.43</title></circle>
 <circle cx='78.0' cy='183.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / questions_ko: ECE 0.040, AUROC 0.711, efficiency 0.26</title></circle>
+<circle cx='83.2' cy='229.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / questions_ko: ECE 0.057, AUROC 0.874, efficiency -0.11</title></circle>
 <circle cx='84.8' cy='219.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / questions_ko: ECE 0.063, AUROC 0.910, efficiency -0.03</title></circle>
 <circle cx='78.9' cy='218.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / questions_ko: ECE 0.043, AUROC 0.931, efficiency -0.02</title></circle>
 <circle cx='85.1' cy='266.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / questions_ko: ECE 0.064, AUROC 0.867, efficiency -0.40</title></circle>
@@ -95,8 +99,9 @@
 <circle cx='96.3' cy='229.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / questions_ko: ECE 0.101, AUROC 0.753, efficiency -0.11</title></circle>
 <circle cx='86.9' cy='132.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / questions_ko: ECE 0.070, AUROC 0.940, efficiency 0.66</title></circle>
 <circle cx='85.5' cy='256.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / questions_ko: ECE 0.065, AUROC 0.931, efficiency -0.33</title></circle>
-<circle cx='121.0' cy='152.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions_banking77: ECE 0.183, AUROC 0.770, efficiency 0.50</title></circle>
-<circle cx='140.2' cy='162.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions_banking77: ECE 0.247, AUROC 0.728, efficiency 0.43</title></circle>
+<circle cx='121.3' cy='152.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions_banking77: ECE 0.184, AUROC 0.771, efficiency 0.50</title></circle>
+<circle cx='138.3' cy='160.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions_banking77: ECE 0.241, AUROC 0.727, efficiency 0.44</title></circle>
+<circle cx='97.3' cy='172.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / questions_banking77: ECE 0.104, AUROC 0.729, efficiency 0.34</title></circle>
 <circle cx='76.5' cy='268.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / questions_banking77: ECE 0.035, AUROC 0.949, efficiency -0.42</title></circle>
 <circle cx='111.2' cy='169.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / questions_banking77: ECE 0.151, AUROC 0.707, efficiency 0.37</title></circle>
 <circle cx='92.7' cy='147.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / questions_banking77: ECE 0.089, AUROC 0.807, efficiency 0.54</title></circle>
@@ -129,8 +134,9 @@
 <circle cx='118.5' cy='149.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / questions_banking77: ECE 0.175, AUROC 0.759, efficiency 0.52</title></circle>
 <circle cx='90.7' cy='134.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / questions_banking77: ECE 0.082, AUROC 0.805, efficiency 0.65</title></circle>
 <circle cx='101.3' cy='148.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / questions_banking77: ECE 0.118, AUROC 0.804, efficiency 0.53</title></circle>
-<circle cx='134.0' cy='178.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / transfer-v4: ECE 0.227, AUROC 0.784, efficiency 0.30</title></circle>
-<circle cx='139.1' cy='180.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / transfer-v4: ECE 0.244, AUROC 0.756, efficiency 0.28</title></circle>
+<circle cx='133.1' cy='180.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / transfer-v4: ECE 0.224, AUROC 0.778, efficiency 0.28</title></circle>
+<circle cx='138.1' cy='181.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / transfer-v4: ECE 0.240, AUROC 0.757, efficiency 0.27</title></circle>
+<circle cx='95.5' cy='199.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / transfer-v4: ECE 0.098, AUROC 0.680, efficiency 0.13</title></circle>
 <circle cx='88.1' cy='210.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / transfer-v4: ECE 0.074, AUROC 0.795, efficiency 0.04</title></circle>
 <circle cx='164.8' cy='199.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / transfer-v4: ECE 0.329, AUROC 0.593, efficiency 0.13</title></circle>
 <circle cx='113.9' cy='182.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / transfer-v4: ECE 0.160, AUROC 0.746, efficiency 0.27</title></circle>
@@ -142,6 +148,7 @@
 <circle cx='101.3' cy='191.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / transfer-v4: ECE 0.118, AUROC 0.808, efficiency 0.19</title></circle>
 <circle cx='95.0' cy='193.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / transfer-v4: ECE 0.097, AUROC 0.758, efficiency 0.18</title></circle>
 <circle cx='101.1' cy='179.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / transfer-v4: ECE 0.117, AUROC 0.787, efficiency 0.29</title></circle>
+<circle cx='82.6' cy='192.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / transfer-v4: ECE 0.055, AUROC 0.756, efficiency 0.18</title></circle>
 <circle cx='87.4' cy='165.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / transfer-v4: ECE 0.071, AUROC 0.777, efficiency 0.40</title></circle>
 <circle cx='92.9' cy='180.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / transfer-v4: ECE 0.090, AUROC 0.818, efficiency 0.28</title></circle>
 <circle cx='83.9' cy='186.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / transfer-v4: ECE 0.060, AUROC 0.804, efficiency 0.23</title></circle>
@@ -164,8 +171,9 @@
 <circle cx='92.8' cy='173.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / transfer-v4: ECE 0.089, AUROC 0.710, efficiency 0.34</title></circle>
 <circle cx='94.9' cy='205.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / transfer-v4: ECE 0.096, AUROC 0.769, efficiency 0.08</title></circle>
 <circle cx='99.4' cy='203.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / transfer-v4: ECE 0.111, AUROC 0.815, efficiency 0.10</title></circle>
-<circle cx='157.9' cy='189.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / typed-decisions: ECE 0.306, AUROC 0.675, efficiency 0.21</title></circle>
-<circle cx='170.4' cy='197.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / typed-decisions: ECE 0.348, AUROC 0.653, efficiency 0.14</title></circle>
+<circle cx='157.5' cy='188.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / typed-decisions: ECE 0.305, AUROC 0.673, efficiency 0.22</title></circle>
+<circle cx='169.9' cy='198.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / typed-decisions: ECE 0.346, AUROC 0.650, efficiency 0.13</title></circle>
+<circle cx='149.2' cy='200.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / typed-decisions: ECE 0.277, AUROC 0.640, efficiency 0.12</title></circle>
 <circle cx='72.4' cy='204.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / typed-decisions: ECE 0.021, AUROC 0.741, efficiency 0.09</title></circle>
 <circle cx='213.2' cy='190.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / typed-decisions: ECE 0.491, AUROC 0.643, efficiency 0.20</title></circle>
 <circle cx='98.4' cy='187.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / typed-decisions: ECE 0.108, AUROC 0.666, efficiency 0.22</title></circle>
@@ -177,6 +185,7 @@
 <circle cx='105.8' cy='194.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / typed-decisions: ECE 0.133, AUROC 0.714, efficiency 0.17</title></circle>
 <circle cx='103.0' cy='209.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / typed-decisions: ECE 0.123, AUROC 0.669, efficiency 0.05</title></circle>
 <circle cx='105.6' cy='209.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / typed-decisions: ECE 0.132, AUROC 0.634, efficiency 0.05</title></circle>
+<circle cx='78.7' cy='192.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / typed-decisions: ECE 0.042, AUROC 0.766, efficiency 0.19</title></circle>
 <circle cx='104.8' cy='194.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / typed-decisions: ECE 0.129, AUROC 0.789, efficiency 0.17</title></circle>
 <circle cx='78.6' cy='192.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / typed-decisions: ECE 0.042, AUROC 0.715, efficiency 0.19</title></circle>
 <circle cx='81.7' cy='186.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / typed-decisions: ECE 0.052, AUROC 0.734, efficiency 0.23</title></circle>
@@ -199,8 +208,9 @@
 <circle cx='78.6' cy='204.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / typed-decisions: ECE 0.042, AUROC 0.709, efficiency 0.09</title></circle>
 <circle cx='74.1' cy='203.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / typed-decisions: ECE 0.027, AUROC 0.730, efficiency 0.10</title></circle>
 <circle cx='111.8' cy='191.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / typed-decisions: ECE 0.153, AUROC 0.750, efficiency 0.20</title></circle>
-<circle cx='122.3' cy='165.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / nsmc: ECE 0.188, AUROC 0.775, efficiency 0.40</title></circle>
-<circle cx='120.1' cy='161.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / nsmc: ECE 0.180, AUROC 0.791, efficiency 0.43</title></circle>
+<circle cx='122.1' cy='165.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / nsmc: ECE 0.187, AUROC 0.775, efficiency 0.40</title></circle>
+<circle cx='120.2' cy='162.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / nsmc: ECE 0.181, AUROC 0.789, efficiency 0.43</title></circle>
+<circle cx='109.2' cy='160.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / nsmc: ECE 0.144, AUROC 0.744, efficiency 0.44</title></circle>
 <circle cx='81.5' cy='207.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / nsmc: ECE 0.052, AUROC 0.796, efficiency 0.06</title></circle>
 <circle cx='141.0' cy='184.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / nsmc: ECE 0.250, AUROC 0.706, efficiency 0.25</title></circle>
 <circle cx='99.4' cy='225.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / nsmc: ECE 0.111, AUROC 0.454, efficiency -0.08</title></circle>
@@ -212,6 +222,7 @@
 <circle cx='80.0' cy='195.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / nsmc: ECE 0.047, AUROC 0.859, efficiency 0.16</title></circle>
 <circle cx='89.2' cy='184.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / nsmc: ECE 0.077, AUROC 0.690, efficiency 0.25</title></circle>
 <circle cx='105.5' cy='177.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / nsmc: ECE 0.132, AUROC 0.694, efficiency 0.31</title></circle>
+<circle cx='86.2' cy='159.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / nsmc: ECE 0.067, AUROC 0.823, efficiency 0.44</title></circle>
 <circle cx='81.4' cy='175.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / nsmc: ECE 0.051, AUROC 0.711, efficiency 0.32</title></circle>
 <circle cx='81.5' cy='169.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / nsmc: ECE 0.052, AUROC 0.759, efficiency 0.37</title></circle>
 <circle cx='76.6' cy='189.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / nsmc: ECE 0.035, AUROC 0.769, efficiency 0.21</title></circle>
@@ -234,8 +245,9 @@
 <circle cx='107.5' cy='204.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / nsmc: ECE 0.138, AUROC 0.562, efficiency 0.09</title></circle>
 <circle cx='80.8' cy='179.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / nsmc: ECE 0.049, AUROC 0.851, efficiency 0.29</title></circle>
 <circle cx='92.0' cy='228.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / nsmc: ECE 0.087, AUROC 0.846, efficiency -0.10</title></circle>
-<circle cx='136.2' cy='192.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / klue-ynat: ECE 0.234, AUROC 0.746, efficiency 0.18</title></circle>
-<circle cx='133.6' cy='211.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / klue-ynat: ECE 0.225, AUROC 0.696, efficiency 0.04</title></circle>
+<circle cx='136.4' cy='193.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / klue-ynat: ECE 0.235, AUROC 0.746, efficiency 0.18</title></circle>
+<circle cx='134.3' cy='203.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / klue-ynat: ECE 0.228, AUROC 0.718, efficiency 0.10</title></circle>
+<circle cx='97.0' cy='185.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / klue-ynat: ECE 0.103, AUROC 0.651, efficiency 0.24</title></circle>
 <circle cx='81.1' cy='217.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / klue-ynat: ECE 0.050, AUROC 0.718, efficiency -0.02</title></circle>
 <circle cx='260.4' cy='220.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / klue-ynat: ECE 0.648, AUROC 0.423, efficiency -0.04</title></circle>
 <circle cx='121.0' cy='185.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / klue-ynat: ECE 0.183, AUROC 0.645, efficiency 0.24</title></circle>
@@ -247,6 +259,7 @@
 <circle cx='90.9' cy='200.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / klue-ynat: ECE 0.083, AUROC 0.764, efficiency 0.12</title></circle>
 <circle cx='92.1' cy='196.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / klue-ynat: ECE 0.087, AUROC 0.745, efficiency 0.15</title></circle>
 <circle cx='92.1' cy='184.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / klue-ynat: ECE 0.087, AUROC 0.770, efficiency 0.25</title></circle>
+<circle cx='90.4' cy='191.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / klue-ynat: ECE 0.081, AUROC 0.735, efficiency 0.19</title></circle>
 <circle cx='93.8' cy='178.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / klue-ynat: ECE 0.093, AUROC 0.732, efficiency 0.29</title></circle>
 <circle cx='89.8' cy='185.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / klue-ynat: ECE 0.079, AUROC 0.752, efficiency 0.24</title></circle>
 <circle cx='93.5' cy='183.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / klue-ynat: ECE 0.092, AUROC 0.785, efficiency 0.26</title></circle>
@@ -269,8 +282,9 @@
 <circle cx='126.1' cy='218.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / klue-ynat: ECE 0.200, AUROC 0.554, efficiency -0.02</title></circle>
 <circle cx='91.6' cy='184.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / klue-ynat: ECE 0.085, AUROC 0.778, efficiency 0.25</title></circle>
 <circle cx='102.5' cy='215.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / klue-ynat: ECE 0.122, AUROC 0.762, efficiency 0.01</title></circle>
-<circle cx='85.0' cy='120.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / clinc-oos: ECE 0.063, AUROC 0.909, efficiency 0.76</title></circle>
-<circle cx='94.0' cy='128.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / clinc-oos: ECE 0.093, AUROC 0.876, efficiency 0.69</title></circle>
+<circle cx='84.5' cy='120.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / clinc-oos: ECE 0.062, AUROC 0.911, efficiency 0.76</title></circle>
+<circle cx='94.5' cy='127.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / clinc-oos: ECE 0.095, AUROC 0.880, efficiency 0.70</title></circle>
+<circle cx='86.3' cy='140.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / clinc-oos: ECE 0.068, AUROC 0.802, efficiency 0.60</title></circle>
 <circle cx='100.1' cy='141.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / clinc-oos: ECE 0.114, AUROC 0.802, efficiency 0.59</title></circle>
 <circle cx='78.0' cy='133.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / clinc-oos: ECE 0.040, AUROC 0.833, efficiency 0.66</title></circle>
 <circle cx='88.6' cy='134.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-400m / clinc-oos: ECE 0.075, AUROC 0.829, efficiency 0.65</title></circle>
@@ -302,8 +316,9 @@
 <circle cx='99.2' cy='145.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / clinc-oos: ECE 0.111, AUROC 0.780, efficiency 0.56</title></circle>
 <circle cx='83.6' cy='147.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / clinc-oos: ECE 0.059, AUROC 0.821, efficiency 0.55</title></circle>
 <circle cx='70.3' cy='132.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / clinc-oos: ECE 0.014, AUROC 0.954, efficiency 0.66</title></circle>
-<circle cx='100.3' cy='134.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / massive-en: ECE 0.114, AUROC 0.873, efficiency 0.65</title></circle>
-<circle cx='102.3' cy='137.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / massive-en: ECE 0.121, AUROC 0.831, efficiency 0.62</title></circle>
+<circle cx='100.0' cy='129.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / massive-en: ECE 0.113, AUROC 0.886, efficiency 0.68</title></circle>
+<circle cx='103.0' cy='135.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / massive-en: ECE 0.123, AUROC 0.839, efficiency 0.64</title></circle>
+<circle cx='81.7' cy='140.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / massive-en: ECE 0.052, AUROC 0.831, efficiency 0.60</title></circle>
 <circle cx='77.7' cy='275.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / massive-en: ECE 0.039, AUROC 0.886, efficiency -0.48</title></circle>
 <circle cx='112.0' cy='174.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / massive-en: ECE 0.153, AUROC 0.698, efficiency 0.33</title></circle>
 <circle cx='82.6' cy='135.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / massive-en: ECE 0.055, AUROC 0.899, efficiency 0.64</title></circle>
@@ -336,8 +351,9 @@
 <circle cx='147.2' cy='157.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / massive-en: ECE 0.271, AUROC 0.752, efficiency 0.47</title></circle>
 <circle cx='81.8' cy='157.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / massive-en: ECE 0.053, AUROC 0.859, efficiency 0.46</title></circle>
 <circle cx='82.6' cy='153.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / massive-en: ECE 0.055, AUROC 0.892, efficiency 0.50</title></circle>
-<circle cx='109.4' cy='119.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / massive-ko: ECE 0.145, AUROC 0.855, efficiency 0.76</title></circle>
-<circle cx='114.8' cy='139.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / massive-ko: ECE 0.163, AUROC 0.834, efficiency 0.60</title></circle>
+<circle cx='108.3' cy='120.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / massive-ko: ECE 0.141, AUROC 0.857, efficiency 0.76</title></circle>
+<circle cx='114.9' cy='138.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / massive-ko: ECE 0.163, AUROC 0.841, efficiency 0.61</title></circle>
+<circle cx='96.2' cy='143.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / massive-ko: ECE 0.101, AUROC 0.786, efficiency 0.57</title></circle>
 <circle cx='80.1' cy='269.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / massive-ko: ECE 0.047, AUROC 0.818, efficiency -0.43</title></circle>
 <circle cx='125.7' cy='155.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / massive-ko: ECE 0.199, AUROC 0.816, efficiency 0.48</title></circle>
 <circle cx='111.2' cy='178.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / massive-ko: ECE 0.151, AUROC 0.683, efficiency 0.30</title></circle>
@@ -395,8 +411,9 @@
 <text x='696.0' y='324' font-size='10' fill='#52514e' text-anchor='middle'>0.9</text>
 <text x='746.0' y='324' font-size='10' fill='#52514e' text-anchor='middle'>1.0</text>
 <line x1='446' y1='215.7' x2='746' y2='215.7' stroke='#52514e' stroke-width='1'/>
-<circle cx='664.1' cy='210.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions: ECE 0.087, AUROC 0.836, efficiency 0.04</title></circle>
-<circle cx='714.0' cy='207.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions: ECE 0.094, AUROC 0.936, efficiency 0.07</title></circle>
+<circle cx='664.1' cy='210.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions: ECE 0.088, AUROC 0.836, efficiency 0.04</title></circle>
+<circle cx='714.0' cy='206.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions: ECE 0.094, AUROC 0.936, efficiency 0.08</title></circle>
+<circle cx='664.7' cy='150.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / questions: ECE 0.086, AUROC 0.837, efficiency 0.52</title></circle>
 <circle cx='704.0' cy='172.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / questions: ECE 0.061, AUROC 0.916, efficiency 0.35</title></circle>
 <circle cx='591.4' cy='228.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / questions: ECE 0.373, AUROC 0.691, efficiency -0.10</title></circle>
 <circle cx='663.3' cy='141.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / questions: ECE 0.081, AUROC 0.835, efficiency 0.59</title></circle>
@@ -408,6 +425,7 @@
 <circle cx='704.6' cy='279.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / questions: ECE 0.035, AUROC 0.917, efficiency -0.50</title></circle>
 <circle cx='654.2' cy='199.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / questions: ECE 0.237, AUROC 0.816, efficiency 0.13</title></circle>
 <circle cx='660.2' cy='187.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / questions: ECE 0.047, AUROC 0.828, efficiency 0.22</title></circle>
+<circle cx='708.2' cy='216.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / questions: ECE 0.062, AUROC 0.924, efficiency -0.01</title></circle>
 <circle cx='675.6' cy='238.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / questions: ECE 0.065, AUROC 0.859, efficiency -0.18</title></circle>
 <circle cx='707.1' cy='175.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / questions: ECE 0.071, AUROC 0.922, efficiency 0.32</title></circle>
 <circle cx='702.5' cy='229.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / questions: ECE 0.049, AUROC 0.913, efficiency -0.11</title></circle>
@@ -430,8 +448,9 @@
 <circle cx='656.8' cy='172.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / questions: ECE 0.150, AUROC 0.822, efficiency 0.34</title></circle>
 <circle cx='684.4' cy='173.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / questions: ECE 0.049, AUROC 0.877, efficiency 0.34</title></circle>
 <circle cx='707.4' cy='269.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / questions: ECE 0.082, AUROC 0.923, efficiency -0.43</title></circle>
-<circle cx='692.9' cy='199.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions_ko: ECE 0.074, AUROC 0.894, efficiency 0.13</title></circle>
-<circle cx='704.5' cy='187.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions_ko: ECE 0.090, AUROC 0.917, efficiency 0.23</title></circle>
+<circle cx='691.7' cy='201.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions_ko: ECE 0.074, AUROC 0.891, efficiency 0.12</title></circle>
+<circle cx='704.5' cy='187.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions_ko: ECE 0.090, AUROC 0.917, efficiency 0.22</title></circle>
+<circle cx='624.2' cy='186.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / questions_ko: ECE 0.153, AUROC 0.756, efficiency 0.23</title></circle>
 <circle cx='691.7' cy='163.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / questions_ko: ECE 0.059, AUROC 0.891, efficiency 0.42</title></circle>
 <circle cx='556.5' cy='235.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / questions_ko: ECE 0.250, AUROC 0.621, efficiency -0.16</title></circle>
 <circle cx='671.6' cy='188.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / questions_ko: ECE 0.176, AUROC 0.851, efficiency 0.22</title></circle>
@@ -443,6 +462,7 @@
 <circle cx='730.3' cy='200.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / questions_ko: ECE 0.059, AUROC 0.969, efficiency 0.12</title></circle>
 <circle cx='677.5' cy='161.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / questions_ko: ECE 0.114, AUROC 0.863, efficiency 0.43</title></circle>
 <circle cx='601.4' cy='183.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / questions_ko: ECE 0.040, AUROC 0.711, efficiency 0.26</title></circle>
+<circle cx='683.1' cy='229.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / questions_ko: ECE 0.057, AUROC 0.874, efficiency -0.11</title></circle>
 <circle cx='701.2' cy='219.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / questions_ko: ECE 0.063, AUROC 0.910, efficiency -0.03</title></circle>
 <circle cx='711.7' cy='218.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / questions_ko: ECE 0.043, AUROC 0.931, efficiency -0.02</title></circle>
 <circle cx='679.6' cy='266.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / questions_ko: ECE 0.064, AUROC 0.867, efficiency -0.40</title></circle>
@@ -465,8 +485,9 @@
 <circle cx='622.3' cy='229.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / questions_ko: ECE 0.101, AUROC 0.753, efficiency -0.11</title></circle>
 <circle cx='716.1' cy='132.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / questions_ko: ECE 0.070, AUROC 0.940, efficiency 0.66</title></circle>
 <circle cx='711.7' cy='256.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / questions_ko: ECE 0.065, AUROC 0.931, efficiency -0.33</title></circle>
-<circle cx='631.2' cy='152.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions_banking77: ECE 0.183, AUROC 0.770, efficiency 0.50</title></circle>
-<circle cx='610.1' cy='162.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions_banking77: ECE 0.247, AUROC 0.728, efficiency 0.43</title></circle>
+<circle cx='631.6' cy='152.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / questions_banking77: ECE 0.184, AUROC 0.771, efficiency 0.50</title></circle>
+<circle cx='609.4' cy='160.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / questions_banking77: ECE 0.241, AUROC 0.727, efficiency 0.44</title></circle>
+<circle cx='610.3' cy='172.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / questions_banking77: ECE 0.104, AUROC 0.729, efficiency 0.34</title></circle>
 <circle cx='720.7' cy='268.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / questions_banking77: ECE 0.035, AUROC 0.949, efficiency -0.42</title></circle>
 <circle cx='599.5' cy='169.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / questions_banking77: ECE 0.151, AUROC 0.707, efficiency 0.37</title></circle>
 <circle cx='649.7' cy='147.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / questions_banking77: ECE 0.089, AUROC 0.807, efficiency 0.54</title></circle>
@@ -499,8 +520,9 @@
 <circle cx='625.3' cy='149.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / questions_banking77: ECE 0.175, AUROC 0.759, efficiency 0.52</title></circle>
 <circle cx='648.6' cy='134.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / questions_banking77: ECE 0.082, AUROC 0.805, efficiency 0.65</title></circle>
 <circle cx='648.2' cy='148.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / questions_banking77: ECE 0.118, AUROC 0.804, efficiency 0.53</title></circle>
-<circle cx='637.8' cy='178.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / transfer-v4: ECE 0.227, AUROC 0.784, efficiency 0.30</title></circle>
-<circle cx='624.1' cy='180.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / transfer-v4: ECE 0.244, AUROC 0.756, efficiency 0.28</title></circle>
+<circle cx='635.1' cy='180.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / transfer-v4: ECE 0.224, AUROC 0.778, efficiency 0.28</title></circle>
+<circle cx='624.4' cy='181.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / transfer-v4: ECE 0.240, AUROC 0.757, efficiency 0.27</title></circle>
+<circle cx='586.2' cy='199.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / transfer-v4: ECE 0.098, AUROC 0.680, efficiency 0.13</title></circle>
 <circle cx='643.3' cy='210.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / transfer-v4: ECE 0.074, AUROC 0.795, efficiency 0.04</title></circle>
 <circle cx='542.3' cy='199.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / transfer-v4: ECE 0.329, AUROC 0.593, efficiency 0.13</title></circle>
 <circle cx='618.8' cy='182.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / transfer-v4: ECE 0.160, AUROC 0.746, efficiency 0.27</title></circle>
@@ -512,6 +534,7 @@
 <circle cx='649.9' cy='191.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / transfer-v4: ECE 0.118, AUROC 0.808, efficiency 0.19</title></circle>
 <circle cx='625.1' cy='193.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / transfer-v4: ECE 0.097, AUROC 0.758, efficiency 0.18</title></circle>
 <circle cx='639.5' cy='179.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / transfer-v4: ECE 0.117, AUROC 0.787, efficiency 0.29</title></circle>
+<circle cx='624.0' cy='192.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / transfer-v4: ECE 0.055, AUROC 0.756, efficiency 0.18</title></circle>
 <circle cx='634.5' cy='165.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / transfer-v4: ECE 0.071, AUROC 0.777, efficiency 0.40</title></circle>
 <circle cx='655.1' cy='180.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / transfer-v4: ECE 0.090, AUROC 0.818, efficiency 0.28</title></circle>
 <circle cx='648.0' cy='186.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / transfer-v4: ECE 0.060, AUROC 0.804, efficiency 0.23</title></circle>
@@ -534,8 +557,9 @@
 <circle cx='600.8' cy='173.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / transfer-v4: ECE 0.089, AUROC 0.710, efficiency 0.34</title></circle>
 <circle cx='630.3' cy='205.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / transfer-v4: ECE 0.096, AUROC 0.769, efficiency 0.08</title></circle>
 <circle cx='653.7' cy='203.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / transfer-v4: ECE 0.111, AUROC 0.815, efficiency 0.10</title></circle>
-<circle cx='583.4' cy='189.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / typed-decisions: ECE 0.306, AUROC 0.675, efficiency 0.21</title></circle>
-<circle cx='572.5' cy='197.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / typed-decisions: ECE 0.348, AUROC 0.653, efficiency 0.14</title></circle>
+<circle cx='582.7' cy='188.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / typed-decisions: ECE 0.305, AUROC 0.673, efficiency 0.22</title></circle>
+<circle cx='570.9' cy='198.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / typed-decisions: ECE 0.346, AUROC 0.650, efficiency 0.13</title></circle>
+<circle cx='565.9' cy='200.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / typed-decisions: ECE 0.277, AUROC 0.640, efficiency 0.12</title></circle>
 <circle cx='616.7' cy='204.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / typed-decisions: ECE 0.021, AUROC 0.741, efficiency 0.09</title></circle>
 <circle cx='567.3' cy='190.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / typed-decisions: ECE 0.491, AUROC 0.643, efficiency 0.20</title></circle>
 <circle cx='579.2' cy='187.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / typed-decisions: ECE 0.108, AUROC 0.666, efficiency 0.22</title></circle>
@@ -547,6 +571,7 @@
 <circle cx='603.0' cy='194.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / typed-decisions: ECE 0.133, AUROC 0.714, efficiency 0.17</title></circle>
 <circle cx='580.6' cy='209.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / typed-decisions: ECE 0.123, AUROC 0.669, efficiency 0.05</title></circle>
 <circle cx='562.9' cy='209.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / typed-decisions: ECE 0.132, AUROC 0.634, efficiency 0.05</title></circle>
+<circle cx='628.8' cy='192.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / typed-decisions: ECE 0.042, AUROC 0.766, efficiency 0.19</title></circle>
 <circle cx='640.4' cy='194.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / typed-decisions: ECE 0.129, AUROC 0.789, efficiency 0.17</title></circle>
 <circle cx='603.5' cy='192.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / typed-decisions: ECE 0.042, AUROC 0.715, efficiency 0.19</title></circle>
 <circle cx='612.8' cy='186.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / typed-decisions: ECE 0.052, AUROC 0.734, efficiency 0.23</title></circle>
@@ -569,8 +594,9 @@
 <circle cx='600.4' cy='204.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / typed-decisions: ECE 0.042, AUROC 0.709, efficiency 0.09</title></circle>
 <circle cx='610.9' cy='203.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / typed-decisions: ECE 0.027, AUROC 0.730, efficiency 0.10</title></circle>
 <circle cx='620.9' cy='191.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / typed-decisions: ECE 0.153, AUROC 0.750, efficiency 0.20</title></circle>
-<circle cx='633.6' cy='165.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / nsmc: ECE 0.188, AUROC 0.775, efficiency 0.40</title></circle>
-<circle cx='641.6' cy='161.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / nsmc: ECE 0.180, AUROC 0.791, efficiency 0.43</title></circle>
+<circle cx='633.7' cy='165.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / nsmc: ECE 0.187, AUROC 0.775, efficiency 0.40</title></circle>
+<circle cx='640.6' cy='162.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / nsmc: ECE 0.181, AUROC 0.789, efficiency 0.43</title></circle>
+<circle cx='618.2' cy='160.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / nsmc: ECE 0.144, AUROC 0.744, efficiency 0.44</title></circle>
 <circle cx='644.1' cy='207.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / nsmc: ECE 0.052, AUROC 0.796, efficiency 0.06</title></circle>
 <circle cx='598.8' cy='184.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / nsmc: ECE 0.250, AUROC 0.706, efficiency 0.25</title></circle>
 <circle cx='473.1' cy='225.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / nsmc: ECE 0.111, AUROC 0.454, efficiency -0.08</title></circle>
@@ -582,6 +608,7 @@
 <circle cx='675.7' cy='195.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / nsmc: ECE 0.047, AUROC 0.859, efficiency 0.16</title></circle>
 <circle cx='591.0' cy='184.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / nsmc: ECE 0.077, AUROC 0.690, efficiency 0.25</title></circle>
 <circle cx='593.2' cy='177.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / nsmc: ECE 0.132, AUROC 0.694, efficiency 0.31</title></circle>
+<circle cx='657.7' cy='159.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / nsmc: ECE 0.067, AUROC 0.823, efficiency 0.44</title></circle>
 <circle cx='601.5' cy='175.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / nsmc: ECE 0.051, AUROC 0.711, efficiency 0.32</title></circle>
 <circle cx='625.3' cy='169.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / nsmc: ECE 0.052, AUROC 0.759, efficiency 0.37</title></circle>
 <circle cx='630.6' cy='189.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / nsmc: ECE 0.035, AUROC 0.769, efficiency 0.21</title></circle>
@@ -604,8 +631,9 @@
 <circle cx='526.9' cy='204.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / nsmc: ECE 0.138, AUROC 0.562, efficiency 0.09</title></circle>
 <circle cx='671.7' cy='179.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / nsmc: ECE 0.049, AUROC 0.851, efficiency 0.29</title></circle>
 <circle cx='669.0' cy='228.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / nsmc: ECE 0.087, AUROC 0.846, efficiency -0.10</title></circle>
-<circle cx='619.0' cy='192.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / klue-ynat: ECE 0.234, AUROC 0.746, efficiency 0.18</title></circle>
-<circle cx='593.8' cy='211.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / klue-ynat: ECE 0.225, AUROC 0.696, efficiency 0.04</title></circle>
+<circle cx='618.9' cy='193.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / klue-ynat: ECE 0.235, AUROC 0.746, efficiency 0.18</title></circle>
+<circle cx='604.8' cy='203.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / klue-ynat: ECE 0.228, AUROC 0.718, efficiency 0.10</title></circle>
+<circle cx='571.7' cy='185.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / klue-ynat: ECE 0.103, AUROC 0.651, efficiency 0.24</title></circle>
 <circle cx='604.9' cy='217.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / klue-ynat: ECE 0.050, AUROC 0.718, efficiency -0.02</title></circle>
 <circle cx='457.5' cy='220.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / klue-ynat: ECE 0.648, AUROC 0.423, efficiency -0.04</title></circle>
 <circle cx='568.5' cy='185.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / klue-ynat: ECE 0.183, AUROC 0.645, efficiency 0.24</title></circle>
@@ -617,6 +645,7 @@
 <circle cx='627.9' cy='200.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>drex-1.5 / klue-ynat: ECE 0.083, AUROC 0.764, efficiency 0.12</title></circle>
 <circle cx='618.5' cy='196.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff / klue-ynat: ECE 0.087, AUROC 0.745, efficiency 0.15</title></circle>
 <circle cx='631.2' cy='184.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jeff-0.8b / klue-ynat: ECE 0.087, AUROC 0.770, efficiency 0.25</title></circle>
+<circle cx='613.5' cy='191.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-9b / klue-ynat: ECE 0.081, AUROC 0.735, efficiency 0.19</title></circle>
 <circle cx='612.2' cy='178.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-0.8b / klue-ynat: ECE 0.093, AUROC 0.732, efficiency 0.29</title></circle>
 <circle cx='622.1' cy='185.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jev-style-2b / klue-ynat: ECE 0.079, AUROC 0.752, efficiency 0.24</title></circle>
 <circle cx='638.6' cy='183.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>jevk5 / klue-ynat: ECE 0.092, AUROC 0.785, efficiency 0.26</title></circle>
@@ -639,8 +668,9 @@
 <circle cx='523.2' cy='218.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / klue-ynat: ECE 0.200, AUROC 0.554, efficiency -0.02</title></circle>
 <circle cx='634.8' cy='184.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / klue-ynat: ECE 0.085, AUROC 0.778, efficiency 0.25</title></circle>
 <circle cx='627.1' cy='215.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / klue-ynat: ECE 0.122, AUROC 0.762, efficiency 0.01</title></circle>
-<circle cx='700.5' cy='120.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / clinc-oos: ECE 0.063, AUROC 0.909, efficiency 0.76</title></circle>
-<circle cx='684.0' cy='128.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / clinc-oos: ECE 0.093, AUROC 0.876, efficiency 0.69</title></circle>
+<circle cx='701.4' cy='120.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / clinc-oos: ECE 0.062, AUROC 0.911, efficiency 0.76</title></circle>
+<circle cx='686.2' cy='127.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / clinc-oos: ECE 0.095, AUROC 0.880, efficiency 0.70</title></circle>
+<circle cx='647.0' cy='140.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / clinc-oos: ECE 0.068, AUROC 0.802, efficiency 0.60</title></circle>
 <circle cx='646.8' cy='141.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / clinc-oos: ECE 0.114, AUROC 0.802, efficiency 0.59</title></circle>
 <circle cx='662.3' cy='133.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / clinc-oos: ECE 0.040, AUROC 0.833, efficiency 0.66</title></circle>
 <circle cx='660.3' cy='134.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-400m / clinc-oos: ECE 0.075, AUROC 0.829, efficiency 0.65</title></circle>
@@ -672,8 +702,9 @@
 <circle cx='636.1' cy='145.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / clinc-oos: ECE 0.111, AUROC 0.780, efficiency 0.56</title></circle>
 <circle cx='656.3' cy='147.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / clinc-oos: ECE 0.059, AUROC 0.821, efficiency 0.55</title></circle>
 <circle cx='722.9' cy='132.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / clinc-oos: ECE 0.014, AUROC 0.954, efficiency 0.66</title></circle>
-<circle cx='682.3' cy='134.3' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / massive-en: ECE 0.114, AUROC 0.873, efficiency 0.65</title></circle>
-<circle cx='661.3' cy='137.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / massive-en: ECE 0.121, AUROC 0.831, efficiency 0.62</title></circle>
+<circle cx='689.1' cy='129.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / massive-en: ECE 0.113, AUROC 0.886, efficiency 0.68</title></circle>
+<circle cx='665.6' cy='135.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / massive-en: ECE 0.123, AUROC 0.839, efficiency 0.64</title></circle>
+<circle cx='661.6' cy='140.1' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / massive-en: ECE 0.052, AUROC 0.831, efficiency 0.60</title></circle>
 <circle cx='688.8' cy='275.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / massive-en: ECE 0.039, AUROC 0.886, efficiency -0.48</title></circle>
 <circle cx='595.0' cy='174.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / massive-en: ECE 0.153, AUROC 0.698, efficiency 0.33</title></circle>
 <circle cx='695.5' cy='135.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / massive-en: ECE 0.055, AUROC 0.899, efficiency 0.64</title></circle>
@@ -706,8 +737,9 @@
 <circle cx='622.0' cy='157.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>von / massive-en: ECE 0.271, AUROC 0.752, efficiency 0.47</title></circle>
 <circle cx='675.6' cy='157.4' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow / massive-en: ECE 0.053, AUROC 0.859, efficiency 0.46</title></circle>
 <circle cx='691.9' cy='153.2' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>winnow-12b / massive-en: ECE 0.055, AUROC 0.892, efficiency 0.50</title></circle>
-<circle cx='673.7' cy='119.8' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / massive-ko: ECE 0.145, AUROC 0.855, efficiency 0.76</title></circle>
-<circle cx='662.8' cy='139.9' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / massive-ko: ECE 0.163, AUROC 0.834, efficiency 0.60</title></circle>
+<circle cx='674.6' cy='120.0' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-l0 / massive-ko: ECE 0.141, AUROC 0.857, efficiency 0.76</title></circle>
+<circle cx='666.4' cy='138.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>anyjev-raw / massive-ko: ECE 0.163, AUROC 0.841, efficiency 0.61</title></circle>
+<circle cx='639.0' cy='143.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>bev-decider / massive-ko: ECE 0.101, AUROC 0.786, efficiency 0.57</title></circle>
 <circle cx='655.2' cy='269.7' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clef-flash / massive-ko: ECE 0.047, AUROC 0.818, efficiency -0.43</title></circle>
 <circle cx='654.1' cy='155.5' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>clm / massive-ko: ECE 0.199, AUROC 0.816, efficiency 0.48</title></circle>
 <circle cx='587.7' cy='178.6' r='4' fill='#2a78d6' fill-opacity='0.75' stroke='#fcfcfb' stroke-width='1.5'><title>coba-1b / massive-ko: ECE 0.151, AUROC 0.683, efficiency 0.30</title></circle>

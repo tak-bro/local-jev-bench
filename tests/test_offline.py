@@ -883,3 +883,16 @@ def test_readme_charts_match_the_reports():
     # README's charts are drawn from the committed reports; a new run must redraw them (bench/charts.py).
     for path, content in charts.charts().items():
         assert path.read_text() == content, f"{path.name} is stale: uv run python bench/charts.py"
+
+def test_a_set_behind_a_symlink_is_still_labelled_repo_relative(tmp_path, monkeypatch):
+    # A worktree links bench/data to the original checkout's; following the link would leave the repo and give an
+    # absolute label, which score.py refuses to mix with the relative one in the same directory.
+    (tmp_path / "x.jsonl").write_text("")
+    link = ROOT / "bench" / f".test-link-{os.getpid()}"
+    link.symlink_to(tmp_path)
+    try:
+        monkeypatch.chdir(ROOT)
+        assert run.questions_label(Path("bench") / link.name / "x.jsonl") == f"bench/{link.name}/x.jsonl"
+    finally:
+        link.unlink()
+    assert run.questions_label(tmp_path / "x.jsonl") == str((tmp_path / "x.jsonl").resolve())
