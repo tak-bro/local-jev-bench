@@ -15,42 +15,44 @@ questions count only in sets graded by argmax, which read their level probabilit
 
 | engine | model | cold ms | first-call p50 ms | all-call p50 ms | all-call p95 ms | calls | accuracy | Brier (n) | ECE | rep-disagree | order-flip | errors | worst memory pressure |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| anyjev-l0 | anyjev-l0 | 3611.5 | 731.2 | 250.5 | 766.5 | 90 | 85/105 (81%, 72-87) | 0.161 (75) | 0.087 | 1/105 | 0/30 (0%) | 0 | normal |
-| anyjev-raw | anyjev-raw | 3443.6 | 486.1 | 209.7 | 552.1 | 90 | 86/105 (82%, 73-88) | 0.184 (75) | 0.094 | 0/105 | 0/30 (0%) | 0 | normal |
-| clef | Clef-Q4_K_M@5f70656 | 3365.6 | 3174.7 | 3177.0 | 3562.5 | 90 | 95/105 (90%, 83-95) | 0.153 (75) | 0.074 | 0/105 | 0/30 (0%) | 0 | normal |
-| clef-flash | Clef-Flash-Q8_0@4a7a08c | 1169.2 | 811.7 | 822.3 | 915.2 | 90 | 90/105 (86%, 78-91) | 0.130 (75) | 0.061 | 0/105 | 0/30 (0%) | 0 | normal |
-| clm | - | 768.2 | 262.5 | 1.6 | 279.2 | 90 | 41/105 (39%, 30-49) | 0.733 (75) | 0.373 | 0/105 | 0/30 (0%) | 0 | normal |
-| coba-1b | coba:1b | 1193.9 | 100.2 | 99.1 | 124.7 | 90 | 86/105 (82%, 73-88) | 0.202 (75) | 0.081 | 0/105 | 1/30 (3%) | 0 | normal |
-| coba-400m | coba:400m | 537.5 | 39.0 | 40.5 | 59.5 | 90 | 84/105 (80%, 71-87) | 0.217 (75) | 0.088 | 0/105 | 1/30 (3%) | 0 | normal |
-| d1-omni | d1-omni | 2660.6 | 237.8 | 236.1 | 296.6 | 90 | 89/105 (85%, 77-90) | 0.178 (75) | 0.083 | 0/105 | 0/30 (0%) | 0 | normal |
-| decider-2b | decider | 13817.9 | 3078.4 | 3091.1 | 3451.5 | 90 | 88/105 (84%, 76-90) | 0.104 (75) | 0.013 | 0/105 | 0/30 (0%) | 0 | normal |
-| decider-4b | decider:4b | 20089.9 | 8319.1 | 8330.4 | 9264.3 | 90 | 94/105 (90%, 82-94) | 0.094 (75) | 0.061 | 0/105 | 0/30 (0%) | 0 | normal |
-| decision-eos | decision | 5421.1 | 1078.6 | 1077.1 | 1634.5 | 90 | 79/105 (75%, 66-83) | 0.251 (75) | 0.050 | 0/105 | 3/30 (10%) | 0 | normal |
-| drex-1.5 | drex-v1.5-Q8_0@37c2b59 | 976.0 | 825.8 | 823.4 | 945.7 | 90 | 95/105 (90%, 83-95) | 0.097 (75) | 0.035 | 0/105 | 0/30 (0%) | 0 | normal |
-| jeff | jeff-latest | 263.5 | 219.4 | 216.5 | 253.4 | 90 | 67/105 (64%, 54-72) | 0.490 (75) | 0.237 | 0/105 | 0/30 (0%) | 0 | normal |
-| jeff-0.8b | jeff-latest | 141.7 | 96.3 | 96.3 | 116.7 | 90 | 87/105 (83%, 75-89) | 0.168 (75) | 0.047 | 0/105 | 2/30 (7%) | 0 | normal |
-| jev-style-0.8b | jev-style-0.8b-decision-v3 | 154.4 | 99.9 | 100.5 | 119.5 | 90 | 86/105 (82%, 73-88) | 0.151 (75) | 0.065 | 0/105 | 0/30 (0%) | 0 | normal |
-| jev-style-2b | jev-style-2b-decision-v4 | 166.1 | 160.1 | 132.3 | 163.1 | 90 | 92/105 (88%, 80-93) | 0.120 (75) | 0.071 | 0/105 | 1/30 (3%) | 0 | normal |
-| jevk5 | jevk5 | 2888.6 | 585.4 | 583.7 | 680.7 | 90 | 94/105 (90%, 82-94) | 0.113 (75) | 0.049 | 0/105 | 1/30 (3%) | 0 | normal |
-| julia-1 | Julia-1-Q8_0@1e6b48a | 121.8 | 21.4 | 21.1 | 25.3 | 90 | 55/105 (52%, 43-62) | 0.764 (75) | 0.364 | 0/105 | 10/30 (33%) | 0 | normal |
-| kev-0.8b | kev-latest | 167.8 | 48.5 | 38.0 | 52.7 | 90 | 79/105 (75%, 66-83) | 0.260 (75) | 0.085 | 0/105 | 1/30 (3%) | 0 | normal |
-| kev-4b | kev-latest | 292.3 | 219.8 | 189.8 | 259.9 | 90 | 93/105 (89%, 81-93) | 0.126 (75) | 0.086 | 0/105 | 1/30 (3%) | 0 | normal |
-| kev-9b | kev-latest | 5571.4 | 408.0 | 361.1 | 504.0 | 90 | 93/105 (89%, 81-93) | 0.109 (75) | 0.082 | 0/105 | 1/30 (3%) | 0 | normal |
-| lev | lev-Q8_0@2ef3b3c | 928.2 | 775.1 | 779.4 | 873.6 | 90 | 80/105 (76%, 67-83) | 0.217 (75) | 0.133 | 0/105 | 0/30 (0%) | 0 | normal |
-| nimble-v3 | nimble:9b-v3 | 76118.5 | 37108.4 | 37052.2 | 51697.3 | 90 | 97/105 (92%, 86-96) | 0.061 (75) | 0.046 | 0/105 | 0/30 (0%) | 0 | normal |
-| ollaya | laya | 444.2 | 39.3 | 40.8 | 54.9 | 90 | 79/105 (75%, 66-83) | 0.225 (75) | 0.128 | 0/105 | 2/30 (7%) | 0 | normal |
-| ollaya-td | laya:typed-decisions | 2609.4 | 267.9 | 268.2 | 331.0 | 90 | 84/105 (80%, 71-87) | 0.207 (75) | 0.136 | 0/105 | 1/30 (3%) | 0 | normal |
-| onejev-4b | OneJev1.6-4B.Q8_0@2b605ac | 826.9 | 794.1 | 719.0 | 1017.7 | 90 | 93/105 (89%, 81-93) | 0.085 (75) | 0.067 | 0/105 | 1/30 (3%) | 0 | normal |
-| opendecider-td | opendecider | 2758.6 | 325.4 | 287.6 | 400.8 | 90 | 87/105 (83%, 75-89) | 0.119 (75) | 0.072 | 0/105 | 1/30 (3%) | 0 | normal |
-| openjev | OpenJev-Q4_K_M@d2c376d | 3091.2 | 2964.5 | 2970.7 | 3445.2 | 90 | 92/105 (88%, 80-93) | 0.145 (75) | 0.092 | 0/105 | 3/30 (10%) | 0 | normal |
-| pplx-decider | pplx-decider:flash | 13911.7 | 2764.4 | 2770.6 | 3124.4 | 90 | 91/105 (87%, 79-92) | 0.121 (75) | 0.067 | 0/105 | 0/30 (0%) | 0 | normal |
-| rizzo-flow-4b | rizzo-flow-4b-q8_0 | 508.4 | 456.7 | 452.8 | 498.9 | 90 | 93/105 (89%, 81-93) | 0.124 (75) | 0.043 | 0/105 | 1/30 (3%) | 0 | normal |
-| startlux-4b | StartLux-Decision-v1.1-4B-Instant-MLX-8bit@56f18ac | 579.8 | 482.7 | 490.4 | 576.8 | 90 | 91/105 (87%, 79-92) | 0.101 (75) | 0.055 | 0/105 | 1/30 (3%) | 0 | warn |
-| sura-0.8b | sura:0.8b | 3684.2 | 429.6 | 429.5 | 487.3 | 90 | 86/105 (82%, 73-88) | 0.189 (75) | 0.098 | 0/105 | 2/30 (7%) | 0 | normal |
-| sura-2b | sura:2b | 9257.6 | 1103.9 | 1102.9 | 1281.6 | 90 | 88/105 (84%, 76-90) | 0.169 (75) | 0.083 | 0/105 | 0/30 (0%) | 0 | normal |
-| von | von-latest | 3839.5 | 105.9 | 103.6 | 113.8 | 90 | 77/105 (73%, 64-81) | 0.277 (75) | 0.150 | 0/105 | 0/30 (0%) | 0 | normal |
-| winnow | winnow:e4b | 4596.0 | 431.7 | 390.8 | 512.1 | 90 | 93/105 (89%, 81-93) | 0.136 (75) | 0.049 | 0/105 | 0/30 (0%) | 0 | normal |
-| winnow-12b | winnow:12b | 7841.3 | 1203.8 | 1079.7 | 1428.2 | 90 | 96/105 (91%, 85-95) | 0.151 (75) | 0.082 | 0/105 | 0/30 (0%) | 0 | normal |
+| anyjev-l0 | anyjev-l0 | 3967.9 | 740.1 | 257.9 | 807.5 | 90 | 85/105 (81%, 72-87) | 0.162 (75) | 0.088 | 1/105 | 0/30 (0%) | 0 | normal |
+| anyjev-raw | anyjev-raw | 3542.4 | 476.2 | 194.7 | 545.7 | 90 | 86/105 (82%, 73-88) | 0.184 (75) | 0.094 | 0/105 | 0/30 (0%) | 0 | normal |
+| bev-decider | bev-decider-0.4b | 470.1 | 61.3 | 61.1 | 67.1 | 90 | 79/105 (75%, 66-83) | 0.240 (75) | 0.086 | 0/105 | 0/30 (0%) | 0 | normal |
+| clef | Clef-Q4_K_M@5f70656 | 3425.1 | 3292.1 | 3281.3 | 3650.0 | 90 | 95/105 (90%, 83-95) | 0.153 (75) | 0.074 | 0/105 | 0/30 (0%) | 0 | normal |
+| clef-flash | Clef-Flash-Q8_0@4a7a08c | 1037.4 | 876.1 | 876.0 | 993.9 | 90 | 90/105 (86%, 78-91) | 0.130 (75) | 0.061 | 0/105 | 0/30 (0%) | 0 | normal |
+| clm | - | 1232.1 | 222.3 | 1.4 | 239.1 | 90 | 41/105 (39%, 30-49) | 0.733 (75) | 0.373 | 0/105 | 0/30 (0%) | 0 | normal |
+| coba-1b | coba:1b | 1212.9 | 102.5 | 102.1 | 125.9 | 90 | 86/105 (82%, 73-88) | 0.202 (75) | 0.081 | 0/105 | 1/30 (3%) | 0 | normal |
+| coba-400m | coba:400m | 532.8 | 39.8 | 41.4 | 59.1 | 90 | 84/105 (80%, 71-87) | 0.217 (75) | 0.088 | 0/105 | 1/30 (3%) | 0 | normal |
+| d1-omni | d1-omni | 2672.7 | 236.6 | 236.0 | 295.9 | 90 | 89/105 (85%, 77-90) | 0.178 (75) | 0.083 | 0/105 | 0/30 (0%) | 0 | normal |
+| decider-2b | decider | 13420.5 | 3070.0 | 3075.7 | 3418.1 | 90 | 88/105 (84%, 76-90) | 0.104 (75) | 0.013 | 0/105 | 0/30 (0%) | 0 | normal |
+| decider-4b | decider:4b | 20676.9 | 8271.2 | 8284.4 | 9325.8 | 90 | 94/105 (90%, 82-94) | 0.094 (75) | 0.061 | 0/105 | 0/30 (0%) | 0 | normal |
+| decision-eos | decision | 5221.9 | 925.3 | 926.0 | 1377.8 | 90 | 79/105 (75%, 66-83) | 0.251 (75) | 0.050 | 0/105 | 3/30 (10%) | 0 | normal |
+| drex-1.5 | drex-v1.5-Q8_0@37c2b59 | 979.6 | 824.9 | 824.9 | 957.9 | 90 | 95/105 (90%, 83-95) | 0.097 (75) | 0.035 | 0/105 | 0/30 (0%) | 0 | normal |
+| jeff | jeff-latest | 267.3 | 197.5 | 197.4 | 232.6 | 90 | 67/105 (64%, 54-72) | 0.490 (75) | 0.237 | 0/105 | 0/30 (0%) | 0 | normal |
+| jeff-0.8b | jeff-latest | 143.5 | 97.5 | 98.7 | 117.5 | 90 | 87/105 (83%, 75-89) | 0.168 (75) | 0.047 | 0/105 | 2/30 (7%) | 0 | normal |
+| jev-9b | JEV-9B@7ac669b | 1580.8 | 1282.2 | 1280.5 | 1445.1 | 90 | 87/105 (83%, 75-89) | 0.114 (75) | 0.062 | 0/105 | 0/30 (0%) | 0 | normal |
+| jev-style-0.8b | jev-style-0.8b-decision-v3 | 264.3 | 111.1 | 111.4 | 134.0 | 90 | 86/105 (82%, 73-88) | 0.151 (75) | 0.065 | 0/105 | 0/30 (0%) | 0 | normal |
+| jev-style-2b | jev-style-2b-decision-v4 | 171.3 | 134.5 | 129.0 | 160.1 | 90 | 92/105 (88%, 80-93) | 0.120 (75) | 0.071 | 0/105 | 1/30 (3%) | 0 | normal |
+| jevk5 | jevk5 | 3046.0 | 584.6 | 584.8 | 680.1 | 90 | 94/105 (90%, 82-94) | 0.113 (75) | 0.049 | 0/105 | 1/30 (3%) | 0 | normal |
+| julia-1 | Julia-1-Q8_0@1e6b48a | 40.5 | 21.2 | 21.0 | 25.7 | 90 | 55/105 (52%, 43-62) | 0.764 (75) | 0.364 | 0/105 | 10/30 (33%) | 0 | normal |
+| kev-0.8b | kev-latest | 84.3 | 44.8 | 38.5 | 53.5 | 90 | 79/105 (75%, 66-83) | 0.260 (75) | 0.085 | 0/105 | 1/30 (3%) | 0 | normal |
+| kev-4b | kev-latest | 276.9 | 225.2 | 194.9 | 264.8 | 90 | 93/105 (89%, 81-93) | 0.126 (75) | 0.086 | 0/105 | 1/30 (3%) | 0 | normal |
+| kev-9b | kev-latest | 5324.7 | 427.0 | 376.0 | 506.8 | 90 | 93/105 (89%, 81-93) | 0.109 (75) | 0.082 | 0/105 | 1/30 (3%) | 0 | normal |
+| lev | lev-Q8_0@2ef3b3c | 941.9 | 786.9 | 785.1 | 885.9 | 90 | 80/105 (76%, 67-83) | 0.217 (75) | 0.133 | 0/105 | 0/30 (0%) | 0 | normal |
+| nimble-v3 | nimble:9b-v3 | 74858.3 | 39465.6 | 39429.3 | 51612.2 | 90 | 97/105 (92%, 86-96) | 0.061 (75) | 0.046 | 0/105 | 0/30 (0%) | 0 | normal |
+| ollaya | laya | 433.2 | 36.7 | 36.6 | 47.2 | 90 | 79/105 (75%, 66-83) | 0.225 (75) | 0.128 | 0/105 | 2/30 (7%) | 0 | normal |
+| ollaya-td | laya:typed-decisions | 2570.1 | 304.9 | 304.8 | 381.0 | 90 | 84/105 (80%, 71-87) | 0.207 (75) | 0.136 | 0/105 | 1/30 (3%) | 0 | normal |
+| onejev-4b | OneJev1.6-4B.Q8_0@2b605ac | 765.0 | 739.9 | 680.5 | 966.6 | 90 | 93/105 (89%, 81-93) | 0.085 (75) | 0.067 | 0/105 | 1/30 (3%) | 0 | normal |
+| opendecider-td | opendecider | 2739.9 | 317.1 | 281.9 | 397.0 | 90 | 87/105 (83%, 75-89) | 0.119 (75) | 0.072 | 0/105 | 1/30 (3%) | 0 | normal |
+| openjev | OpenJev-Q4_K_M@d2c376d | 3000.6 | 2952.3 | 2968.8 | 3414.3 | 90 | 92/105 (88%, 80-93) | 0.145 (75) | 0.092 | 0/105 | 3/30 (10%) | 0 | normal |
+| pplx-decider | pplx-decider:flash | 14141.3 | 2820.6 | 2830.2 | 3456.0 | 90 | 91/105 (87%, 79-92) | 0.121 (75) | 0.067 | 0/105 | 0/30 (0%) | 0 | normal |
+| rizzo-flow-4b | rizzo-flow-4b-q8_0 | 482.5 | 451.1 | 451.7 | 493.7 | 90 | 93/105 (89%, 81-93) | 0.124 (75) | 0.043 | 0/105 | 1/30 (3%) | 0 | normal |
+| startlux-4b | StartLux-Decision-v1.1-4B-Instant-MLX-8bit@56f18ac | 592.6 | 478.5 | 476.8 | 569.9 | 90 | 91/105 (87%, 79-92) | 0.101 (75) | 0.055 | 0/105 | 1/30 (3%) | 0 | warn |
+| sura-0.8b | sura:0.8b | 3723.7 | 429.8 | 429.5 | 487.0 | 90 | 86/105 (82%, 73-88) | 0.189 (75) | 0.098 | 0/105 | 2/30 (7%) | 0 | normal |
+| sura-2b | sura:2b | 9889.8 | 977.2 | 977.2 | 1102.0 | 90 | 88/105 (84%, 76-90) | 0.169 (75) | 0.083 | 0/105 | 0/30 (0%) | 0 | normal |
+| von | von-latest | 7093.7 | 98.4 | 97.5 | 112.6 | 90 | 77/105 (73%, 64-81) | 0.277 (75) | 0.150 | 0/105 | 0/30 (0%) | 0 | normal |
+| winnow | winnow:e4b | 4504.2 | 475.8 | 424.6 | 562.5 | 90 | 93/105 (89%, 81-93) | 0.136 (75) | 0.049 | 0/105 | 0/30 (0%) | 0 | normal |
+| winnow-12b | winnow:12b | 7538.7 | 1213.9 | 1098.3 | 1457.1 | 90 | 96/105 (91%, 85-95) | 0.151 (75) | 0.082 | 0/105 | 0/30 (0%) | 0 | normal |
 
 ## Pairwise differences (McNemar exact)
 
@@ -61,6 +63,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | engine A | engine B | both graded | b | c | p | p (Holm) |
 |---|---|---|---|---|---|---|
 | anyjev-l0 | anyjev-raw | 105 | 1 | 2 | 1.000 | 1.000 |
+| anyjev-l0 | bev-decider | 105 | 14 | 8 | 0.286 | 1.000 |
 | anyjev-l0 | clef | 105 | 3 | 13 | 0.021 | 1.000 |
 | anyjev-l0 | clef-flash | 105 | 5 | 10 | 0.302 | 1.000 |
 | anyjev-l0 | clm | 105 | 49 | 5 | <0.001 | <0.001 |
@@ -73,10 +76,11 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | anyjev-l0 | drex-1.5 | 105 | 2 | 12 | 0.013 | 1.000 |
 | anyjev-l0 | jeff | 105 | 26 | 8 | 0.003 | 1.000 |
 | anyjev-l0 | jeff-0.8b | 105 | 10 | 12 | 0.832 | 1.000 |
+| anyjev-l0 | jev-9b | 105 | 7 | 9 | 0.804 | 1.000 |
 | anyjev-l0 | jev-style-0.8b | 105 | 9 | 10 | 1.000 | 1.000 |
 | anyjev-l0 | jev-style-2b | 105 | 3 | 10 | 0.092 | 1.000 |
 | anyjev-l0 | jevk5 | 105 | 3 | 12 | 0.035 | 1.000 |
-| anyjev-l0 | julia-1 | 105 | 41 | 11 | <0.001 | 0.020 |
+| anyjev-l0 | julia-1 | 105 | 41 | 11 | <0.001 | 0.022 |
 | anyjev-l0 | kev-0.8b | 105 | 14 | 8 | 0.286 | 1.000 |
 | anyjev-l0 | kev-4b | 105 | 3 | 11 | 0.057 | 1.000 |
 | anyjev-l0 | kev-9b | 105 | 3 | 11 | 0.057 | 1.000 |
@@ -95,6 +99,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | anyjev-l0 | von | 105 | 13 | 5 | 0.096 | 1.000 |
 | anyjev-l0 | winnow | 105 | 2 | 10 | 0.039 | 1.000 |
 | anyjev-l0 | winnow-12b | 105 | 1 | 12 | 0.003 | 1.000 |
+| anyjev-raw | bev-decider | 105 | 15 | 8 | 0.210 | 1.000 |
 | anyjev-raw | clef | 105 | 4 | 13 | 0.049 | 1.000 |
 | anyjev-raw | clef-flash | 105 | 7 | 11 | 0.481 | 1.000 |
 | anyjev-raw | clm | 105 | 49 | 4 | <0.001 | <0.001 |
@@ -105,12 +110,13 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | anyjev-raw | decider-4b | 105 | 4 | 12 | 0.077 | 1.000 |
 | anyjev-raw | decision-eos | 105 | 13 | 6 | 0.167 | 1.000 |
 | anyjev-raw | drex-1.5 | 105 | 3 | 12 | 0.035 | 1.000 |
-| anyjev-raw | jeff | 105 | 27 | 8 | 0.002 | 0.956 |
+| anyjev-raw | jeff | 105 | 27 | 8 | 0.002 | 1.000 |
 | anyjev-raw | jeff-0.8b | 105 | 10 | 11 | 1.000 | 1.000 |
+| anyjev-raw | jev-9b | 105 | 8 | 9 | 1.000 | 1.000 |
 | anyjev-raw | jev-style-0.8b | 105 | 10 | 10 | 1.000 | 1.000 |
 | anyjev-raw | jev-style-2b | 105 | 5 | 11 | 0.210 | 1.000 |
 | anyjev-raw | jevk5 | 105 | 3 | 11 | 0.057 | 1.000 |
-| anyjev-raw | julia-1 | 105 | 41 | 10 | <0.001 | 0.008 |
+| anyjev-raw | julia-1 | 105 | 41 | 10 | <0.001 | 0.009 |
 | anyjev-raw | kev-0.8b | 105 | 15 | 8 | 0.210 | 1.000 |
 | anyjev-raw | kev-4b | 105 | 5 | 12 | 0.143 | 1.000 |
 | anyjev-raw | kev-9b | 105 | 5 | 12 | 0.143 | 1.000 |
@@ -129,6 +135,41 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | anyjev-raw | von | 105 | 12 | 3 | 0.035 | 1.000 |
 | anyjev-raw | winnow | 105 | 3 | 10 | 0.092 | 1.000 |
 | anyjev-raw | winnow-12b | 105 | 2 | 12 | 0.013 | 1.000 |
+| bev-decider | clef | 105 | 5 | 21 | 0.002 | 1.000 |
+| bev-decider | clef-flash | 105 | 7 | 18 | 0.043 | 1.000 |
+| bev-decider | clm | 105 | 45 | 7 | <0.001 | <0.001 |
+| bev-decider | coba-1b | 105 | 8 | 15 | 0.210 | 1.000 |
+| bev-decider | coba-400m | 105 | 8 | 13 | 0.383 | 1.000 |
+| bev-decider | d1-omni | 105 | 8 | 18 | 0.076 | 1.000 |
+| bev-decider | decider-2b | 105 | 6 | 15 | 0.078 | 1.000 |
+| bev-decider | decider-4b | 105 | 4 | 19 | 0.003 | 1.000 |
+| bev-decider | decision-eos | 105 | 8 | 8 | 1.000 | 1.000 |
+| bev-decider | drex-1.5 | 105 | 2 | 18 | <0.001 | 0.243 |
+| bev-decider | jeff | 105 | 22 | 10 | 0.050 | 1.000 |
+| bev-decider | jeff-0.8b | 105 | 6 | 14 | 0.115 | 1.000 |
+| bev-decider | jev-9b | 105 | 7 | 15 | 0.134 | 1.000 |
+| bev-decider | jev-style-0.8b | 105 | 7 | 14 | 0.189 | 1.000 |
+| bev-decider | jev-style-2b | 105 | 6 | 19 | 0.015 | 1.000 |
+| bev-decider | jevk5 | 105 | 3 | 18 | 0.001 | 0.860 |
+| bev-decider | julia-1 | 105 | 35 | 11 | <0.001 | 0.317 |
+| bev-decider | kev-0.8b | 105 | 14 | 14 | 1.000 | 1.000 |
+| bev-decider | kev-4b | 105 | 4 | 18 | 0.004 | 1.000 |
+| bev-decider | kev-9b | 105 | 4 | 18 | 0.004 | 1.000 |
+| bev-decider | lev | 105 | 18 | 19 | 1.000 | 1.000 |
+| bev-decider | nimble-v3 | 105 | 1 | 19 | <0.001 | 0.025 |
+| bev-decider | ollaya | 105 | 11 | 11 | 1.000 | 1.000 |
+| bev-decider | ollaya-td | 105 | 8 | 13 | 0.383 | 1.000 |
+| bev-decider | onejev-4b | 105 | 1 | 15 | <0.001 | 0.309 |
+| bev-decider | opendecider-td | 105 | 6 | 14 | 0.115 | 1.000 |
+| bev-decider | openjev | 105 | 5 | 18 | 0.011 | 1.000 |
+| bev-decider | pplx-decider | 105 | 6 | 18 | 0.023 | 1.000 |
+| bev-decider | rizzo-flow-4b | 105 | 4 | 18 | 0.004 | 1.000 |
+| bev-decider | startlux-4b | 105 | 5 | 17 | 0.017 | 1.000 |
+| bev-decider | sura-0.8b | 105 | 5 | 12 | 0.143 | 1.000 |
+| bev-decider | sura-2b | 105 | 6 | 15 | 0.078 | 1.000 |
+| bev-decider | von | 105 | 13 | 11 | 0.839 | 1.000 |
+| bev-decider | winnow | 105 | 5 | 19 | 0.007 | 1.000 |
+| bev-decider | winnow-12b | 105 | 2 | 19 | <0.001 | 0.136 |
 | clef | clef-flash | 105 | 8 | 3 | 0.227 | 1.000 |
 | clef | clm | 105 | 56 | 2 | <0.001 | <0.001 |
 | clef | coba-1b | 105 | 10 | 1 | 0.012 | 1.000 |
@@ -140,6 +181,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | clef | drex-1.5 | 105 | 6 | 6 | 1.000 | 1.000 |
 | clef | jeff | 105 | 29 | 1 | <0.001 | <0.001 |
 | clef | jeff-0.8b | 105 | 17 | 9 | 0.169 | 1.000 |
+| clef | jev-9b | 105 | 11 | 3 | 0.057 | 1.000 |
 | clef | jev-style-0.8b | 105 | 16 | 7 | 0.093 | 1.000 |
 | clef | jev-style-2b | 105 | 7 | 4 | 0.549 | 1.000 |
 | clef | jevk5 | 105 | 7 | 6 | 1.000 | 1.000 |
@@ -147,9 +189,9 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | clef | kev-0.8b | 105 | 22 | 6 | 0.004 | 1.000 |
 | clef | kev-4b | 105 | 6 | 4 | 0.754 | 1.000 |
 | clef | kev-9b | 105 | 7 | 5 | 0.774 | 1.000 |
-| clef | lev | 105 | 18 | 3 | 0.001 | 0.764 |
+| clef | lev | 105 | 18 | 3 | 0.001 | 0.860 |
 | clef | nimble-v3 | 105 | 6 | 8 | 0.791 | 1.000 |
-| clef | ollaya | 105 | 19 | 3 | <0.001 | 0.448 |
+| clef | ollaya | 105 | 19 | 3 | <0.001 | 0.504 |
 | clef | ollaya-td | 105 | 14 | 3 | 0.013 | 1.000 |
 | clef | onejev-4b | 105 | 7 | 5 | 0.774 | 1.000 |
 | clef | opendecider-td | 105 | 13 | 5 | 0.096 | 1.000 |
@@ -159,7 +201,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | clef | startlux-4b | 105 | 7 | 3 | 0.344 | 1.000 |
 | clef | sura-0.8b | 105 | 13 | 4 | 0.049 | 1.000 |
 | clef | sura-2b | 105 | 11 | 4 | 0.118 | 1.000 |
-| clef | von | 105 | 22 | 4 | <0.001 | 0.282 |
+| clef | von | 105 | 22 | 4 | <0.001 | 0.317 |
 | clef | winnow | 105 | 5 | 3 | 0.727 | 1.000 |
 | clef | winnow-12b | 105 | 3 | 4 | 1.000 | 1.000 |
 | clef-flash | clm | 105 | 53 | 4 | <0.001 | <0.001 |
@@ -170,8 +212,9 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | clef-flash | decider-4b | 105 | 2 | 6 | 0.289 | 1.000 |
 | clef-flash | decision-eos | 105 | 19 | 8 | 0.052 | 1.000 |
 | clef-flash | drex-1.5 | 105 | 4 | 9 | 0.267 | 1.000 |
-| clef-flash | jeff | 105 | 28 | 5 | <0.001 | 0.037 |
+| clef-flash | jeff | 105 | 28 | 5 | <0.001 | 0.041 |
 | clef-flash | jeff-0.8b | 105 | 17 | 14 | 0.720 | 1.000 |
+| clef-flash | jev-9b | 105 | 9 | 6 | 0.607 | 1.000 |
 | clef-flash | jev-style-0.8b | 105 | 13 | 9 | 0.523 | 1.000 |
 | clef-flash | jev-style-2b | 105 | 3 | 5 | 0.727 | 1.000 |
 | clef-flash | jevk5 | 105 | 4 | 8 | 0.388 | 1.000 |
@@ -201,8 +244,9 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | clm | decider-4b | 105 | 1 | 54 | <0.001 | <0.001 |
 | clm | decision-eos | 105 | 6 | 44 | <0.001 | <0.001 |
 | clm | drex-1.5 | 105 | 4 | 58 | <0.001 | <0.001 |
-| clm | jeff | 105 | 13 | 39 | <0.001 | 0.218 |
+| clm | jeff | 105 | 13 | 39 | <0.001 | 0.245 |
 | clm | jeff-0.8b | 105 | 10 | 56 | <0.001 | <0.001 |
+| clm | jev-9b | 105 | 2 | 48 | <0.001 | <0.001 |
 | clm | jev-style-0.8b | 105 | 7 | 52 | <0.001 | <0.001 |
 | clm | jev-style-2b | 105 | 2 | 53 | <0.001 | <0.001 |
 | clm | jevk5 | 105 | 1 | 54 | <0.001 | <0.001 |
@@ -231,8 +275,9 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | coba-1b | decider-4b | 105 | 3 | 11 | 0.057 | 1.000 |
 | coba-1b | decision-eos | 105 | 16 | 9 | 0.230 | 1.000 |
 | coba-1b | drex-1.5 | 105 | 3 | 12 | 0.035 | 1.000 |
-| coba-1b | jeff | 105 | 22 | 3 | <0.001 | 0.085 |
+| coba-1b | jeff | 105 | 22 | 3 | <0.001 | 0.096 |
 | coba-1b | jeff-0.8b | 105 | 12 | 13 | 1.000 | 1.000 |
+| coba-1b | jev-9b | 105 | 7 | 8 | 1.000 | 1.000 |
 | coba-1b | jev-style-0.8b | 105 | 10 | 10 | 1.000 | 1.000 |
 | coba-1b | jev-style-2b | 105 | 5 | 11 | 0.210 | 1.000 |
 | coba-1b | jevk5 | 105 | 3 | 11 | 0.057 | 1.000 |
@@ -260,17 +305,18 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | coba-400m | decider-4b | 105 | 3 | 13 | 0.021 | 1.000 |
 | coba-400m | decision-eos | 105 | 13 | 8 | 0.383 | 1.000 |
 | coba-400m | drex-1.5 | 105 | 2 | 13 | 0.007 | 1.000 |
-| coba-400m | jeff | 105 | 21 | 4 | <0.001 | 0.473 |
+| coba-400m | jeff | 105 | 21 | 4 | <0.001 | 0.533 |
 | coba-400m | jeff-0.8b | 105 | 12 | 15 | 0.701 | 1.000 |
+| coba-400m | jev-9b | 105 | 10 | 13 | 0.678 | 1.000 |
 | coba-400m | jev-style-0.8b | 105 | 8 | 10 | 0.815 | 1.000 |
 | coba-400m | jev-style-2b | 105 | 5 | 13 | 0.096 | 1.000 |
 | coba-400m | jevk5 | 105 | 3 | 13 | 0.021 | 1.000 |
-| coba-400m | julia-1 | 105 | 37 | 8 | <0.001 | 0.009 |
+| coba-400m | julia-1 | 105 | 37 | 8 | <0.001 | 0.010 |
 | coba-400m | kev-0.8b | 105 | 14 | 9 | 0.405 | 1.000 |
 | coba-400m | kev-4b | 105 | 4 | 13 | 0.049 | 1.000 |
 | coba-400m | kev-9b | 105 | 4 | 13 | 0.049 | 1.000 |
 | coba-400m | lev | 105 | 17 | 13 | 0.585 | 1.000 |
-| coba-400m | nimble-v3 | 105 | 1 | 14 | <0.001 | 0.505 |
+| coba-400m | nimble-v3 | 105 | 1 | 14 | <0.001 | 0.568 |
 | coba-400m | ollaya | 105 | 13 | 8 | 0.383 | 1.000 |
 | coba-400m | ollaya-td | 105 | 10 | 10 | 1.000 | 1.000 |
 | coba-400m | onejev-4b | 105 | 3 | 12 | 0.035 | 1.000 |
@@ -288,8 +334,9 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | d1-omni | decider-4b | 105 | 7 | 12 | 0.359 | 1.000 |
 | d1-omni | decision-eos | 105 | 21 | 11 | 0.110 | 1.000 |
 | d1-omni | drex-1.5 | 105 | 6 | 12 | 0.238 | 1.000 |
-| d1-omni | jeff | 105 | 33 | 11 | 0.001 | 0.650 |
+| d1-omni | jeff | 105 | 33 | 11 | 0.001 | 0.731 |
 | d1-omni | jeff-0.8b | 105 | 15 | 13 | 0.851 | 1.000 |
+| d1-omni | jev-9b | 105 | 15 | 13 | 0.851 | 1.000 |
 | d1-omni | jev-style-0.8b | 105 | 12 | 9 | 0.664 | 1.000 |
 | d1-omni | jev-style-2b | 105 | 9 | 12 | 0.664 | 1.000 |
 | d1-omni | jevk5 | 105 | 9 | 14 | 0.405 | 1.000 |
@@ -315,8 +362,9 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | decider-2b | decider-4b | 105 | 2 | 8 | 0.109 | 1.000 |
 | decider-2b | decision-eos | 105 | 18 | 9 | 0.122 | 1.000 |
 | decider-2b | drex-1.5 | 105 | 3 | 10 | 0.092 | 1.000 |
-| decider-2b | jeff | 105 | 28 | 7 | <0.001 | 0.269 |
+| decider-2b | jeff | 105 | 28 | 7 | <0.001 | 0.303 |
 | decider-2b | jeff-0.8b | 105 | 13 | 12 | 1.000 | 1.000 |
+| decider-2b | jev-9b | 105 | 6 | 5 | 1.000 | 1.000 |
 | decider-2b | jev-style-0.8b | 105 | 10 | 8 | 0.815 | 1.000 |
 | decider-2b | jev-style-2b | 105 | 4 | 8 | 0.388 | 1.000 |
 | decider-2b | jevk5 | 105 | 3 | 9 | 0.146 | 1.000 |
@@ -343,6 +391,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | decider-4b | drex-1.5 | 105 | 4 | 5 | 1.000 | 1.000 |
 | decider-4b | jeff | 105 | 30 | 3 | <0.001 | <0.001 |
 | decider-4b | jeff-0.8b | 105 | 16 | 9 | 0.230 | 1.000 |
+| decider-4b | jev-9b | 105 | 9 | 2 | 0.065 | 1.000 |
 | decider-4b | jev-style-0.8b | 105 | 14 | 6 | 0.115 | 1.000 |
 | decider-4b | jev-style-2b | 105 | 5 | 3 | 0.727 | 1.000 |
 | decider-4b | jevk5 | 105 | 3 | 3 | 1.000 | 1.000 |
@@ -350,9 +399,9 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | decider-4b | kev-0.8b | 105 | 19 | 4 | 0.003 | 1.000 |
 | decider-4b | kev-4b | 105 | 4 | 3 | 1.000 | 1.000 |
 | decider-4b | kev-9b | 105 | 5 | 4 | 1.000 | 1.000 |
-| decider-4b | lev | 105 | 16 | 2 | 0.001 | 0.674 |
+| decider-4b | lev | 105 | 16 | 2 | 0.001 | 0.758 |
 | decider-4b | nimble-v3 | 105 | 4 | 7 | 0.549 | 1.000 |
-| decider-4b | ollaya | 105 | 18 | 3 | 0.001 | 0.764 |
+| decider-4b | ollaya | 105 | 18 | 3 | 0.001 | 0.860 |
 | decider-4b | ollaya-td | 105 | 12 | 2 | 0.013 | 1.000 |
 | decider-4b | onejev-4b | 105 | 5 | 4 | 1.000 | 1.000 |
 | decider-4b | opendecider-td | 105 | 10 | 3 | 0.092 | 1.000 |
@@ -362,21 +411,22 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | decider-4b | startlux-4b | 105 | 5 | 2 | 0.453 | 1.000 |
 | decider-4b | sura-0.8b | 105 | 11 | 3 | 0.057 | 1.000 |
 | decider-4b | sura-2b | 105 | 9 | 3 | 0.146 | 1.000 |
-| decider-4b | von | 105 | 20 | 3 | <0.001 | 0.259 |
+| decider-4b | von | 105 | 20 | 3 | <0.001 | 0.292 |
 | decider-4b | winnow | 105 | 5 | 4 | 1.000 | 1.000 |
 | decider-4b | winnow-12b | 105 | 3 | 5 | 0.727 | 1.000 |
-| decision-eos | drex-1.5 | 105 | 2 | 18 | <0.001 | 0.216 |
+| decision-eos | drex-1.5 | 105 | 2 | 18 | <0.001 | 0.243 |
 | decision-eos | jeff | 105 | 21 | 9 | 0.043 | 1.000 |
 | decision-eos | jeff-0.8b | 105 | 6 | 14 | 0.115 | 1.000 |
+| decision-eos | jev-9b | 105 | 8 | 16 | 0.152 | 1.000 |
 | decision-eos | jev-style-0.8b | 105 | 9 | 16 | 0.230 | 1.000 |
 | decision-eos | jev-style-2b | 105 | 5 | 18 | 0.011 | 1.000 |
-| decision-eos | jevk5 | 105 | 2 | 17 | <0.001 | 0.383 |
-| decision-eos | julia-1 | 105 | 34 | 10 | <0.001 | 0.209 |
+| decision-eos | jevk5 | 105 | 2 | 17 | <0.001 | 0.430 |
+| decision-eos | julia-1 | 105 | 34 | 10 | <0.001 | 0.235 |
 | decision-eos | kev-0.8b | 105 | 9 | 9 | 1.000 | 1.000 |
 | decision-eos | kev-4b | 105 | 4 | 18 | 0.004 | 1.000 |
 | decision-eos | kev-9b | 105 | 4 | 18 | 0.004 | 1.000 |
 | decision-eos | lev | 105 | 16 | 17 | 1.000 | 1.000 |
-| decision-eos | nimble-v3 | 105 | 2 | 20 | <0.001 | 0.067 |
+| decision-eos | nimble-v3 | 105 | 2 | 20 | <0.001 | 0.075 |
 | decision-eos | ollaya | 105 | 9 | 9 | 1.000 | 1.000 |
 | decision-eos | ollaya-td | 105 | 8 | 13 | 0.383 | 1.000 |
 | decision-eos | onejev-4b | 105 | 4 | 18 | 0.004 | 1.000 |
@@ -389,19 +439,20 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | decision-eos | sura-2b | 105 | 6 | 15 | 0.078 | 1.000 |
 | decision-eos | von | 105 | 12 | 10 | 0.832 | 1.000 |
 | decision-eos | winnow | 105 | 5 | 19 | 0.007 | 1.000 |
-| decision-eos | winnow-12b | 105 | 2 | 19 | <0.001 | 0.120 |
+| decision-eos | winnow-12b | 105 | 2 | 19 | <0.001 | 0.136 |
 | drex-1.5 | jeff | 105 | 29 | 1 | <0.001 | <0.001 |
 | drex-1.5 | jeff-0.8b | 105 | 13 | 5 | 0.096 | 1.000 |
+| drex-1.5 | jev-9b | 105 | 12 | 4 | 0.077 | 1.000 |
 | drex-1.5 | jev-style-0.8b | 105 | 11 | 2 | 0.022 | 1.000 |
 | drex-1.5 | jev-style-2b | 105 | 7 | 4 | 0.549 | 1.000 |
 | drex-1.5 | jevk5 | 105 | 5 | 4 | 1.000 | 1.000 |
 | drex-1.5 | julia-1 | 105 | 44 | 4 | <0.001 | <0.001 |
-| drex-1.5 | kev-0.8b | 105 | 18 | 2 | <0.001 | 0.216 |
+| drex-1.5 | kev-0.8b | 105 | 18 | 2 | <0.001 | 0.243 |
 | drex-1.5 | kev-4b | 105 | 5 | 3 | 0.727 | 1.000 |
 | drex-1.5 | kev-9b | 105 | 4 | 2 | 0.688 | 1.000 |
 | drex-1.5 | lev | 105 | 19 | 4 | 0.003 | 1.000 |
 | drex-1.5 | nimble-v3 | 105 | 4 | 6 | 0.754 | 1.000 |
-| drex-1.5 | ollaya | 105 | 18 | 2 | <0.001 | 0.216 |
+| drex-1.5 | ollaya | 105 | 18 | 2 | <0.001 | 0.243 |
 | drex-1.5 | ollaya-td | 105 | 15 | 4 | 0.019 | 1.000 |
 | drex-1.5 | onejev-4b | 105 | 5 | 3 | 0.727 | 1.000 |
 | drex-1.5 | opendecider-td | 105 | 10 | 2 | 0.039 | 1.000 |
@@ -411,11 +462,12 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | drex-1.5 | startlux-4b | 105 | 7 | 3 | 0.344 | 1.000 |
 | drex-1.5 | sura-0.8b | 105 | 11 | 2 | 0.022 | 1.000 |
 | drex-1.5 | sura-2b | 105 | 9 | 2 | 0.065 | 1.000 |
-| drex-1.5 | von | 105 | 20 | 2 | <0.001 | 0.067 |
+| drex-1.5 | von | 105 | 20 | 2 | <0.001 | 0.075 |
 | drex-1.5 | winnow | 105 | 7 | 5 | 0.774 | 1.000 |
 | drex-1.5 | winnow-12b | 105 | 3 | 4 | 1.000 | 1.000 |
-| jeff | jeff-0.8b | 105 | 5 | 25 | <0.001 | 0.175 |
-| jeff | jev-style-0.8b | 105 | 8 | 27 | 0.002 | 0.956 |
+| jeff | jeff-0.8b | 105 | 5 | 25 | <0.001 | 0.197 |
+| jeff | jev-9b | 105 | 8 | 28 | 0.001 | 0.693 |
+| jeff | jev-style-0.8b | 105 | 8 | 27 | 0.002 | 1.000 |
 | jeff | jev-style-2b | 105 | 3 | 28 | <0.001 | 0.003 |
 | jeff | jevk5 | 105 | 2 | 29 | <0.001 | <0.001 |
 | jeff | julia-1 | 105 | 26 | 14 | 0.081 | 1.000 |
@@ -426,17 +478,18 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | jeff | nimble-v3 | 105 | 1 | 31 | <0.001 | <0.001 |
 | jeff | ollaya | 105 | 10 | 22 | 0.050 | 1.000 |
 | jeff | ollaya-td | 105 | 8 | 25 | 0.005 | 1.000 |
-| jeff | onejev-4b | 105 | 3 | 29 | <0.001 | 0.001 |
-| jeff | opendecider-td | 105 | 6 | 26 | <0.001 | 0.282 |
-| jeff | openjev | 105 | 4 | 29 | <0.001 | 0.006 |
-| jeff | pplx-decider | 105 | 5 | 29 | <0.001 | 0.021 |
-| jeff | rizzo-flow-4b | 105 | 4 | 30 | <0.001 | 0.003 |
-| jeff | startlux-4b | 105 | 4 | 28 | <0.001 | 0.011 |
-| jeff | sura-0.8b | 105 | 5 | 24 | <0.001 | 0.287 |
-| jeff | sura-2b | 105 | 5 | 26 | <0.001 | 0.105 |
+| jeff | onejev-4b | 105 | 3 | 29 | <0.001 | 0.002 |
+| jeff | opendecider-td | 105 | 6 | 26 | <0.001 | 0.317 |
+| jeff | openjev | 105 | 4 | 29 | <0.001 | 0.007 |
+| jeff | pplx-decider | 105 | 5 | 29 | <0.001 | 0.024 |
+| jeff | rizzo-flow-4b | 105 | 4 | 30 | <0.001 | 0.004 |
+| jeff | startlux-4b | 105 | 4 | 28 | <0.001 | 0.012 |
+| jeff | sura-0.8b | 105 | 5 | 24 | <0.001 | 0.323 |
+| jeff | sura-2b | 105 | 5 | 26 | <0.001 | 0.118 |
 | jeff | von | 105 | 12 | 22 | 0.121 | 1.000 |
-| jeff | winnow | 105 | 3 | 29 | <0.001 | 0.001 |
+| jeff | winnow | 105 | 3 | 29 | <0.001 | 0.002 |
 | jeff | winnow-12b | 105 | 0 | 29 | <0.001 | <0.001 |
+| jeff-0.8b | jev-9b | 105 | 11 | 11 | 1.000 | 1.000 |
 | jeff-0.8b | jev-style-0.8b | 105 | 10 | 9 | 1.000 | 1.000 |
 | jeff-0.8b | jev-style-2b | 105 | 10 | 15 | 0.424 | 1.000 |
 | jeff-0.8b | jevk5 | 105 | 7 | 14 | 0.189 | 1.000 |
@@ -459,6 +512,28 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | jeff-0.8b | von | 105 | 17 | 7 | 0.064 | 1.000 |
 | jeff-0.8b | winnow | 105 | 8 | 14 | 0.286 | 1.000 |
 | jeff-0.8b | winnow-12b | 105 | 6 | 15 | 0.078 | 1.000 |
+| jev-9b | jev-style-0.8b | 105 | 13 | 12 | 1.000 | 1.000 |
+| jev-9b | jev-style-2b | 105 | 3 | 8 | 0.227 | 1.000 |
+| jev-9b | jevk5 | 105 | 1 | 8 | 0.039 | 1.000 |
+| jev-9b | julia-1 | 105 | 42 | 10 | <0.001 | 0.006 |
+| jev-9b | kev-0.8b | 105 | 17 | 9 | 0.169 | 1.000 |
+| jev-9b | kev-4b | 105 | 3 | 9 | 0.146 | 1.000 |
+| jev-9b | kev-9b | 105 | 5 | 11 | 0.210 | 1.000 |
+| jev-9b | lev | 105 | 13 | 6 | 0.167 | 1.000 |
+| jev-9b | nimble-v3 | 105 | 4 | 14 | 0.031 | 1.000 |
+| jev-9b | ollaya | 105 | 15 | 7 | 0.134 | 1.000 |
+| jev-9b | ollaya-td | 105 | 9 | 6 | 0.607 | 1.000 |
+| jev-9b | onejev-4b | 105 | 2 | 8 | 0.109 | 1.000 |
+| jev-9b | opendecider-td | 105 | 8 | 8 | 1.000 | 1.000 |
+| jev-9b | openjev | 105 | 4 | 9 | 0.267 | 1.000 |
+| jev-9b | pplx-decider | 105 | 6 | 10 | 0.454 | 1.000 |
+| jev-9b | rizzo-flow-4b | 105 | 3 | 9 | 0.146 | 1.000 |
+| jev-9b | startlux-4b | 105 | 2 | 6 | 0.289 | 1.000 |
+| jev-9b | sura-0.8b | 105 | 8 | 7 | 1.000 | 1.000 |
+| jev-9b | sura-2b | 105 | 9 | 10 | 1.000 | 1.000 |
+| jev-9b | von | 105 | 18 | 8 | 0.076 | 1.000 |
+| jev-9b | winnow | 105 | 2 | 8 | 0.109 | 1.000 |
+| jev-9b | winnow-12b | 105 | 1 | 10 | 0.012 | 1.000 |
 | jev-style-0.8b | jev-style-2b | 105 | 9 | 15 | 0.307 | 1.000 |
 | jev-style-0.8b | jevk5 | 105 | 5 | 13 | 0.096 | 1.000 |
 | jev-style-0.8b | julia-1 | 105 | 38 | 7 | <0.001 | 0.002 |
@@ -501,12 +576,12 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | jev-style-2b | winnow | 105 | 2 | 3 | 1.000 | 1.000 |
 | jev-style-2b | winnow-12b | 105 | 2 | 6 | 0.289 | 1.000 |
 | jevk5 | julia-1 | 105 | 44 | 5 | <0.001 | <0.001 |
-| jevk5 | kev-0.8b | 105 | 18 | 3 | 0.001 | 0.764 |
+| jevk5 | kev-0.8b | 105 | 18 | 3 | 0.001 | 0.860 |
 | jevk5 | kev-4b | 105 | 4 | 3 | 1.000 | 1.000 |
 | jevk5 | kev-9b | 105 | 6 | 5 | 1.000 | 1.000 |
 | jevk5 | lev | 105 | 18 | 4 | 0.004 | 1.000 |
 | jevk5 | nimble-v3 | 105 | 4 | 7 | 0.549 | 1.000 |
-| jevk5 | ollaya | 105 | 16 | 1 | <0.001 | 0.148 |
+| jevk5 | ollaya | 105 | 16 | 1 | <0.001 | 0.167 |
 | jevk5 | ollaya-td | 105 | 13 | 3 | 0.021 | 1.000 |
 | jevk5 | onejev-4b | 105 | 4 | 3 | 1.000 | 1.000 |
 | jevk5 | opendecider-td | 105 | 9 | 2 | 0.065 | 1.000 |
@@ -516,16 +591,16 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | jevk5 | startlux-4b | 105 | 6 | 3 | 0.508 | 1.000 |
 | jevk5 | sura-0.8b | 105 | 10 | 2 | 0.039 | 1.000 |
 | jevk5 | sura-2b | 105 | 10 | 4 | 0.180 | 1.000 |
-| jevk5 | von | 105 | 19 | 2 | <0.001 | 0.120 |
+| jevk5 | von | 105 | 19 | 2 | <0.001 | 0.136 |
 | jevk5 | winnow | 105 | 6 | 5 | 1.000 | 1.000 |
 | jevk5 | winnow-12b | 105 | 2 | 4 | 0.688 | 1.000 |
-| julia-1 | kev-0.8b | 105 | 9 | 33 | <0.001 | 0.147 |
+| julia-1 | kev-0.8b | 105 | 9 | 33 | <0.001 | 0.165 |
 | julia-1 | kev-4b | 105 | 5 | 43 | <0.001 | <0.001 |
 | julia-1 | kev-9b | 105 | 5 | 43 | <0.001 | <0.001 |
-| julia-1 | lev | 105 | 16 | 41 | 0.001 | 0.651 |
+| julia-1 | lev | 105 | 16 | 41 | 0.001 | 0.732 |
 | julia-1 | nimble-v3 | 105 | 1 | 43 | <0.001 | <0.001 |
-| julia-1 | ollaya | 105 | 7 | 31 | <0.001 | 0.064 |
-| julia-1 | ollaya-td | 105 | 8 | 37 | <0.001 | 0.009 |
+| julia-1 | ollaya | 105 | 7 | 31 | <0.001 | 0.072 |
+| julia-1 | ollaya-td | 105 | 8 | 37 | <0.001 | 0.010 |
 | julia-1 | onejev-4b | 105 | 5 | 43 | <0.001 | <0.001 |
 | julia-1 | opendecider-td | 105 | 8 | 40 | <0.001 | 0.002 |
 | julia-1 | openjev | 105 | 6 | 43 | <0.001 | <0.001 |
@@ -534,13 +609,13 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | julia-1 | startlux-4b | 105 | 8 | 44 | <0.001 | <0.001 |
 | julia-1 | sura-0.8b | 105 | 5 | 36 | <0.001 | <0.001 |
 | julia-1 | sura-2b | 105 | 8 | 41 | <0.001 | 0.001 |
-| julia-1 | von | 105 | 10 | 32 | <0.001 | 0.487 |
+| julia-1 | von | 105 | 10 | 32 | <0.001 | 0.548 |
 | julia-1 | winnow | 105 | 6 | 44 | <0.001 | <0.001 |
 | julia-1 | winnow-12b | 105 | 4 | 45 | <0.001 | <0.001 |
 | kev-0.8b | kev-4b | 105 | 4 | 18 | 0.004 | 1.000 |
 | kev-0.8b | kev-9b | 105 | 3 | 17 | 0.003 | 1.000 |
 | kev-0.8b | lev | 105 | 16 | 17 | 1.000 | 1.000 |
-| kev-0.8b | nimble-v3 | 105 | 2 | 20 | <0.001 | 0.067 |
+| kev-0.8b | nimble-v3 | 105 | 2 | 20 | <0.001 | 0.075 |
 | kev-0.8b | ollaya | 105 | 10 | 10 | 1.000 | 1.000 |
 | kev-0.8b | ollaya-td | 105 | 8 | 13 | 0.383 | 1.000 |
 | kev-0.8b | onejev-4b | 105 | 5 | 19 | 0.007 | 1.000 |
@@ -553,7 +628,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | kev-0.8b | sura-2b | 105 | 7 | 16 | 0.093 | 1.000 |
 | kev-0.8b | von | 105 | 11 | 9 | 0.824 | 1.000 |
 | kev-0.8b | winnow | 105 | 5 | 19 | 0.007 | 1.000 |
-| kev-0.8b | winnow-12b | 105 | 3 | 20 | <0.001 | 0.259 |
+| kev-0.8b | winnow-12b | 105 | 3 | 20 | <0.001 | 0.292 |
 | kev-4b | kev-9b | 105 | 4 | 4 | 1.000 | 1.000 |
 | kev-4b | lev | 105 | 16 | 3 | 0.004 | 1.000 |
 | kev-4b | nimble-v3 | 105 | 2 | 6 | 0.289 | 1.000 |
@@ -567,7 +642,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | kev-4b | startlux-4b | 105 | 6 | 4 | 0.754 | 1.000 |
 | kev-4b | sura-0.8b | 105 | 11 | 4 | 0.118 | 1.000 |
 | kev-4b | sura-2b | 105 | 9 | 4 | 0.267 | 1.000 |
-| kev-4b | von | 105 | 20 | 4 | 0.002 | 0.787 |
+| kev-4b | von | 105 | 20 | 4 | 0.002 | 0.885 |
 | kev-4b | winnow | 105 | 5 | 5 | 1.000 | 1.000 |
 | kev-4b | winnow-12b | 105 | 0 | 3 | 0.250 | 1.000 |
 | kev-9b | lev | 105 | 16 | 3 | 0.004 | 1.000 |
@@ -582,10 +657,10 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | kev-9b | startlux-4b | 105 | 8 | 6 | 0.791 | 1.000 |
 | kev-9b | sura-0.8b | 105 | 12 | 5 | 0.143 | 1.000 |
 | kev-9b | sura-2b | 105 | 10 | 5 | 0.302 | 1.000 |
-| kev-9b | von | 105 | 19 | 3 | <0.001 | 0.448 |
+| kev-9b | von | 105 | 19 | 3 | <0.001 | 0.504 |
 | kev-9b | winnow | 105 | 4 | 4 | 1.000 | 1.000 |
 | kev-9b | winnow-12b | 105 | 2 | 5 | 0.453 | 1.000 |
-| lev | nimble-v3 | 105 | 4 | 21 | <0.001 | 0.473 |
+| lev | nimble-v3 | 105 | 4 | 21 | <0.001 | 0.533 |
 | lev | ollaya | 105 | 19 | 18 | 1.000 | 1.000 |
 | lev | ollaya-td | 105 | 12 | 16 | 0.572 | 1.000 |
 | lev | onejev-4b | 105 | 5 | 18 | 0.011 | 1.000 |
@@ -598,8 +673,8 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | lev | sura-2b | 105 | 8 | 16 | 0.152 | 1.000 |
 | lev | von | 105 | 19 | 16 | 0.736 | 1.000 |
 | lev | winnow | 105 | 3 | 16 | 0.004 | 1.000 |
-| lev | winnow-12b | 105 | 2 | 18 | <0.001 | 0.216 |
-| nimble-v3 | ollaya | 105 | 20 | 2 | <0.001 | 0.067 |
+| lev | winnow-12b | 105 | 2 | 18 | <0.001 | 0.243 |
+| nimble-v3 | ollaya | 105 | 20 | 2 | <0.001 | 0.075 |
 | nimble-v3 | ollaya-td | 105 | 15 | 2 | 0.002 | 1.000 |
 | nimble-v3 | onejev-4b | 105 | 7 | 3 | 0.344 | 1.000 |
 | nimble-v3 | opendecider-td | 105 | 12 | 2 | 0.013 | 1.000 |
@@ -609,7 +684,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | nimble-v3 | startlux-4b | 105 | 10 | 4 | 0.180 | 1.000 |
 | nimble-v3 | sura-0.8b | 105 | 12 | 1 | 0.003 | 1.000 |
 | nimble-v3 | sura-2b | 105 | 12 | 3 | 0.035 | 1.000 |
-| nimble-v3 | von | 105 | 22 | 2 | <0.001 | 0.020 |
+| nimble-v3 | von | 105 | 22 | 2 | <0.001 | 0.022 |
 | nimble-v3 | winnow | 105 | 9 | 5 | 0.424 | 1.000 |
 | nimble-v3 | winnow-12b | 105 | 5 | 4 | 1.000 | 1.000 |
 | ollaya | ollaya-td | 105 | 4 | 9 | 0.267 | 1.000 |
@@ -623,7 +698,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | ollaya | sura-2b | 105 | 6 | 15 | 0.078 | 1.000 |
 | ollaya | von | 105 | 8 | 6 | 0.791 | 1.000 |
 | ollaya | winnow | 105 | 4 | 18 | 0.004 | 1.000 |
-| ollaya | winnow-12b | 105 | 2 | 19 | <0.001 | 0.120 |
+| ollaya | winnow-12b | 105 | 2 | 19 | <0.001 | 0.136 |
 | ollaya-td | onejev-4b | 105 | 4 | 13 | 0.049 | 1.000 |
 | ollaya-td | opendecider-td | 105 | 7 | 10 | 0.629 | 1.000 |
 | ollaya-td | openjev | 105 | 5 | 13 | 0.096 | 1.000 |
@@ -642,7 +717,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | onejev-4b | startlux-4b | 105 | 5 | 3 | 0.727 | 1.000 |
 | onejev-4b | sura-0.8b | 105 | 10 | 3 | 0.092 | 1.000 |
 | onejev-4b | sura-2b | 105 | 10 | 5 | 0.302 | 1.000 |
-| onejev-4b | von | 105 | 19 | 3 | <0.001 | 0.448 |
+| onejev-4b | von | 105 | 19 | 3 | <0.001 | 0.504 |
 | onejev-4b | winnow | 105 | 4 | 4 | 1.000 | 1.000 |
 | onejev-4b | winnow-12b | 105 | 1 | 4 | 0.375 | 1.000 |
 | opendecider-td | openjev | 105 | 7 | 12 | 0.359 | 1.000 |
@@ -672,7 +747,7 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | rizzo-flow-4b | startlux-4b | 105 | 5 | 3 | 0.727 | 1.000 |
 | rizzo-flow-4b | sura-0.8b | 105 | 11 | 4 | 0.118 | 1.000 |
 | rizzo-flow-4b | sura-2b | 105 | 11 | 6 | 0.332 | 1.000 |
-| rizzo-flow-4b | von | 105 | 18 | 2 | <0.001 | 0.216 |
+| rizzo-flow-4b | von | 105 | 18 | 2 | <0.001 | 0.243 |
 | rizzo-flow-4b | winnow | 105 | 3 | 3 | 1.000 | 1.000 |
 | rizzo-flow-4b | winnow-12b | 105 | 3 | 6 | 0.508 | 1.000 |
 | startlux-4b | sura-0.8b | 105 | 9 | 4 | 0.267 | 1.000 |
@@ -687,6 +762,6 @@ pair in this table (Holm-Bonferroni), so a difference under 0.05 there holds acr
 | sura-2b | von | 105 | 18 | 7 | 0.043 | 1.000 |
 | sura-2b | winnow | 105 | 6 | 11 | 0.332 | 1.000 |
 | sura-2b | winnow-12b | 105 | 2 | 10 | 0.039 | 1.000 |
-| von | winnow | 105 | 3 | 19 | <0.001 | 0.448 |
-| von | winnow-12b | 105 | 2 | 21 | <0.001 | 0.037 |
+| von | winnow | 105 | 3 | 19 | <0.001 | 0.504 |
+| von | winnow-12b | 105 | 2 | 21 | <0.001 | 0.041 |
 | winnow | winnow-12b | 105 | 2 | 5 | 0.453 | 1.000 |

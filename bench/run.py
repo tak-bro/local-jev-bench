@@ -411,10 +411,13 @@ def now() -> str:
 
 
 def questions_label(path: Path) -> str:
-    """The question set as it appears in the report header: repo-relative when inside the repo."""
-    path = path.resolve()
+    """The question set as it appears in the report header: repo-relative when inside the repo. The path is tried
+    before its symlinks are followed too: a worktree links bench/data to the original checkout's."""
     root = Path(__file__).resolve().parents[1]
-    return str(path.relative_to(root)) if path.is_relative_to(root) else str(path)
+    for p in (path.resolve(), Path(os.path.abspath(path))):
+        if p.is_relative_to(root):
+            return str(p.relative_to(root))
+    return str(path.resolve())
 
 
 def positive_int(text: str) -> int:
